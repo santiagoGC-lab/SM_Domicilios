@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SM - Reportes</title>
+    <link rel="stylesheet" href="../componentes/reportes.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Añadir FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+           <img src="../componentes/img/logo2.png" alt="Logo" />
+        </div>
+        <div class="sidebar-menu">
+            <a href="dashboard.php" class="menu-item ">
+                <i class="fas fa-tachometer-alt"></i>
+                <span class="menu-text">Inicio</span>
+            </a>
+            <a href="productos.php" class="menu-item">
+                <i class="fas fa-box"></i>
+                <span class="menu-text">Productos</span>
+            </a>
+            <a href="categorias.php" class="menu-item">
+                <i class="fas fa-tags"></i>
+                <span class="menu-text">Categorías</span>
+            </a>
+
+            <a href="movimientos.php" class="menu-item">
+                <i class="fas fa-exchange-alt"></i>
+                <span class="menu-text">Movimientos</span>
+            </a>
+            <a href="usuarios.php" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span class="menu-text">Usuarios</span>
+            </a>
+            <a href="reportes.html" class="menu-item active">
+                <i class="fas fa-chart-bar"></i>
+                <span class="menu-text">Reportes</span>
+            </a>
+            <a href="configuracion.php" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span class="menu-text">Configuración</span>
+            </a>
+            <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="menu-text">Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header">
+            <h2>Reportes</h2>
+            <button class="btn btn-primary" id="btnGenerateReport">
+                <i class="fas fa-plus"></i> Generar Nuevo Reporte
+            </button>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3 class="chart-title">Movimientos de Inventario</h3>
+                <div class="chart-filters">
+                    <select class="form-control">
+                        <option value="week">Última Semana</option>
+                        <option value="month" selected>Último Mes</option>
+                        <option value="quarter">Último Trimestre</option>
+                        <option value="year">Último Año</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-body">
+                <p>Aquí se mostrará el gráfico de movimientos de inventario</p>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3 class="chart-title">Productos por Categoría</h3>
+                <div class="chart-filters">
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
+            <div class="chart-body">
+                <p>Aquí se mostrará el gráfico de productos por categoría</p>
+            </div>
+        </div>
+        
+        <h3>Reportes Guardados</h3>
+        
+        <div class="reports-grid">
+            <div class="report-card">
+                <div class="report-header">
+                    <h4 class="report-title">Inventario Mensual</h4>
+                </div>
+                <div class="report-body">
+                    <p class="report-description">Reporte detallado del inventario al cierre del mes de mayo 2023.</p>
+                </div>
+                <div class="report-footer">
+                    <span class="report-date">Generado: 31/05/2023</span>
+                    <div class="report-actions">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="report-card">
+                <div class="report-header">
+                    <h4 class="report-title">Ventas por Categoría</h4>
+                </div>
+                <div class="report-body">
+                    <p class="report-description">Análisis de ventas por categoría de producto durante el segundo trimestre.</p>
+                </div>
+                <div class="report-footer">
+                    <span class="report-date">Generado: 15/05/2023</span>
+                    <div class="report-actions">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="report-card">
+                <div class="report-header">
+                    <h4 class="report-title">Productos de Baja Rotación</h4>
+                </div>
+                <div class="report-body">
+                    <p class="report-description">Listado de productos con baja rotación en los últimos 3 meses.</p>
+                </div>
+                <div class="report-footer">
+                    <span class="report-date">Generado: 10/05/2023</span>
+                    <div class="report-actions">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="report-card">
+                <div class="report-header">
+                    <h4 class="report-title">Movimientos por Usuario</h4>
+                </div>
+                <div class="report-body">
+                    <p class="report-description">Detalle de movimientos de inventario realizados por cada usuario.</p>
+                </div>
+                <div class="report-footer">
+                    <span class="report-date">Generado: 05/05/2023</span>
+                    <div class="report-actions">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para generar reporte -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Generar Nuevo Reporte</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="reportForm">
+                <div class="form-group">
+                    <label for="reportType">Tipo de Reporte</label>
+                    <select class="form-control" id="reportType" required>
+                        <option value="">Seleccionar tipo</option>
+                        <option value="inventory">Inventario Actual</option>
+                        <option value="movements">Movimientos de Inventario</option>
+                        <option value="sales">Ventas por Categoría</option>
+                        <option value="lowstock">Productos con Stock Bajo</option>
+                        <option value="useractions">Acciones por Usuario</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reportDateFrom">Desde</label>
+                        <input type="date" class="form-control" id="reportDateFrom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reportDateTo">Hasta</label>
+                        <input type="date" class="form-control" id="reportDateTo" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reportFormat">Formato</label>
+                    <select class="form-control" id="reportFormat" required>
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reportNotes">Notas</label>
+                    <textarea class="form-control" id="reportNotes" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnCancelReport">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Generar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // JavaScript para funcionalidad interactiva
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('reportModal');
+            const btnGenerateReport = document.getElementById('btnGenerateReport');
+            const btnCancelReport = document.getElementById('btnCancelReport');
+            const closeModal = document.querySelector('.close-modal');
+            
+            // Establecer fechas por defecto (último mes)
+            const today = new Date();
+            const lastMonth = new Date();
+            lastMonth.setMonth(today.getMonth() - 1);
+            
+            document.getElementById('reportDateFrom').value = lastMonth.toISOString().split('T')[0];
+            document.getElementById('reportDateTo').value = today.toISOString().split('T')[0];
+            
+            // Abrir modal para generar reporte
+            btnGenerateReport.addEventListener('click', function() {
+                modal.style.display = 'flex';
+            });
+            
+            // Cerrar modal
+            function closeReportModal() {
+                modal.style.display = 'none';
+            }
+            
+            btnCancelReport.addEventListener('click', closeReportModal);
+            closeModal.addEventListener('click', closeReportModal);
+            
+            // Cerrar modal al hacer clic fuera del contenido
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeReportModal();
+                }
+            });
+            
+            // Manejar envío del formulario
+            document.getElementById('reportForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Aquí iría la lógica para generar el reporte
+                alert('Reporte generado correctamente');
+                closeReportModal();
+            });
+            
+            // Manejar botones de ver y descargar en los reportes guardados
+            document.querySelectorAll('.report-actions .btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.querySelector('i').classList.contains('fa-eye') ? 'ver' : 'descargar';
+                    const reportTitle = this.closest('.report-card').querySelector('.report-title').textContent;
+                    alert(`Acción: ${action} el reporte "${reportTitle}"`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
