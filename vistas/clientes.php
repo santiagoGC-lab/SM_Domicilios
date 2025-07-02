@@ -677,15 +677,15 @@ verificarSesion();
         }
 
         function loadClients() {
-    fetch('../servicios/obtener_clientes.php')
-        .then(response => response.json())
-        .then(clientes => {
-            const tbody = document.getElementById('clientsTableBody');
-            tbody.innerHTML = '';
+            fetch('../servicios/obtener_clientes.php')
+                .then(response => response.json())
+                .then(clientes => {
+                    const tbody = document.getElementById('clientsTableBody');
+                    tbody.innerHTML = '';
 
-            clientes.forEach(cliente => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+                    clientes.forEach(cliente => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
                     <td>${cliente.id}</td>
                     <td>
                         <div class="client-info">
@@ -731,13 +731,13 @@ verificarSesion();
                         </div>
                     </td>
                 `;
-                tbody.appendChild(tr);
-            });
-        })
-        .catch(error => {
-            console.error('Error al cargar los clientes:', error);
-        });
-}
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar los clientes:', error);
+                });
+        }
 
 
         function filterClients() {
