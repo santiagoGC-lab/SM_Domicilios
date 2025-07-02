@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 02-07-2025 a las 17:18:50
+-- Tiempo de generación: 02-07-2025 a las 20:20:25
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -18,49 +18,43 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `supermercar`
+-- Base de datos: `sm_domicilios`
 --
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `domiciliarios`
+-- Estructura de tabla para la tabla `usuarios`
 --
 
-CREATE TABLE `domiciliarios` (
-  `id` int(11) NOT NULL,
-  `cedula` varchar(10) NOT NULL,
-  `nombre` varchar(30) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `domiciliarios`
---
-
-INSERT INTO `domiciliarios` (`id`, `cedula`, `nombre`) VALUES
-(1, '123456789', 'Juan Pérez'),
-(2, '987654321', 'María Gómez');
+CREATE TABLE `usuarios` (
+  `id_usuario` int(11) NOT NULL,
+  `nombre` varchar(100) DEFAULT NULL,
+  `correo` varchar(100) DEFAULT NULL,
+  `contrasena` varchar(255) DEFAULT NULL,
+  `rol` enum('cliente','admin','repartidor') DEFAULT 'cliente'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Índices para tablas volcadas
 --
 
 --
--- Indices de la tabla `domiciliarios`
+-- Indices de la tabla `usuarios`
 --
-ALTER TABLE `domiciliarios`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `cedula` (`cedula`);
+ALTER TABLE `usuarios`
+  ADD PRIMARY KEY (`id_usuario`),
+  ADD UNIQUE KEY `correo` (`correo`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
 --
 
 --
--- AUTO_INCREMENT de la tabla `domiciliarios`
+-- AUTO_INCREMENT de la tabla `usuarios`
 --
-ALTER TABLE `domiciliarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+ALTER TABLE `usuarios`
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

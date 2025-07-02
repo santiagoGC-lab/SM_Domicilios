@@ -174,6 +174,12 @@ verificarSesion();
     </div>
 
     <script>
+        if (respuesta === "duplicado") {
+            alert("Ya existe una zona con ese nombre y barrio.");
+        } else if (respuesta === "ok") {
+            location.reload();
+        }
+
         // Sidebar responsive
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             document.getElementById('sidebar').classList.toggle('collapsed');
