@@ -677,9 +677,68 @@ verificarSesion();
         }
 
         function loadClients() {
-            // Aquí cargarías los clientes desde la base de datos
-            // Por ahora, los datos están hardcodeados en el HTML
-        }
+    fetch('../servicios/obtener_clientes.php')
+        .then(response => response.json())
+        .then(clientes => {
+            const tbody = document.getElementById('clientsTableBody');
+            tbody.innerHTML = '';
+
+            clientes.forEach(cliente => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${cliente.id}</td>
+                    <td>
+                        <div class="client-info">
+                            <strong>${cliente.nombre}</strong>
+                            <small>Cliente desde: ${cliente.fecha_registro}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="contact-info">
+                            <div><i class="fas fa-phone"></i> ${cliente.telefono}</div>
+                            <div><i class="fas fa-envelope"></i> ${cliente.email}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="address-count">-</span> <!-- Puedes cargar direcciones aparte -->
+                    </td>
+                    <td>
+                        <div class="orders-info">
+                            <strong>- pedidos</strong>
+                            <small>$ - total</small>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="estado-${cliente.tipo_cliente.toLowerCase()}">${cliente.tipo_cliente.toUpperCase()}</span>
+                    </td>
+                    <td>
+                        <small>-</small>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-ver" onclick="viewClient(${cliente.id})" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-editar" onclick="editClient(${cliente.id})" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-historial" onclick="viewHistory(${cliente.id})" title="Historial">
+                                <i class="fas fa-history"></i>
+                            </button>
+                            <button class="btn btn-eliminar" onclick="deleteClient(${cliente.id})" title="Eliminar">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(error => {
+            console.error('Error al cargar los clientes:', error);
+        });
+}
+
 
         function filterClients() {
             const searchTerm = document.getElementById('searchClient').value.toLowerCase();
