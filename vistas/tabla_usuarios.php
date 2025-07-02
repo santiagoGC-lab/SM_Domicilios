@@ -21,7 +21,7 @@ $resultado = mysqli_query($conexion, $query);
         </tr>
     </thead>
     <tbody>
-        <?php while($usuario = mysqli_fetch_assoc($resultado)) { ?>
+        <?php while ($usuario = mysqli_fetch_assoc($resultado)) { ?>
             <tr>
                 <td><?php echo $usuario['id']; ?></td>
                 <td><?php echo $usuario['nombre']; ?></td>

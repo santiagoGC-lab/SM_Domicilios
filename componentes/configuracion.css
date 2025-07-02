@@ -336,6 +336,7 @@ input:checked+.slider:before {
         opacity: 1;
     }
 }
+
 /* Estilos para configuraciones de seguridad */
 .security-level {
     display: flex;

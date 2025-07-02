@@ -1,12 +1,15 @@
+<?php
+require_once '../servicios/verificar_sesion.php';
+verificarSesion();
+?>
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SM - Configuración</title>
+    <title>SM - Reportes</title>
     <link rel="stylesheet" href="../componentes/dashboard.css" />
-    <link rel="stylesheet" href="../componentes/configuracion.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 
@@ -28,7 +31,7 @@
                 <i class="fas fa-shopping-bag"></i>
                 <span class="menu-text">Pedidos</span>
             </a>
-            <a href="clientes.php" class="menu-item ">
+            <a href="clientes.php" class="menu-item">
                 <i class="fas fa-users"></i>
                 <span class="menu-text">Clientes</span>
             </a>
@@ -40,11 +43,11 @@
                 <i class="fas fa-map-marked-alt"></i>
                 <span class="menu-text">Zonas de Entrega</span>
             </a>
-            <a href="reportes.php" class="menu-item">
+            <a href="reportes.html" class="menu-item active">
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
-            <a href="configuracion.php" class="menu-item active">
+            <a href="configuracion.php" class="menu-item">
                 <i class="fas fa-cog"></i>
                 <span class="menu-text">Configuración</span>
             </a>
@@ -57,53 +60,73 @@
 
     <div class="main-content" id="mainContent">
         <div class="header">
-            <h2>Configuración del Sistema</h2>
+            <h2>Reportes</h2>
             <div class="user-info" onclick="showUserMenu()">
                 <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Usuario" />
                 <span>Bienvenido, <strong id="userName">Usuario</strong></span>
             </div>
         </div>
 
-        <div class="config-section admin-only">
-            <h3>Configuración General <span class="admin-badge">Admin</span></h3>
-            <div class="form-group">
-                <label>Nombre de la Empresa</label>
-                <input type="text" class="form-control" placeholder="Nombre de la empresa..." />
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Email de Contacto</label>
-                    <input type="email" class="form-control" placeholder="Email..." />
+        <div class="dashboard-cards">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-truck-fast"></i>
+                    </div>
+                    <h3>Entregas por Zona</h3>
                 </div>
-                <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="tel" class="form-control" placeholder="Teléfono..." />
+                <div class="chart-body">
+                    <p>Visualización de entregas por zona de reparto</p>
+                    <button class="btn-login">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <div class="config-section advanced-config">
-            <h3>Configuración Avanzada <span class="warning-badge">Avanzado</span></h3>
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                Estas configuraciones son para usuarios avanzados.
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Tiempos de Entrega</h3>
+                </div>
+                <div class="chart-body">
+                    <p>Análisis de tiempos promedio de entrega</p>
+                    <button class="btn-login">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Copias de Seguridad Automáticas</label>
-                <label class="switch">
-                    <input type="checkbox">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="form-group">
-                <label>Intervalo de Respaldo (días)</label>
-                <input type="number" class="form-control" min="1" value="7" />
-            </div>
-        </div>
 
-        <div class="section-actions">
-            <button class="btn btn-secondary">Cancelar</button>
-            <button class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cambios</button>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                    <h3>Rendimiento Domiciliarios</h3>
+                </div>
+                <div class="chart-body">
+                    <p>Evaluación de rendimiento por domiciliario</p>
+                    <button class="btn-login">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Clientes Frecuentes</h3>
+                </div>
+                <div class="chart-body">
+                    <p>Análisis de pedidos por cliente</p>
+                    <button class="btn-login">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -124,14 +147,6 @@
         function showUserMenu() {
             window.location.href = 'menuUsu.html';
         };
-
-        // Theme selector
-        document.querySelectorAll('.theme-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('selected'));
-                this.classList.add('selected');
-            });
-        });
     </script>
 </body>
 

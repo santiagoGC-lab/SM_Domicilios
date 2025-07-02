@@ -5,6 +5,7 @@ verificarSesion();
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,10 +16,11 @@ verificarSesion();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-           <img src="../componentes/img/logo2.png" alt="Logo" />
+            <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
             <a href="dashboard.php" class="menu-item">
@@ -64,7 +66,7 @@ verificarSesion();
                 <input type="text" placeholder="Buscar pedidos...">
             </div>
             <div class="action-buttons">
-                <button class="btn-login" id="btnAddPedido">
+                <button class="btn-login" id="btnAddPedido" onclick="abrirModalNuevoPedido()">
                     <i class="fas fa-plus"></i> Nuevo Pedido
                 </button>
             </div>
@@ -78,7 +80,7 @@ verificarSesion();
                     </div>
                     <h3 class="card-title">Pedidos Pendientes</h3>
                 </div>
-                <div class="card-value">0</div>
+                <div class="card-value">3</div>
                 <div class="card-footer">Actualizado hace 5 minutos</div>
             </div>
             <div class="card">
@@ -88,7 +90,7 @@ verificarSesion();
                     </div>
                     <h3 class="card-title">Completados Hoy</h3>
                 </div>
-                <div class="card-value">0</div>
+                <div class="card-value">2</div>
                 <div class="card-footer">Actualizado hace 5 minutos</div>
             </div>
 
@@ -99,7 +101,7 @@ verificarSesion();
                     </div>
                     <h3 class="card-title">Ingresos del Día</h3>
                 </div>
-                <div class="card-value">$0</div>
+                <div class="card-value">$150.00</div>
                 <div class="card-footer">Actualizado hace 5 minutos</div>
             </div>
         </div>
@@ -109,9 +111,133 @@ verificarSesion();
                 <h3>Pedidos Recientes</h3>
             </div>
             <div class="activity-list">
-                <!-- Los pedidos se cargarán dinámicamente aquí -->
+                <div class="activity-item">
+                    <span>Pedido #001 - Cliente: Juan Pérez - Producto: Pizza (2) - Estado: Pendiente</span>
+                    <span>02/07/2025 14:30</span>
+                </div>
+                <div class="activity-item">
+                    <span>Pedido #002 - Cliente: María Gómez - Producto: Hamburguesa (1) - Estado: Entregado</span>
+                    <span>02/07/2025 13:45</span>
+                </div>
+                <div class="activity-item">
+                    <span>Pedido #003 - Cliente: Carlos López - Producto: Pizza (1) - Estado: En Camino</span>
+                    <span>02/07/2025 14:00</span>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal de Nuevo Pedido -->
+    <div id="modalNuevoPedido" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <h2>Nuevo Pedido</h2>
+            <form id="formNuevoPedido">
+                <div class="form-group">
+                    <label for="cliente">Cliente:</label>
+                    <input type="text" id="cliente" name="cliente" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="zona">Zona:</label>
+                    <select id="zona" name="zona" class="form-control" required>
+                        <option value="">Seleccione una zona</option>
+                        <option value="norte">Norte</option>
+                        <option value="sur">Sur</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="estado">Estado:</label>
+                    <select id="estado" name="estado" class="form-control" required>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_proceso">En Proceso</option>
+                        <option value="en_camino">En Camino</option>
+                        <option value="entregado">Entregado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="productos">Productos:</label>
+                    <div id="productosContainer" class="producto-item">
+                        <select class="form-control producto-select" required>
+                            <option value="">Seleccione un producto</option>
+                            <option value="pizza">Pizza</option>
+                            <option value="hamburguesa">Hamburguesa</option>
+                        </select>
+                        <input type="number" class="form-control cantidad" placeholder="Cantidad" min="1" required>
+                        <button type="button" class="btn-remove-producto btn" onclick="this.parentElement.remove()">-</button>
+                    </div>
+                    <button type="button" class="btn-login" onclick="agregarProducto()">Agregar Producto</button>
+                </div>
+                <button type="submit" class="btn-login">Crear Pedido</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Función para abrir el modal de nuevo pedido
+        function abrirModalNuevoPedido() {
+            document.getElementById('modalNuevoPedido').style.display = 'block';
+            document.getElementById('formNuevoPedido').reset();
+            document.getElementById('productosContainer').innerHTML = `
+                <div class="producto-item">
+                    <select class="form-control producto-select" required>
+                        <option value="">Seleccione un producto</option>
+                        <option value="pizza">Pizza</option>
+                        <option value="hamburguesa">Hamburguesa</option>
+                    </select>
+                    <input type="number" class="form-control cantidad" placeholder="Cantidad" min="1" required>
+                    <button type="button" class="btn-remove-producto btn" onclick="this.parentElement.remove()">-</button>
+                </div>`;
+        }
+
+        // Función para agregar un nuevo campo de producto
+        function agregarProducto() {
+            const container = document.getElementById('productosContainer');
+            const newProducto = document.createElement('div');
+            newProducto.className = 'producto-item';
+            newProducto.innerHTML = `
+                <select class="form-control producto-select" required>
+                    <option value="">Seleccione un producto</option>
+                    <option value="pizza">Pizza</option>
+                    <option value="hamburguesa">Hamburguesa</option>
+                </select>
+                <input type="number" class="form-control cantidad" placeholder="Cantidad" min="1" required>
+                <button type="button" class="btn-remove-producto btn" onclick="this.parentElement.remove()">-</button>`;
+            container.appendChild(newProducto);
+        }
+
+        // Cerrar el modal
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.onclick = function() {
+                this.closest('.modal').style.display = 'none';
+            };
+        });
+
+        // Cerrar el modal si se hace clic fuera de él
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Manejar el envío del formulario de nuevo pedido
+        document.getElementById('formNuevoPedido').onsubmit = function(e) {
+            e.preventDefault();
+            const pedido = {
+                cliente: document.getElementById('cliente').value,
+                zona: document.getElementById('zona').value,
+                estado: document.getElementById('estado').value,
+                productos: Array.from(document.querySelectorAll('.producto-item')).map(item => ({
+                    producto: item.querySelector('.producto-select').value,
+                    cantidad: item.querySelector('.cantidad').value
+                }))
+            };
+            // Aquí iría la lógica para enviar los datos al servidor
+            alert('Nuevo pedido creado: ' + JSON.stringify(pedido));
+            document.getElementById('modalNuevoPedido').style.display = 'none';
+            // Placeholder para recargar la lista de pedidos o actualizar la interfaz
+        }
+    </script>
 </body>
+
 </html>
