@@ -43,7 +43,7 @@ verificarSesion();
             </a>
             <a href="zonas.php" class="menu-item">
                 <i class="fas fa-map-marked-alt"></i>
-                <span class="menu-text">Zonas</span>
+                <span class="menu-text">Zonas de Entrega</span>
             </a>
             <a href="reportes.html" class="menu-item">
                 <i class="fas fa-chart-bar"></i>

@@ -143,20 +143,104 @@
 }
 
 /* Table improvements */
+/* Estilos específicos para la tabla de zonas */
 .users-table {
-    animation: fadeIn 0.8s var(--transition-timing);
-    overflow: auto;
-    max-height: 60vh;
-    position: relative;
-    contain: content;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
 }
 
-.users-table thead {
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 10;
-    backdrop-filter: blur(5px);
+.users-table th,
+.users-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.users-table th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 500;
+}
+
+.users-table tbody tr:hover {
+    background-color: var(--light-bg);
+}
+
+/* Estilos para los estados */
+.estado-activo {
+    background-color: var(--success-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+}
+
+.estado-inactivo {
+    background-color: var(--warning-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+}
+
+/* Estilos para los botones de acción */
+.btn-editar,
+.btn-eliminar {
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-editar {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.btn-eliminar {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.btn-editar:hover,
+.btn-eliminar:hover {
+    opacity: 0.8;
+    transform: translateY(-2px);
+}
+
+/* Estilos para el formulario de búsqueda */
+.users-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.users-actions .form-control {
+    flex: 1;
+    max-width: 300px;
+}
+
+.users-actions .btn-login {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.users-actions .btn-login:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
 }
 
 .users-table tbody tr {
