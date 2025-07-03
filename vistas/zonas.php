@@ -1,7 +1,3 @@
-<?php
-require_once '../servicios/verificar_sesion.php';
-verificarSesion();
-?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -174,90 +170,106 @@ verificarSesion();
     </div>
 
     <script>
-        if (respuesta === "duplicado") {
-            alert("Ya existe una zona con ese nombre y barrio.");
-        } else if (respuesta === "ok") {
-            location.reload();
-        }
-
-        // Sidebar responsive
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        });
-
-        document.addEventListener('click', function(e) {
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sidebar responsive
             const sidebar = document.getElementById('sidebar');
-            const toggle = document.getElementById('sidebarToggle');
-            if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-                sidebar.classList.remove('collapsed');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+
+            sidebarToggle.addEventListener('click', function () {
+                sidebar.classList.toggle('collapsed');
+            });
+
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                    sidebar.classList.remove('collapsed');
+                }
+            });
+
+            // Función para mostrar el menú de usuario
+            function showUserMenu() {
+                window.location.href = 'menuUsu.html';
             }
+
+            // Funciones para abrir el modal de edición
+            function editarZona(id) {
+                const modalEditar = document.getElementById('modalEditar');
+                modalEditar.style.display = 'block';
+                // Ejemplo de carga de datos
+                document.getElementById('zonaId').value = id;
+                document.getElementById('nombre').value = 'Norte';
+                document.getElementById('ciudad').value = 'Ciudad Principal';
+                document.getElementById('tarifa').value = 5000;
+                document.getElementById('estado').value = 'activo';
+            }
+
+            // Funciones para abrir el modal de nueva zona
+            function abrirModalNueva() {
+                const modalNueva = document.getElementById('modalNueva');
+                modalNueva.style.display = 'block';
+                document.getElementById('formNueva').reset();
+            }
+
+            // Cerrar modales con el botón "X"
+            document.querySelectorAll('.close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', function () {
+                    const modal = this.closest('.modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+
+            // Cerrar modales al hacer clic fuera de ellos
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function (e) {
+                    if (e.target === this) {
+                        this.style.display = 'none';
+                    }
+                });
+            });
+
+            // Cerrar modales con la tecla Escape
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                }
+            });
+
+            // Manejar el envío del formulario de edición
+            document.getElementById('formEditar').addEventListener('submit', function (e) {
+                e.preventDefault();
+                alert('Zona actualizada: ' + document.getElementById('nombre').value);
+                document.getElementById('modalEditar').style.display = 'none';
+            });
+
+            // Manejar el envío del formulario de nueva zona
+            document.getElementById('formNueva').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const nuevaZona = {
+                    nombre: document.getElementById('nuevoNombre').value,
+                    ciudad: document.getElementById('nuevoCiudad').value,
+                    tarifa: document.getElementById('nuevoTarifa').value,
+                    estado: document.getElementById('nuevoEstado').value
+                };
+                alert('Nueva zona creada: ' + JSON.stringify(nuevaZona));
+                document.getElementById('modalNueva').style.display = 'none';
+            });
+
+            // Eliminar zona
+            function eliminarZona(id) {
+                if (confirm('¿Estás seguro de que deseas eliminar esta zona?')) {
+                    alert('Zona con ID ' + id + ' eliminada');
+                }
+            }
+
+            // Exponer funciones al ámbito global
+            window.editarZona = editarZona;
+            window.abrirModalNueva = abrirModalNueva;
+            window.eliminarZona = eliminarZona;
+            window.showUserMenu = showUserMenu;
         });
-
-        function showUserMenu() {
-            window.location.href = 'menuUsu.html';
-        };
-
-        // Funciones para el modal de edición
-        function editarZona(id) {
-            document.getElementById('modalEditar').style.display = 'block';
-            // Aquí iría la lógica para cargar los datos de la zona con ID 'id'
-            document.getElementById('zonaId').value = id;
-            document.getElementById('nombre').value = 'Norte'; // Ejemplo de datos
-            document.getElementById('ciudad').value = 'Ciudad Principal';
-            document.getElementById('tarifa').value = 5000;
-            document.getElementById('estado').value = 'activo';
-        }
-
-        // Funciones para el modal de nueva zona
-        function abrirModalNueva() {
-            document.getElementById('modalNueva').style.display = 'block';
-            // Limpiar el formulario al abrir
-            document.getElementById('formNueva').reset();
-        }
-
-        // Cerrar los modales
-        document.querySelectorAll('.close').forEach(closeBtn => {
-            closeBtn.onclick = function() {
-                this.closest('.modal').style.display = 'none';
-            };
-        });
-
-        // Cerrar los modales si se hace clic fuera de ellos
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        }
-
-        // Manejar el envío del formulario de edición
-        document.getElementById('formEditar').onsubmit = function(e) {
-            e.preventDefault();
-            // Aquí iría la lógica para actualizar la zona
-            alert('Zona actualizada: ' + document.getElementById('nombre').value);
-            document.getElementById('modalEditar').style.display = 'none';
-        }
-
-        // Manejar el envío del formulario de nueva zona
-        document.getElementById('formNueva').onsubmit = function(e) {
-            e.preventDefault();
-            // Aquí iría la lógica para crear la nueva zona (por ejemplo, enviar datos a un servidor)
-            const nuevaZona = {
-                nombre: document.getElementById('nuevoNombre').value,
-                ciudad: document.getElementById('nuevoCiudad').value,
-                tarifa: document.getElementById('nuevoTarifa').value,
-                estado: document.getElementById('nuevoEstado').value
-            };
-            alert('Nueva zona creada: ' + JSON.stringify(nuevaZona));
-            document.getElementById('modalNueva').style.display = 'none';
-            // Aquí podrías añadir lógica para recargar la tabla o agregar la zona dinámicamente
-        }
-
-        function eliminarZona(id) {
-            if (confirm('¿Estás seguro de que deseas eliminar esta zona?')) {
-                // Aquí iría la lógica para eliminar la zona
-                alert('Zona con ID ' + id + ' eliminada');
-            }
-        }
     </script>
 </body>
 

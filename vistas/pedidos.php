@@ -1,8 +1,3 @@
-<?php
-require_once '../servicios/verificar_sesion.php';
-verificarSesion();
-?>
-
 <!DOCTYPE html>
 <html lang="es">
 
