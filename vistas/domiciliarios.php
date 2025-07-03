@@ -65,7 +65,7 @@
         <div class="users-section">
             <div class="users-actions">
                 <input type="text" class="form-control" placeholder="Buscar domiciliario..." />
-                <button class="btn-login">
+                <button class="btn-action">
                     <i class="fas fa-user-plus"></i> Nuevo Domiciliario
                 </button>
             </div>

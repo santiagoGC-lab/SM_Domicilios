@@ -1,4 +1,8 @@
-/* clientes.css */
+* {
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+}
+
 :root {
     --primary-color: #015938;
     --secondary-color: #007B55;
