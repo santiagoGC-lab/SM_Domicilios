@@ -196,9 +196,9 @@
 
 .clients-section {
     padding: 20px;
-    background: var(--light-bg);
-    border-radius: 8px;
-    margin-bottom: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
 }
 
 .clients-actions {
