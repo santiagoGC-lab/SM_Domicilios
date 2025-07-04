@@ -119,15 +119,14 @@
 .menu-text {
     display: block;
 }
-
-.sidebar.collapsed .menu-text {
-    display: none;
-}
-
 .main-content {
     margin-left: 250px;
     padding: 20px;
     transition: all var(--transition-speed) var(--transition-timing);
+}
+
+.sidebar.collapsed .menu-text {
+    display: none;
 }
 
 .sidebar.collapsed + .main-content {

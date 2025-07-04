@@ -154,9 +154,10 @@
                         <input type="number" class="form-control cantidad" placeholder="Cantidad" min="1" required>
                         <button type="button" class="btn-remove-producto btn" onclick="this.parentElement.remove()">-</button>
                     </div>
-                    <button type="button" class="btn-login" onclick="agregarProducto()">Agregar Producto</button>
+                    <button type="button" class="btn-login" onclick="agregarProducto()">+</button>
                 </div>
                 <button type="submit" class="btn-login">Crear Pedido</button>
+                <button type="button" class="btn-login" onclick="cerrarModal('modalNuevoPedido')">Cancelar</button>
             </form>
         </div>
     </div>
