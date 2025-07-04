@@ -110,134 +110,135 @@
 
         <div class="clients-section">
             <div class="clients-actions">
-                <div class="search-bar">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Buscar Cliente..." id="searchInput">
-                <button class="btn-search" onclick="buscarCliente()">Buscar</button>
+                <div class="search-and-filter">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar Cliente..." id="searchInput" oninput="filterClients()">
+                        <button class="btn-search" onclick="filterClients()">Buscar</button>
+                    </div>
+                    <select id="filterStatus" class="filter-select" onchange="filterClients()">
+                        <option value="">Todos los estados</option>
+                        <option value="activo">Activos</option>
+                        <option value="inactivo">Inactivos</option>
+                        <option value="vip">VIP</option>
+                    </select>
+                </div>
+                <button class="btn-login" onclick="openNewClientModal()">
+                    <i class="fas fa-user-plus"></i> Nuevo Cliente
+                </button>
             </div>
-                <select id="filterStatus" class="form-control">
-                    <option value="">Todos los estados</option>
-                    <option value="activo">Activos</option>
-                    <option value="inactivo">Inactivos</option>
-                    <option value="vip">VIP</option>
-                </select>
-            </div>
-            <button class="btn-login" onclick="openNewClientModal()">
-                <i class="fas fa-user-plus"></i> Nuevo Cliente
-            </button>
-        </div>
 
-        <div class="clients-table-container">
-            <table class="clients-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Cliente</th>
-                        <th>Contacto</th>
-                        <th>Direcciones</th>
-                        <th>Pedidos</th>
-                        <th>Estado</th>
-                        <th>Último Pedido</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="clientsTableBody">
-                    <tr>
-                        <td>001</td>
-                        <td>
-                            <div class="client-info">
-                                <strong>María González</strong>
-                                <small>Cliente desde: 15/03/2024</small>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="contact-info">
-                                <div><i class="fas fa-phone"></i> 3001234567</div>
-                                <div><i class="fas fa-envelope"></i> maria@email.com</div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="address-count">3 direcciones</span>
-                        </td>
-                        <td>
-                            <div class="orders-info">
-                                <strong>24 pedidos</strong>
-                                <small>$560,000 total</small>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="estado-vip">VIP</span>
-                        </td>
-                        <td>
-                            <small>Hace 2 días</small>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-ver" onclick="viewClient(1)" title="Ver detalles">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-editar" onclick="editClient(1)" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-historial" onclick="viewHistory(1)" title="Historial">
-                                    <i class="fas fa-history"></i>
-                                </button>
-                                <button class="btn btn-eliminar" onclick="deleteClient(1)" title="Eliminar">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>002</td>
-                        <td>
-                            <div class="client-info">
-                                <strong>Carlos Ramírez</strong>
-                                <small>Cliente desde: 28/02/2024</small>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="contact-info">
-                                <div><i class="fas fa-phone"></i> 3009876543</div>
-                                <div><i class="fas fa-envelope"></i> carlos@email.com</div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="address-count">1 dirección</span>
-                        </td>
-                        <td>
-                            <div class="orders-info">
-                                <strong>8 pedidos</strong>
-                                <small>$180,000 total</small>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="estado-activo">Activo</span>
-                        </td>
-                        <td>
-                            <small>Hace 1 semana</small>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-ver" onclick="viewClient(2)" title="Ver detalles">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-editar" onclick="editClient(2)" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-historial" onclick="viewHistory(2)" title="Historial">
-                                    <i class="fas fa-history"></i>
-                                </button>
-                                <button class="btn btn-eliminar" onclick="deleteClient(2)" title="Eliminar">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="clients-table-container">
+                <table class="clients-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Contacto</th>
+                            <th>Direcciones</th>
+                            <th>Pedidos</th>
+                            <th>Estado</th>
+                            <th>Último Pedido</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                        <tr>
+                            <td>001</td>
+                            <td>
+                                <div class="client-info">
+                                    <strong>María González</strong>
+                                    <small>Cliente desde: 15/03/2024</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="contact-info">
+                                    <div><i class="fas fa-phone"></i> 3001234567</div>
+                                    <div><i class="fas fa-envelope"></i> maria@email.com</div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="address-count">3 direcciones</span>
+                            </td>
+                            <td>
+                                <div class="orders-info">
+                                    <strong>24 pedidos</strong>
+                                    <small>$560,000 total</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="estado-vip">VIP</span>
+                            </td>
+                            <td>
+                                <small>Hace 2 días</small>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-ver" onclick="viewClient(1)" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-editar" onclick="editClient(1)" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-historial" onclick="viewHistory(1)" title="Historial">
+                                        <i class="fas fa-history"></i>
+                                    </button>
+                                    <button class="btn btn-eliminar" onclick="deleteClient(1)" title="Eliminar">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>002</td>
+                            <td>
+                                <div class="client-info">
+                                    <strong>Carlos Ramírez</strong>
+                                    <small>Cliente desde: 28/02/2024</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="contact-info">
+                                    <div><i class="fas fa-phone"></i> 3009876543</div>
+                                    <div><i class="fas fa-envelope"></i> carlos@email.com</div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="address-count">1 dirección</span>
+                            </td>
+                            <td>
+                                <div class="orders-info">
+                                    <strong>8 pedidos</strong>
+                                    <small>$180,000 total</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="estado-activo">Activo</span>
+                            </td>
+                            <td>
+                                <small>Hace 1 semana</small>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-ver" onclick="viewClient(2)" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-editar" onclick="editClient(2)" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-historial" onclick="viewHistory(2)" title="Historial">
+                                        <i class="fas fa-history"></i>
+                                    </button>
+                                    <button class="btn btn-eliminar" onclick="deleteClient(2)" title="Eliminar">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
     </div>
 
     <!-- Modal Nuevo/Editar Cliente -->
@@ -245,7 +246,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Nuevo Cliente</h2>
-                <span class="close" onclick="closeModal('modalClient')">&times;</span>
+                <span class="close" onclick="closeModal('modalClient')">×</span>
             </div>
             <form id="formClient">
                 <input type="hidden" id="clientId" name="id">
@@ -365,7 +366,7 @@
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2>Historial de Pedidos - <span id="clientNameHistory"></span></h2>
-                <span class="close" onclick="closeModal('modalHistory')">&times;</span>
+                <span class="close" onclick="closeModal('modalHistory')">×</span>
             </div>
             <div class="history-content">
                 <div class="history-stats">
@@ -421,8 +422,8 @@
                 document.getElementById('sidebar').classList.toggle('collapsed');
             });
 
-            // Búsqueda en tiempo real
-            document.getElementById('searchClient').addEventListener('input', filterClients);
+            // Búsqueda y filtro en tiempo real
+            document.getElementById('searchInput').addEventListener('input', filterClients);
             document.getElementById('filterStatus').addEventListener('change', filterClients);
 
             // Formulario de cliente
@@ -488,7 +489,8 @@
         function loadClientAddresses(clientId) {
             clearAddresses();
             // Simular direcciones del cliente
-            const addresses = [{
+            const addresses = [
+                {
                     id: 1,
                     direccion: 'Calle 123 #45-67',
                     barrio: 'Centro',
@@ -529,7 +531,8 @@
                 totalOrders: 24,
                 totalSpent: 560000,
                 avgOrder: 23333,
-                orders: [{
+                orders: [
+                    {
                         id: '001',
                         fecha: '2024-01-15',
                         estado: 'entregado',
@@ -738,13 +741,24 @@
                 });
         }
 
-
         function filterClients() {
-            const searchTerm = document.getElementById('searchClient').value.toLowerCase();
-            const statusFilter = document.getElementById('filterStatus').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
+            const rows = document.querySelectorAll('#clientsTableBody tr');
 
-            // Implementar filtrado de la tabla
-            // Esta función filtraría los clientes mostrados según los criterios
+            rows.forEach(row => {
+                const clientName = row.querySelector('.client-info strong').textContent.toLowerCase();
+                const clientStatus = row.querySelector('.estado-activo, .estado-inactivo, .estado-vip').textContent.toLowerCase();
+
+                const matchesSearch = clientName.includes(searchTerm);
+                const matchesStatus = !statusFilter || clientStatus === statusFilter;
+
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
         }
 
         function viewOrder(orderId) {
