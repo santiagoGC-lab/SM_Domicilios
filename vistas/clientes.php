@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SM - Gestión de Clientes</title>
+    <link rel="shortcut icon" href="../componentes/img/logo2.png" />
     <link rel="stylesheet" href="../componentes/dashboard.css" />
     <link rel="stylesheet" href="../componentes/cliente.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -489,8 +490,7 @@
         function loadClientAddresses(clientId) {
             clearAddresses();
             // Simular direcciones del cliente
-            const addresses = [
-                {
+            const addresses = [{
                     id: 1,
                     direccion: 'Calle 123 #45-67',
                     barrio: 'Centro',
@@ -531,8 +531,7 @@
                 totalOrders: 24,
                 totalSpent: 560000,
                 avgOrder: 23333,
-                orders: [
-                    {
+                orders: [{
                         id: '001',
                         fecha: '2024-01-15',
                         estado: 'entregado',

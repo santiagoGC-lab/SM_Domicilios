@@ -16,6 +16,6 @@ if (isset($_COOKIE[session_name()])) {
 $_SESSION = array();
 
 // Redirect to login page
-header("Location: ../login.html");
+header("Location: ../login.php");
 exit();
 ?>

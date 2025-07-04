@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SM - Recuperación de Contraseña</title>
-
+    <link rel="shortcut icon" href="../componentes/img/logo2.png" />
     <link rel="stylesheet" href="../componentes/login-pure.css">
     <!-- Iconos de Font Awesome (única librería externa que mantenemos) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <!-- Contenedor principal de autenticación -->
     <div class="cont-auten">
@@ -19,53 +21,57 @@
                 <img src="../componentes/img/logo2.png" alt="Logo SuperMercar" style="max-width: 150px;">
             </div>
         </div>
-        
+
         <!-- Sección de formulario -->
         <div class="form-auten">
             <!-- Contenedor para mensajes de alerta -->
             <div id="alertContainer"></div>
-            
+
             <!-- Título del formulario -->
             <div class="titulo-inicio">
                 <h3><i class="fas fa-key me-2"></i>Recuperar Contraseña</h3>
             </div>
-            
+
             <!-- Formulario de Recuperación -->
             <form id="formRecuperacion" action="servicios/recuperacion.php" method="post">
                 <!-- Campos ocultos para el procesamiento del formulario -->
                 <input type="hidden" name="action" value="recuperar">
                 <!-- Nota: El token CSRF debe ser generado por PHP -->
                 <input type="hidden" name="csrf_token" value="">
-                
+
                 <!-- Instrucciones -->
                 <div class="alert alert-info mb-4">
-                    <i class="fas fa-info-circle me-2"></i> Ingresa tu correo electrónico para recibir instrucciones de recuperación de contraseña.
+                    <i class="fas fa-info-circle me-2"></i> Ingresa tu correo electrónico para recibir instrucciones de
+                    recuperación de contraseña.
                 </div>
-                
+
                 <!-- Campo de correo electrónico -->
                 <div class="inputs-login">
                     <label for="email" class="txt-form">Correo Electrónico</label>
-                    <input type="email" class="input-form" id="email" name="email" maxlength="100" tabindex="1" required>
+                    <input type="email" class="input-form" id="email" name="email" maxlength="100" tabindex="1"
+                        required>
                 </div>
-                
+
                 <!-- Botón de envío -->
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary">Enviar Instrucciones</button>
                 </div>
-                
+
                 <!-- Enlace para volver al login -->
                 <div class="text-center mt-3">
-                    <a href="../login.html" class="txt-olvidado"><i class="fas fa-arrow-left me-1"></i> Volver al inicio de sesión</a>
+                    <a href="../login.html" class="txt-olvidado"><i class="fas fa-arrow-left me-1"></i> Volver al inicio
+                        de sesión</a>
                 </div>
             </form>
-            
+
             <!-- Mensaje informativo -->
             <div class="alert alert-info mt-4">
-                <i class="fas fa-info-circle me-2"></i> Si no recibes el correo, verifica tu bandeja de spam o contacta al administrador del sistema.
+                <i class="fas fa-info-circle me-2"></i> Si no recibes el correo, verifica tu bandeja de spam o contacta
+                al administrador del sistema.
             </div>
         </div>
     </div>
-    
+
     <!-- Scripts -->
     <script>
         // Función para mostrar mensajes de alerta
@@ -78,44 +84,45 @@
                 <button type="button" class="btn-close" onclick="this.parentElement.remove()" aria-label="Cerrar"></button>
             `;
             alertContainer.appendChild(alert);
-            
+
             // Auto-cerrar después de 5 segundos
             setTimeout(() => {
                 alert.classList.remove('show');
                 setTimeout(() => alert.remove(), 150);
             }, 5000);
         }
-        
+
         // Inicialización cuando el DOM está cargado
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Validación del formulario de recuperación
             const recuperacionForm = document.getElementById('formRecuperacion');
-            
-            recuperacionForm.addEventListener('submit', function(e) {
+
+            recuperacionForm.addEventListener('submit', function (e) {
                 // Validación básica del correo electrónico
                 const email = document.getElementById('email').value.trim();
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                
+
                 if (!emailRegex.test(email)) {
                     e.preventDefault();
                     showAlert('Por favor, ingresa un correo electrónico válido.', 'danger');
                     return false;
                 }
             });
-            
+
             // Verificar si hay mensajes de error o éxito en la URL
             const urlParams = new URLSearchParams(window.location.search);
             const errorMsg = urlParams.get('error');
             const successMsg = urlParams.get('success');
-            
+
             if (errorMsg) {
                 showAlert(decodeURIComponent(errorMsg), 'danger');
             }
-            
+
             if (successMsg) {
                 showAlert(decodeURIComponent(successMsg), 'success');
             }
         });
     </script>
 </body>
+
 </html>
