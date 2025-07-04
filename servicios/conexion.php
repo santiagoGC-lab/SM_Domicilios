@@ -1,7 +1,7 @@
 <?php
 function conectarDB() {
     $host = 'localhost';
-    $db   = 'sm_bdd';
+    $db   = 'sm_domicilios';
     $user = 'root';
     $pass = 'root';
     
