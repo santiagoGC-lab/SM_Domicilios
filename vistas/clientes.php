@@ -110,131 +110,134 @@
 
         <div class="clients-section">
             <div class="clients-actions">
-                <div class="search-filters">
-                    <input type="text" id="searchClient" class="form-control" placeholder="Buscar por nombre, teléfono o email..." />
-                    <select id="filterStatus" class="form-control">
-                        <option value="">Todos los estados</option>
-                        <option value="activo">Activos</option>
-                        <option value="inactivo">Inactivos</option>
-                        <option value="vip">VIP</option>
-                    </select>
-                </div>
-                <button class="btn-login" onclick="openNewClientModal()">
-                    <i class="fas fa-user-plus"></i> Nuevo Cliente
-                </button>
+                <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Buscar Cliente..." id="searchInput">
+                <button class="btn-search" onclick="buscarCliente()">Buscar</button>
             </div>
-
-            <div class="clients-table-container">
-                <table class="clients-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Cliente</th>
-                            <th>Contacto</th>
-                            <th>Direcciones</th>
-                            <th>Pedidos</th>
-                            <th>Estado</th>
-                            <th>Último Pedido</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="clientsTableBody">
-                        <tr>
-                            <td>001</td>
-                            <td>
-                                <div class="client-info">
-                                    <strong>María González</strong>
-                                    <small>Cliente desde: 15/03/2024</small>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="contact-info">
-                                    <div><i class="fas fa-phone"></i> 3001234567</div>
-                                    <div><i class="fas fa-envelope"></i> maria@email.com</div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="address-count">3 direcciones</span>
-                            </td>
-                            <td>
-                                <div class="orders-info">
-                                    <strong>24 pedidos</strong>
-                                    <small>$560,000 total</small>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="estado-vip">VIP</span>
-                            </td>
-                            <td>
-                                <small>Hace 2 días</small>
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-ver" onclick="viewClient(1)" title="Ver detalles">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-editar" onclick="editClient(1)" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-historial" onclick="viewHistory(1)" title="Historial">
-                                        <i class="fas fa-history"></i>
-                                    </button>
-                                    <button class="btn btn-eliminar" onclick="deleteClient(1)" title="Eliminar">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>002</td>
-                            <td>
-                                <div class="client-info">
-                                    <strong>Carlos Ramírez</strong>
-                                    <small>Cliente desde: 28/02/2024</small>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="contact-info">
-                                    <div><i class="fas fa-phone"></i> 3009876543</div>
-                                    <div><i class="fas fa-envelope"></i> carlos@email.com</div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="address-count">1 dirección</span>
-                            </td>
-                            <td>
-                                <div class="orders-info">
-                                    <strong>8 pedidos</strong>
-                                    <small>$180,000 total</small>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="estado-activo">Activo</span>
-                            </td>
-                            <td>
-                                <small>Hace 1 semana</small>
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-ver" onclick="viewClient(2)" title="Ver detalles">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-editar" onclick="editClient(2)" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-historial" onclick="viewHistory(2)" title="Historial">
-                                        <i class="fas fa-history"></i>
-                                    </button>
-                                    <button class="btn btn-eliminar" onclick="deleteClient(2)" title="Eliminar">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <select id="filterStatus" class="form-control">
+                    <option value="">Todos los estados</option>
+                    <option value="activo">Activos</option>
+                    <option value="inactivo">Inactivos</option>
+                    <option value="vip">VIP</option>
+                </select>
             </div>
+            <button class="btn-login" onclick="openNewClientModal()">
+                <i class="fas fa-user-plus"></i> Nuevo Cliente
+            </button>
         </div>
+
+        <div class="clients-table-container">
+            <table class="clients-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Contacto</th>
+                        <th>Direcciones</th>
+                        <th>Pedidos</th>
+                        <th>Estado</th>
+                        <th>Último Pedido</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="clientsTableBody">
+                    <tr>
+                        <td>001</td>
+                        <td>
+                            <div class="client-info">
+                                <strong>María González</strong>
+                                <small>Cliente desde: 15/03/2024</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="contact-info">
+                                <div><i class="fas fa-phone"></i> 3001234567</div>
+                                <div><i class="fas fa-envelope"></i> maria@email.com</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="address-count">3 direcciones</span>
+                        </td>
+                        <td>
+                            <div class="orders-info">
+                                <strong>24 pedidos</strong>
+                                <small>$560,000 total</small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="estado-vip">VIP</span>
+                        </td>
+                        <td>
+                            <small>Hace 2 días</small>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-ver" onclick="viewClient(1)" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-editar" onclick="editClient(1)" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-historial" onclick="viewHistory(1)" title="Historial">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                                <button class="btn btn-eliminar" onclick="deleteClient(1)" title="Eliminar">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>002</td>
+                        <td>
+                            <div class="client-info">
+                                <strong>Carlos Ramírez</strong>
+                                <small>Cliente desde: 28/02/2024</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="contact-info">
+                                <div><i class="fas fa-phone"></i> 3009876543</div>
+                                <div><i class="fas fa-envelope"></i> carlos@email.com</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="address-count">1 dirección</span>
+                        </td>
+                        <td>
+                            <div class="orders-info">
+                                <strong>8 pedidos</strong>
+                                <small>$180,000 total</small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="estado-activo">Activo</span>
+                        </td>
+                        <td>
+                            <small>Hace 1 semana</small>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-ver" onclick="viewClient(2)" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-editar" onclick="editClient(2)" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-historial" onclick="viewHistory(2)" title="Historial">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                                <button class="btn btn-eliminar" onclick="deleteClient(2)" title="Eliminar">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
     </div>
 
     <!-- Modal Nuevo/Editar Cliente -->

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SM - Gestión de Pedidos</title>
     <link rel="stylesheet" href="../componentes/dashboard.css">
+    <link rel="stylesheet" href="../componentes/pedidos.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -58,7 +59,8 @@
             <h2>Gestión de Pedidos</h2>
             <div class="search-bar">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Buscar pedidos...">
+                <input type="text" placeholder="Buscar pedidos..." id="searchInput">
+                <button class="btn-search" onclick="buscarPedido()">Buscar</button>
             </div>
             <div class="action-buttons">
                 <button class="btn-login" id="btnAddPedido" onclick="abrirModalNuevoPedido()">
@@ -110,14 +112,6 @@
                     <span>Pedido #001 - Cliente: Juan Pérez - Producto: Pizza (2) - Estado: Pendiente</span>
                     <span>02/07/2025 14:30</span>
                 </div>
-                <div class="activity-item">
-                    <span>Pedido #002 - Cliente: María Gómez - Producto: Hamburguesa (1) - Estado: Entregado</span>
-                    <span>02/07/2025 13:45</span>
-                </div>
-                <div class="activity-item">
-                    <span>Pedido #003 - Cliente: Carlos López - Producto: Pizza (1) - Estado: En Camino</span>
-                    <span>02/07/2025 14:00</span>
-                </div>
             </div>
         </div>
     </div>
@@ -125,7 +119,7 @@
     <!-- Modal de Nuevo Pedido -->
     <div id="modalNuevoPedido" class="modal">
         <div class="modal-content">
-            <span class="close">×</span>
+            <span class="close">&times;</span>
             <h2>Nuevo Pedido</h2>
             <form id="formNuevoPedido">
                 <div class="form-group">
@@ -144,7 +138,6 @@
                     <label for="estado">Estado:</label>
                     <select id="estado" name="estado" class="form-control" required>
                         <option value="pendiente">Pendiente</option>
-                        <option value="en_proceso">En Proceso</option>
                         <option value="en_camino">En Camino</option>
                         <option value="entregado">Entregado</option>
                         <option value="cancelado">Cancelado</option>
@@ -169,9 +162,9 @@
     </div>
 
     <script>
-        // Función para abrir el modal de nuevo pedido
         function abrirModalNuevoPedido() {
-            document.getElementById('modalNuevoPedido').style.display = 'block';
+            const modal = document.getElementById('modalNuevoPedido');
+            modal.classList.add('active');
             document.getElementById('formNuevoPedido').reset();
             document.getElementById('productosContainer').innerHTML = `
                 <div class="producto-item">
@@ -185,7 +178,6 @@
                 </div>`;
         }
 
-        // Función para agregar un nuevo campo de producto
         function agregarProducto() {
             const container = document.getElementById('productosContainer');
             const newProducto = document.createElement('div');
@@ -201,21 +193,21 @@
             container.appendChild(newProducto);
         }
 
-        // Cerrar el modal
-        document.querySelectorAll('.close').forEach(closeBtn => {
-            closeBtn.onclick = function() {
-                this.closest('.modal').style.display = 'none';
-            };
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        document.querySelectorAll('.close').forEach(btn => {
+            btn.onclick = () => cerrarModal('modalNuevoPedido');
         });
 
-        // Cerrar el modal si se hace clic fuera de él
         window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
+            const modal = document.getElementById('modalNuevoPedido');
+            if (event.target === modal) {
+                cerrarModal('modalNuevoPedido');
             }
         }
 
-        // Manejar el envío del formulario de nuevo pedido
         document.getElementById('formNuevoPedido').onsubmit = function(e) {
             e.preventDefault();
             const pedido = {
@@ -227,10 +219,8 @@
                     cantidad: item.querySelector('.cantidad').value
                 }))
             };
-            // Aquí iría la lógica para enviar los datos al servidor
             alert('Nuevo pedido creado: ' + JSON.stringify(pedido));
-            document.getElementById('modalNuevoPedido').style.display = 'none';
-            // Placeholder para recargar la lista de pedidos o actualizar la interfaz
+            cerrarModal('modalNuevoPedido');
         }
     </script>
 </body>
