@@ -20,14 +20,6 @@
     --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
-body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f6f9;
-    color: var(--text-color);
-}
-
 .sidebar-toggle {
     display: none;
     background: var(--primary-color);
@@ -70,25 +62,58 @@ body {
     padding: 20px 0;
 }
 
-.menu-item, .menu-cerrar {
+.menu-item,
+.menu-cerrar {
+    padding: 12px 20px;
     display: flex;
     align-items: center;
-    padding: 15px 20px;
     color: white;
     text-decoration: none;
-    transition: all var(--transition-speed) var(--transition-timing);
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.menu-item:hover, .menu-cerrar:hover {
-    background: var(--secondary-color);
+.menu-item::before,
+.menu-cerrar::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: rgba(255, 255, 255, 0.1);
+    transition: width 0.3s ease;
 }
 
-.menu-item i, .menu-cerrar i {
-    margin-right: 15px;
+.menu-item:hover::before,
+.menu-item.active::before,
+.menu-cerrar:hover::before,
+.menu-cerrar.active::before {
+    width: 100%;
 }
 
-.menu-item.active {
-    background: var(--secondary-color);
+.menu-item:hover,
+.menu-item.active,
+.menu-cerrar:hover,
+.menu-cerrar.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.9;
+}
+
+.menu-item i,
+.menu-cerrar i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+.menu-cerrar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    min-height: 40px;
 }
 
 .menu-text {
@@ -107,13 +132,6 @@ body {
 
 .sidebar.collapsed + .main-content {
     margin-left: 60px;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
 }
 
 .user-info {
