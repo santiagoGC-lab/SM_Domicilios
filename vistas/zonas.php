@@ -68,7 +68,7 @@
                     <div class="search-bar">
                         <i class="fas fa-search"></i>
                         <input type="text" id="searchInput" class="form-control" placeholder="Buscar zona..." oninput="filterZonas()">
-                        <button class="btn btn-primary" onclick="filterZonas()">Buscar</button>
+                        <button class="btn btn-search" onclick="filterZonas()">Buscar</button>
                     </div>
                     <select id="filterStatus" class="filter-select" onchange="filterZonas()">
                         <option value="">Todos los estados</option>
@@ -99,16 +99,10 @@
                             <td>Norte</td>
                             <td>Ciudad Principal</td>
                             <td>$5.000</td>
+                            <td><span class="estado-activo">Activo</span></td>
                             <td>
-                                <span class="estado-activo">Activo</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-editar" onclick="editarZona(1)">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-eliminar" onclick="eliminarZona(1)">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
+                                <button class="btn btn-editar" onclick="editarZona(1)"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-eliminar" onclick="eliminarZona(1)"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                     </tbody>
@@ -128,15 +122,15 @@
                 <input type="hidden" id="zonaId" name="id">
                 <div class="form-group">
                     <label for="nombre">Nombre de la Zona:</label>
-                    <input type="text" id="nombre" name="nombre" class="form-control" required>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required placeholder="Ej. Norte">
                 </div>
                 <div class="form-group">
                     <label for="ciudad">Ciudad:</label>
-                    <input type="text" id="ciudad" name="ciudad" class="form-control" required>
+                    <input type="text" id="ciudad" name="ciudad" class="form-control" required placeholder="Ej. Ciudad Principal">
                 </div>
                 <div class="form-group">
                     <label for="tarifa">Tarifa Base:</label>
-                    <input type="number" id="tarifa" name="tarifa" class="form-control" required>
+                    <input type="number" id="tarifa" name="tarifa" class="form-control" required placeholder="Ej. 5000">
                 </div>
                 <div class="form-group">
                     <label for="estado">Estado:</label>
@@ -163,15 +157,15 @@
             <form id="formNueva">
                 <div class="form-group">
                     <label for="nuevoNombre">Nombre de la Zona:</label>
-                    <input type="text" id="nuevoNombre" name="nombre" class="form-control" required>
+                    <input type="text" id="nuevoNombre" name="nombre" class="form-control" required placeholder="Ej. Norte">
                 </div>
                 <div class="form-group">
                     <label for="nuevoCiudad">Ciudad:</label>
-                    <input type="text" id="nuevoCiudad" name="ciudad" class="form-control" required>
+                    <input type="text" id="nuevoCiudad" name="ciudad" class="form-control" required placeholder="Ej. Ciudad Principal">
                 </div>
                 <div class="form-group">
                     <label for="nuevoTarifa">Tarifa Base:</label>
-                    <input type="number" id="nuevoTarifa" name="tarifa" class="form-control" required>
+                    <input type="number" id="nuevoTarifa" name="tarifa" class="form-control" required placeholder="Ej. 5000">
                 </div>
                 <div class="form-group">
                     <label for="nuevoEstado">Estado:</label>
@@ -195,12 +189,9 @@
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
-            // Aquí podrías cargar las zonas desde una base de datos
-            // loadZonas();
         });
 
         function setupEventListeners() {
-            // Sidebar responsive
             document.getElementById('sidebarToggle').addEventListener('click', function() {
                 document.getElementById('sidebar').classList.toggle('collapsed');
             });
@@ -213,11 +204,8 @@
                 }
             });
 
-            // Búsqueda y filtro en tiempo real
             document.getElementById('searchInput').addEventListener('input', filterZonas);
             document.getElementById('filterStatus').addEventListener('change', filterZonas);
-
-            // Formularios de edición y nueva zona
             document.getElementById('formEditar').addEventListener('submit', handleZonaSubmit);
             document.getElementById('formNueva').addEventListener('submit', handleNewZonaSubmit);
         }
@@ -226,13 +214,11 @@
             window.location.href = 'menuUsu.html';
         }
 
-        // Funciones para modales
         function editarZona(id) {
             currentZonaId = id;
             document.getElementById('modalTitle').textContent = 'Editar Zona';
             document.getElementById('zonaId').value = id;
 
-            // Simular carga de datos (reemplazar con datos reales de la base de datos)
             if (id === 1) {
                 document.getElementById('nombre').value = 'Norte';
                 document.getElementById('ciudad').value = 'Ciudad Principal';
@@ -250,9 +236,8 @@
 
         function eliminarZona(id) {
             if (confirm('¿Estás seguro de que deseas eliminar esta zona?')) {
-                // Lógica para eliminar la zona (puedes usar AJAX o recargar la página)
                 alert(`Zona con ID ${id} eliminada`);
-                document.getElementById('zonasTableBody').innerHTML = ''; // Simulación
+                document.getElementById('zonasTableBody').innerHTML = '';
             }
         }
 
@@ -260,7 +245,6 @@
             document.getElementById(modalId).style.display = 'none';
         }
 
-        // Filtrado de zonas
         function filterZonas() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
@@ -281,40 +265,32 @@
             });
         }
 
-        // Manejar el envío del formulario de edición
         function handleZonaSubmit(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
             const zonaData = Object.fromEntries(formData.entries());
 
-            // Simulación de guardado (reemplazar con lógica de backend)
             console.log('Zona actualizada:', zonaData);
             alert('Zona actualizada exitosamente');
             closeModal('modalEditar');
-            // Aquí podrías recargar la tabla o actualizarla dinámicamente
         }
 
-        // Manejar el envío del formulario de nueva zona
         function handleNewZonaSubmit(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
             const nuevaZonaData = Object.fromEntries(formData.entries());
 
-            // Simulación de creación (reemplazar con lógica de backend)
             console.log('Nueva zona creada:', nuevaZonaData);
             alert('Nueva zona creada exitosamente');
             closeModal('modalNueva');
-            // Aquí podrías recargar la tabla o actualizarla dinámicamente
         }
 
-        // Cerrar modales al hacer clic fuera
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
             }
         }
 
-        // Exponer funciones al ámbito global
         window.editarZona = editarZona;
         window.abrirModalNueva = abrirModalNueva;
         window.eliminarZona = eliminarZona;
