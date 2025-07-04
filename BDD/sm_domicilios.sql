@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 03-07-2025 a las 13:18:37
+-- Tiempo de generación: 04-07-2025 a las 21:15:58
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -24,28 +24,15 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `barrios`
+-- Estructura de tabla para la tabla `alistamientos`
 --
 
-CREATE TABLE `barrios` (
-  `id` int(11) NOT NULL,
-  `nombre` varchar(50) NOT NULL,
-  `zona` varchar(50) NOT NULL DEFAULT 'Sur',
-  `tarifa_domicilio` decimal(10,2) DEFAULT '3000.00',
-  `horarios_disponibles` json DEFAULT NULL,
-  `estado` enum('activo','inactivo') DEFAULT 'activo',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `barrios`
---
-
-INSERT INTO `barrios` (`id`, `nombre`, `zona`, `tarifa_domicilio`, `horarios_disponibles`, `estado`, `created_at`) VALUES
-(1, 'La Ciudadela', 'Sur', '3000.00', '[\"08:00\", \"09:00\", \"10:00\", \"11:00\", \"14:00\", \"15:00\", \"16:00\"]', 'activo', '2025-07-02 21:55:02'),
-(2, 'Las Palmas', 'Sur', '3000.00', '[\"08:00\", \"09:00\", \"10:00\", \"11:00\", \"14:00\", \"15:00\", \"16:00\"]', 'activo', '2025-07-02 21:55:02'),
-(3, 'Canada', 'Norte', '3500.00', '[\"08:00\", \"09:00\", \"10:00\", \"11:00\", \"14:00\", \"15:00\", \"16:00\"]', 'activo', '2025-07-02 21:55:02'),
-(4, 'Centro', 'Centro', '2500.00', '[\"08:00\", \"09:00\", \"10:00\", \"11:00\", \"14:00\", \"15:00\", \"16:00\", \"17:00\", \"18:00\"]', 'activo', '2025-07-02 21:55:02');
+CREATE TABLE `alistamientos` (
+  `id_alistamiento` int(11) NOT NULL,
+  `id_pedido` int(11) NOT NULL,
+  `alistado_por` int(11) NOT NULL,
+  `fecha_alistado` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -54,60 +41,26 @@ INSERT INTO `barrios` (`id`, `nombre`, `zona`, `tarifa_domicilio`, `horarios_dis
 --
 
 CREATE TABLE `clientes` (
-  `id` int(11) NOT NULL,
-  `usuario_id` int(11) NOT NULL,
-  `direccion_principal` varchar(200) NOT NULL,
-  `barrio_id` int(11) NOT NULL,
-  `referencias_direccion` text,
-  `preferencias_entrega` text,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `id_cliente` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `barrio` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `direccion` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `telefono` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `configuracion`
+-- Estructura de tabla para la tabla `envios`
 --
 
-CREATE TABLE `configuracion` (
-  `id` int(11) NOT NULL,
-  `clave` varchar(50) NOT NULL,
-  `valor` text NOT NULL,
-  `descripcion` text,
-  `tipo` enum('string','number','boolean','json') DEFAULT 'string',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `configuracion`
---
-
-INSERT INTO `configuracion` (`id`, `clave`, `valor`, `descripcion`, `tipo`, `updated_at`) VALUES
-(1, 'tarifa_base_domicilio', '3000', 'Tarifa base para domicilios', 'number', '2025-07-02 21:55:02'),
-(2, 'horario_inicio', '08:00', 'Hora de inicio de servicio', 'string', '2025-07-02 21:55:02'),
-(3, 'horario_fin', '18:00', 'Hora de fin de servicio', 'string', '2025-07-02 21:55:02'),
-(4, 'tiempo_preparacion_minutos', '30', 'Tiempo estimado de preparación en minutos', 'number', '2025-07-02 21:55:02'),
-(5, 'maximo_pedidos_simultaneos', '50', 'Máximo número de pedidos simultáneos', 'number', '2025-07-02 21:55:02'),
-(6, 'empresa_nombre', 'SuperMercar Domicilios', 'Nombre de la empresa', 'string', '2025-07-02 21:55:02'),
-(7, 'empresa_telefono', '3001234567', 'Teléfono principal de la empresa', 'string', '2025-07-02 21:55:02');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `direcciones_cliente`
---
-
-CREATE TABLE `direcciones_cliente` (
-  `id` int(11) NOT NULL,
-  `cliente_id` int(11) NOT NULL,
-  `nombre_direccion` varchar(50) NOT NULL,
-  `direccion` varchar(200) NOT NULL,
-  `barrio_id` int(11) NOT NULL,
-  `referencias` text,
-  `es_principal` enum('si','no') DEFAULT 'no',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `envios` (
+  `id_envio` int(11) NOT NULL,
+  `id_pedido` int(11) NOT NULL,
+  `repartidor_id` int(11) NOT NULL,
+  `fecha_envio` datetime DEFAULT CURRENT_TIMESTAMP,
+  `estado_envio` enum('pendiente','en camino','entregado') COLLATE utf8mb4_unicode_ci DEFAULT 'pendiente'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -116,69 +69,29 @@ CREATE TABLE `direcciones_cliente` (
 --
 
 CREATE TABLE `pedidos` (
-  `id` int(11) NOT NULL,
-  `numero_pedido` varchar(20) NOT NULL,
-  `cliente_id` int(11) NOT NULL,
-  `direccion_entrega` varchar(200) NOT NULL,
-  `barrio_id` int(11) NOT NULL,
-  `referencias_direccion` text,
-  `telefono_contacto` varchar(15) NOT NULL,
-  `cantidad_paquetes` int(3) UNSIGNED DEFAULT '1',
-  `valor_productos` decimal(10,2) DEFAULT '0.00',
-  `valor_domicilio` decimal(10,2) DEFAULT '3000.00',
-  `valor_total` decimal(10,2) NOT NULL,
-  `metodo_pago` enum('efectivo','transferencia','tarjeta','pse') DEFAULT 'efectivo',
-  `estado_pago` enum('pendiente','pagado','rechazado') DEFAULT 'pendiente',
-  `observaciones` text,
-  `hora_programada` time DEFAULT NULL,
-  `fecha_programada` date DEFAULT NULL,
-  `estado_pedido` enum('recibido','confirmado','alistando','listo','despachado','entregado','cancelado') DEFAULT 'recibido',
-  `repartidor_id` int(11) DEFAULT NULL,
-  `vehiculo_id` int(11) DEFAULT NULL,
-  `hora_despacho` time DEFAULT NULL,
-  `hora_entrega` time DEFAULT NULL,
-  `calificacion_cliente` tinyint(1) DEFAULT NULL,
-  `comentario_cliente` text,
-  `foto_entrega` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `id_pedido` int(11) NOT NULL,
+  `id_cliente` int(11) NOT NULL,
+  `id_zona` int(11) NOT NULL,
+  `direccion` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `telefono` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cantidad` int(11) DEFAULT '1',
+  `estado` enum('pendiente','alistado','enviado','entregado') COLLATE utf8mb4_unicode_ci DEFAULT 'pendiente',
+  `fecha_pedido` datetime DEFAULT CURRENT_TIMESTAMP,
+  `observaciones` text COLLATE utf8mb4_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `repartidores`
+-- Estructura de tabla para la tabla `productos`
 --
 
-CREATE TABLE `repartidores` (
-  `id` int(11) NOT NULL,
-  `usuario_id` int(11) NOT NULL,
-  `licencia_conduccion` varchar(20) DEFAULT NULL,
-  `fecha_vencimiento_licencia` date DEFAULT NULL,
-  `zona_cobertura` json DEFAULT NULL,
-  `vehiculo_propio` enum('si','no') DEFAULT 'no',
-  `calificacion_promedio` decimal(3,2) DEFAULT '5.00',
-  `total_domicilios` int(11) DEFAULT '0',
-  `estado_servicio` enum('disponible','ocupado','descanso','offline') DEFAULT 'offline',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `seguimiento_pedidos`
---
-
-CREATE TABLE `seguimiento_pedidos` (
-  `id` int(11) NOT NULL,
-  `pedido_id` int(11) NOT NULL,
-  `estado_anterior` varchar(20) DEFAULT NULL,
-  `estado_nuevo` varchar(20) NOT NULL,
-  `observaciones` text,
-  `usuario_cambio` int(11) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `productos` (
+  `id_producto` int(11) NOT NULL,
+  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `precio` decimal(10,2) NOT NULL,
+  `stock` int(11) DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -187,233 +100,158 @@ CREATE TABLE `seguimiento_pedidos` (
 --
 
 CREATE TABLE `usuarios` (
-  `id` int(11) NOT NULL,
-  `numero_documento` varchar(12) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `telefono` varchar(15) DEFAULT NULL,
-  `contrasena` varchar(255) NOT NULL,
-  `rol` enum('admin','repartidor') DEFAULT 'cliente',
-  `estado` enum('activo','inactivo') DEFAULT 'activo',
-  `remember_token` varchar(64) DEFAULT NULL,
-  `reset_token` varchar(64) DEFAULT NULL,
-  `reset_token_expiracion` datetime DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `usuarios`
---
-
-INSERT INTO `usuarios` (`id`, `numero_documento`, `nombre`, `email`, `telefono`, `contrasena`, `rol`, `estado`, `remember_token`, `reset_token`, `reset_token_expiracion`, `created_at`, `updated_at`) VALUES
-(1, '1107841204', 'Administrador Sistema', 'admin@supermercar.com', '3001234567', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'activo', NULL, NULL, NULL, '2025-07-02 21:55:02', '2025-07-02 21:56:24');
+  `id_usuario` int(11) NOT NULL,
+  `nombre_completo` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `documento` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `correo` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contraseña` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rol` enum('cliente','admin','repartidor') COLLATE utf8mb4_unicode_ci DEFAULT 'cliente',
+  `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `vehiculos`
+-- Estructura de tabla para la tabla `zonas`
 --
 
-CREATE TABLE `vehiculos` (
-  `id` int(11) NOT NULL,
-  `placa` varchar(10) NOT NULL,
-  `tipo` enum('moto','carro','bicicleta','pie') NOT NULL,
-  `marca` varchar(30) DEFAULT NULL,
-  `estado` enum('disponible','en_uso','mantenimiento','fuera_servicio') DEFAULT 'disponible',
-  `soat_vencimiento` date DEFAULT NULL,
-  `revision_tecnica` date DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `zonas` (
+  `id_zona` int(11) NOT NULL,
+  `nombre` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Índices para tablas volcadas
 --
 
 --
--- Indices de la tabla `barrios`
+-- Indices de la tabla `alistamientos`
 --
-ALTER TABLE `barrios`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `nombre` (`nombre`),
-  ADD KEY `idx_zona` (`zona`),
-  ADD KEY `idx_estado` (`estado`);
+ALTER TABLE `alistamientos`
+  ADD PRIMARY KEY (`id_alistamiento`),
+  ADD KEY `id_pedido` (`id_pedido`),
+  ADD KEY `alistado_por` (`alistado_por`);
 
 --
 -- Indices de la tabla `clientes`
 --
 ALTER TABLE `clientes`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `usuario_id` (`usuario_id`),
-  ADD KEY `fk_clientes_barrio` (`barrio_id`);
+  ADD PRIMARY KEY (`id_cliente`),
+  ADD KEY `id_usuario` (`id_usuario`);
 
 --
--- Indices de la tabla `configuracion`
+-- Indices de la tabla `envios`
 --
-ALTER TABLE `configuracion`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `clave` (`clave`);
-
---
--- Indices de la tabla `direcciones_cliente`
---
-ALTER TABLE `direcciones_cliente`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_direcciones_cliente` (`cliente_id`),
-  ADD KEY `fk_direcciones_barrio` (`barrio_id`);
+ALTER TABLE `envios`
+  ADD PRIMARY KEY (`id_envio`),
+  ADD KEY `id_pedido` (`id_pedido`),
+  ADD KEY `repartidor_id` (`repartidor_id`);
 
 --
 -- Indices de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `numero_pedido` (`numero_pedido`),
-  ADD KEY `fk_pedidos_cliente` (`cliente_id`),
-  ADD KEY `fk_pedidos_barrio` (`barrio_id`),
-  ADD KEY `fk_pedidos_repartidor` (`repartidor_id`),
-  ADD KEY `fk_pedidos_vehiculo` (`vehiculo_id`),
-  ADD KEY `idx_estado_pedido` (`estado_pedido`),
-  ADD KEY `idx_fecha_programada` (`fecha_programada`),
-  ADD KEY `idx_created_at` (`created_at`);
+  ADD PRIMARY KEY (`id_pedido`),
+  ADD KEY `id_cliente` (`id_cliente`),
+  ADD KEY `id_zona` (`id_zona`);
 
 --
--- Indices de la tabla `repartidores`
+-- Indices de la tabla `productos`
 --
-ALTER TABLE `repartidores`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `usuario_id` (`usuario_id`),
-  ADD KEY `idx_estado_servicio` (`estado_servicio`);
-
---
--- Indices de la tabla `seguimiento_pedidos`
---
-ALTER TABLE `seguimiento_pedidos`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_seguimiento_pedido` (`pedido_id`),
-  ADD KEY `fk_seguimiento_usuario` (`usuario_cambio`);
+ALTER TABLE `productos`
+  ADD PRIMARY KEY (`id_producto`);
 
 --
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `numero_documento` (`numero_documento`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `idx_rol` (`rol`),
-  ADD KEY `idx_estado` (`estado`);
+  ADD PRIMARY KEY (`id_usuario`),
+  ADD UNIQUE KEY `documento` (`documento`),
+  ADD UNIQUE KEY `correo` (`correo`);
 
 --
--- Indices de la tabla `vehiculos`
+-- Indices de la tabla `zonas`
 --
-ALTER TABLE `vehiculos`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `placa` (`placa`),
-  ADD KEY `fk_vehiculo_propietario` (`propietario_id`),
-  ADD KEY `idx_estado` (`estado`),
-  ADD KEY `idx_tipo` (`tipo`);
+ALTER TABLE `zonas`
+  ADD PRIMARY KEY (`id_zona`),
+  ADD UNIQUE KEY `nombre` (`nombre`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
 --
 
 --
--- AUTO_INCREMENT de la tabla `barrios`
+-- AUTO_INCREMENT de la tabla `alistamientos`
 --
-ALTER TABLE `barrios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+ALTER TABLE `alistamientos`
+  MODIFY `id_alistamiento` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `clientes`
 --
 ALTER TABLE `clientes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `configuracion`
+-- AUTO_INCREMENT de la tabla `envios`
 --
-ALTER TABLE `configuracion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT de la tabla `direcciones_cliente`
---
-ALTER TABLE `direcciones_cliente`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `envios`
+  MODIFY `id_envio` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `repartidores`
+-- AUTO_INCREMENT de la tabla `productos`
 --
-ALTER TABLE `repartidores`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `seguimiento_pedidos`
---
-ALTER TABLE `seguimiento_pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `productos`
+  MODIFY `id_producto` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `vehiculos`
+-- AUTO_INCREMENT de la tabla `zonas`
 --
-ALTER TABLE `vehiculos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `zonas`
+  MODIFY `id_zona` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Restricciones para tablas volcadas
 --
 
 --
+-- Filtros para la tabla `alistamientos`
+--
+ALTER TABLE `alistamientos`
+  ADD CONSTRAINT `alistamientos_ibfk_1` FOREIGN KEY (`id_pedido`) REFERENCES `pedidos` (`id_pedido`) ON DELETE CASCADE,
+  ADD CONSTRAINT `alistamientos_ibfk_2` FOREIGN KEY (`alistado_por`) REFERENCES `usuarios` (`id_usuario`);
+
+--
 -- Filtros para la tabla `clientes`
 --
 ALTER TABLE `clientes`
-  ADD CONSTRAINT `fk_clientes_barrio` FOREIGN KEY (`barrio_id`) REFERENCES `barrios` (`id`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_clientes_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `clientes_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `direcciones_cliente`
+-- Filtros para la tabla `envios`
 --
-ALTER TABLE `direcciones_cliente`
-  ADD CONSTRAINT `fk_direcciones_barrio` FOREIGN KEY (`barrio_id`) REFERENCES `barrios` (`id`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_direcciones_cliente` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `envios`
+  ADD CONSTRAINT `envios_ibfk_1` FOREIGN KEY (`id_pedido`) REFERENCES `pedidos` (`id_pedido`) ON DELETE CASCADE,
+  ADD CONSTRAINT `envios_ibfk_2` FOREIGN KEY (`repartidor_id`) REFERENCES `usuarios` (`id_usuario`);
 
 --
 -- Filtros para la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  ADD CONSTRAINT `fk_pedidos_barrio` FOREIGN KEY (`barrio_id`) REFERENCES `barrios` (`id`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_pedidos_cliente` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_pedidos_repartidor` FOREIGN KEY (`repartidor_id`) REFERENCES `repartidores` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_pedidos_vehiculo` FOREIGN KEY (`vehiculo_id`) REFERENCES `vehiculos` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `repartidores`
---
-ALTER TABLE `repartidores`
-  ADD CONSTRAINT `fk_repartidores_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `seguimiento_pedidos`
---
-ALTER TABLE `seguimiento_pedidos`
-  ADD CONSTRAINT `fk_seguimiento_pedido` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_seguimiento_usuario` FOREIGN KEY (`usuario_cambio`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `vehiculos`
---
-ALTER TABLE `vehiculos`
-  ADD CONSTRAINT `fk_vehiculo_propietario` FOREIGN KEY (`propietario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `pedidos_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE CASCADE,
+  ADD CONSTRAINT `pedidos_ibfk_2` FOREIGN KEY (`id_zona`) REFERENCES `zonas` (`id_zona`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
