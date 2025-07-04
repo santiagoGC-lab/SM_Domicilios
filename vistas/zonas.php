@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SM - Zonas de Entrega</title>
-    <link rel="stylesheet" href="../componentes/base.css" />
+    <link rel="stylesheet" href="../componentes/dashboard.css" />
     <link rel="stylesheet" href="../componentes/zonas.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
