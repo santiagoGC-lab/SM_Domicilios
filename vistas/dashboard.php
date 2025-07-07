@@ -1,11 +1,15 @@
 <?php
 
 session_start();
-if (!isset($_SESSION['user_id'])) {
+
+// Incluir el archivo de conexión
+require_once '../servicios/conexion.php';
+if (!isset($_SESSION['usuario_id'])) {
     // Usuario no autenticado, redirigir al login
     header("Location: ../login.php");
     exit;
 }
+
 $nombre = $_SESSION['nombre'] ?? '';
 $apellido = $_SESSION['apellido'] ?? '';
 $nombreCompleto = $nombre . ' ' . $apellido;

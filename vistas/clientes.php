@@ -1,11 +1,6 @@
 <?php
 
 session_start();
-if (!isset($_SESSION['usuario_id'])) {
-    // Usuario no autenticado, redirigir al login
-    header("Location: ../login.html");
-    exit;
-}
 $nombre = $_SESSION['nombre'] ?? '';
 $apellido = $_SESSION['apellido'] ?? '';
 $nombreCompleto = $nombre . ' ' . $apellido;
