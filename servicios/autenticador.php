@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$numeroDocumento]);
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($usuario && $usuario['estado'] === 'activo' && password_verify($contrasena, $usuario['contraseña'])) {
+        if ($usuario && $usuario['estado'] === 'activo' && password_verify($contrasena, $usuario['contrasena'])) {
             // Autenticación exitosa
             $_SESSION['usuario_id'] = $usuario['id_usuario'];
             $_SESSION['nombre'] = $usuario['nombre_completo'];
