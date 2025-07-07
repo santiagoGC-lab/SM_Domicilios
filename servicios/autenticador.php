@@ -1,18 +1,6 @@
 <?php
 session_start();
-
-// Conexión a la base de datos
-$host = 'localhost';
-$dbname = 'sm_domicilios';
-$username = 'root';
-$password = 'root';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Error de conexión: " . $e->getMessage());
-}
+require_once 'conexion.php';
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
