@@ -43,20 +43,21 @@
                     <input type="email" class="input-form" id="email" name="email" required>
                 </div>
                 <div class="inputs-login">
+                    <label for="rol" class="txt-form">Rol</label>
+                    <select id="rol" name="rol" class="input-form" required>
+                        <option value="" disabled selected>Selecciona un rol</option>
+                        <option value="admin">Administrador</option>
+                        <option value="cliente">Cliente</option>
+                        <option value="repartidor">Repartidor</option>
+                    </select>
+                </div>
+
+                <div class="inputs-login">
                     <label for="contrasena" class="txt-form">Contraseña</label>
                     <div class="password-toggle">
                         <input type="password" class="input-form" id="contrasena" name="contrasena" maxlength="20"
                             minlength="8" required>
                         <i class="toggle-icon fas fa-eye" onclick="togglePasswordVisibility('contrasena', this)"></i>
-                    </div>
-                </div>
-                <div class="inputs-login">
-                    <label for="confirmarContrasena" class="txt-form">Confirmar Contraseña</label>
-                    <div class="password-toggle">
-                        <input type="password" class="input-form" id="confirmarContrasena" name="confirmarContrasena"
-                            maxlength="20" minlength="8" required>
-                        <i class="toggle-icon fas fa-eye"
-                            onclick="togglePasswordVisibility('confirmarContrasena', this)"></i>
                     </div>
                 </div>
                 <div class="d-grid gap-2">

@@ -4,8 +4,8 @@ session_start();
 // Conexión a la base de datos
 $host = 'localhost';
 $dbname = 'sm_domicilios';
-$username = 'root'; // Cambia según tu configuración
-$password = 'root'; // Cambia según tu configuración
+$username = 'root';
+$password = 'root';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
@@ -14,7 +14,6 @@ try {
     die("Error de conexión: " . $e->getMessage());
 }
 
-// Procesar el formulario
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $numero_documento = trim($_POST['numero_documento'] ?? '');
@@ -47,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($usuario['rol'] === 'admin') {
                 header('Location: dashboard.php');
             } else {
-                header('Location: clientes.php');
+                header('Location: dashboard.php');
             }
             exit;
         } else {
@@ -60,14 +59,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="es">
 
 <head>
-    <!-- Metadatos básicos -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SM - Acceso al Sistema</title>
     <link rel="shortcut icon" href="componentes/img/logo2.png" />
-    <!-- Hoja de estilos principal -->
     <link rel="stylesheet" href="componentes/login-pure.css">
-
     <!-- Iconos de Font Awesome (única librería externa que mantenemos) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -86,24 +82,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Sección de formulario -->
         <div class="form-auten">
             <!-- Contenedor para mensajes de alerta -->
-            <div id="alertContainer"></div>
-
+            <div id="alertContainer">
+            </div>
             <!-- Título del formulario -->
             <div class="titulo-inicio">
                 <h3><i class="titulo-inicio"></i>Iniciar Sesión</h3>
             </div>
-
             <!-- Formulario de Login -->
             <form id="formlogin" action="servicios/autenticador.php" method="post">
-
-
                 <!-- Campo de número de documento -->
                 <div class="inputs-login">
                     <label for="numeroDocumento" class="txt-form">Número de Documento</label>
                     <input type="text" class="input-form" id="numeroDocumento" name="numeroDocumento" minlength="6"
                         maxlength="12" title="Solo se permiten números" pattern="[0-9]+" tabindex="1" required>
                 </div>
-
                 <!-- Campo de contraseña -->
                 <div class="inputs-login">
                     <label for="contrasena" class="txt-form">Contraseña</label>
@@ -115,18 +107,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="toggle-icon fas fa-eye" onclick="togglePasswordVisibility('contrasena', this)"></i>
                     </div>
                 </div>
-
                 <!-- Opción recordar usuario -->
                 <div class="mb-3 form-check">
                     <input type="checkbox" class="form-check-input" id="recuerdame" name="recuerdame">
                     <label class="form-check-label" for="recuerdame">Recordarme</label>
                 </div>
-
                 <!-- Botón de envío -->
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
                 </div>
-
                 <!-- Enlace para recuperar contraseña -->
                 <div class="text-center mt-3">
                     <a href="vistas/recuperar-contra.html" class="txt-olvidado">¿Olvidaste tu contraseña?</a>
@@ -134,7 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     </div>
-
     <!-- Scripts -->
     <script>
         // Función para mostrar/ocultar contraseña
@@ -170,12 +158,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Inicialización cuando el DOM está cargado
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             // Validación del formulario de login
             const loginForm = document.getElementById('formlogin');
 
             if (loginForm) {
-                loginForm.addEventListener('submit', function (e) {
+                loginForm.addEventListener('submit', function(e) {
                     // Validaciones básicas
                     const numeroDocumento = document.getElementById('numeroDocumento').value;
                     const contrasena = document.getElementById('contrasena').value;

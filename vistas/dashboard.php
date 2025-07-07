@@ -1,3 +1,16 @@
+<?php
+
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    // Usuario no autenticado, redirigir al login
+    header("Location: ../login.php");
+    exit;
+}
+$nombre = $_SESSION['nombre'] ?? '';
+$apellido = $_SESSION['apellido'] ?? '';
+$nombreCompleto = $nombre . ' ' . $apellido;
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -63,7 +76,7 @@
             <h2>Panel de Control - Domicilios</h2>
             <div class="user-info" onclick="showUserMenu()">
                 <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Usuario" />
-                <span>Bienvenido, <strong id="userName">Usuario</strong></span>
+                <span>Bienvenido, <strong id="userName"><?php echo htmlspecialchars($nombreCompleto); ?></strong></span>
             </div>
         </div>
 
