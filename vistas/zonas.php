@@ -2,7 +2,8 @@
 
 session_start();
 if (!isset($_SESSION['usuario_id'])) {
-    header('Location: ../login.php');
+    // Si no ha iniciado sesión, lo redirigimos al login
+    header("Location: ../login.html");
     exit;
 }
 $nombre = $_SESSION['nombre'] ?? '';

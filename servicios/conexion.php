@@ -1,16 +1,10 @@
 <?php
-function conectarDB() {
-    $host = 'localhost';
-    $db   = 'sm_domicilios';
-    $user = 'root';
-    $pass = 'root';
-    
-    $conexion = new mysqli($host, $user, $pass, $db);
-    
-    if ($conexion->connect_error) {
-        die("Error de conexión: " . $conexion->connect_error);
-    }
-    
-    $conexion->set_charset("utf8mb4");
-    return $conexion;
+
+function ConectarDB() {
+    $conexion = new mysqli("localhost", "root", "root", "sm_domicilios");
+
+    if ($conexion->connect_errno) {
+        die("No se ha podido conectar con la base de datos: " . $conexion->connect_error);
+    } return $conexion;
+
 }

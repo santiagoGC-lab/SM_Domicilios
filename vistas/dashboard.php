@@ -2,11 +2,8 @@
 
 session_start();
 
-// Incluir el archivo de conexión
-require_once '../servicios/conexion.php';
 if (!isset($_SESSION['usuario_id'])) {
-    // Usuario no autenticado, redirigir al login
-    header("Location: ../login.php");
+    header("Location: ../login.php?error=" . urlencode("Debes iniciar sesión para acceder."));
     exit;
 }
 

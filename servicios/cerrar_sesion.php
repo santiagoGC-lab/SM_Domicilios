@@ -11,6 +11,6 @@ if (isset($_COOKIE[session_name()])) {
 
 $_SESSION = array();
 
-header("Location: ../login.php");
+header("Location: ../login.html");
 exit();
 ?>
