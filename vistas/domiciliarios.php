@@ -117,8 +117,8 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                             <td>1</td>
                             <td>Juan Pérez</td>
                             <td>3001234567</td>
-                            <td>Moto - ABC123</td>
-                            <td>Norte</td>
+                            <td>Disponible</td>
+                            <td>Sin pedido</td>
                             <td>
                                 <span class="estado-disponible">Disponible</span>
                             </td>
