@@ -1,8 +1,6 @@
 <?php
-
 session_start();
 if (!isset($_SESSION['usuario_id'])) {
-    // Si no ha iniciado sesión, lo redirigimos al login
     header("Location: ../login.html");
     exit;
 }
@@ -26,47 +24,21 @@ $nombreCompleto = $nombre . ' ' . $apellido;
 </head>
 
 <body>
-    <button class="sidebar-toggle" id="sidebarToggle">
-        <i class="fas fa-bars"></i>
-    </button>
+    <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
 
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
-            <a href="dashboard.php" class="menu-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span class="menu-text">Inicio</span>
-            </a>
-            <a href="pedidos.php" class="menu-item">
-                <i class="fas fa-shopping-bag"></i>
-                <span class="menu-text">Pedidos</span>
-            </a>
-            <a href="clientes.php" class="menu-item">
-                <i class="fas fa-users"></i>
-                <span class="menu-text">Clientes</span>
-            </a>
-            <a href="domiciliarios.php" class="menu-item active">
-                <i class="fas fa-motorcycle"></i>
-                <span class="menu-text">Domiciliarios</span>
-            </a>
-            <a href="zonas.php" class="menu-item">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="menu-text">Zonas de Entrega</span>
-            </a>
-            <a href="reportes.php" class="menu-item">
-                <i class="fas fa-chart-bar"></i>
-                <span class="menu-text">Reportes</span>
-            </a>
-            <a href="configuracion.php" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span class="menu-text">Configuración</span>
-            </a>
-            <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="menu-text">Cerrar Sesión</span>
-            </a>
+            <a href="dashboard.php" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Inicio</span></a>
+            <a href="pedidos.php" class="menu-item"><i class="fas fa-shopping-bag"></i><span class="menu-text">Pedidos</span></a>
+            <a href="clientes.php" class="menu-item"><i class="fas fa-users"></i><span class="menu-text">Clientes</span></a>
+            <a href="domiciliarios.php" class="menu-item active"><i class="fas fa-motorcycle"></i><span class="menu-text">Domiciliarios</span></a>
+            <a href="zonas.php" class="menu-item"><i class="fas fa-map-marked-alt"></i><span class="menu-text">Zonas de Entrega</span></a>
+            <a href="reportes.php" class="menu-item"><i class="fas fa-chart-bar"></i><span class="menu-text">Reportes</span></a>
+            <a href="configuracion.php" class="menu-item"><i class="fas fa-cog"></i><span class="menu-text">Configuración</span></a>
+            <a href="../servicios/cerrar_sesion.php" class="menu-cerrar"><i class="fas fa-sign-out-alt"></i><span class="menu-text">Cerrar Sesión</span></a>
         </div>
     </div>
 
@@ -75,7 +47,7 @@ $nombreCompleto = $nombre . ' ' . $apellido;
             <h2>Gestión de Domiciliarios</h2>
             <div class="user-info" onclick="showUserMenu()">
                 <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Usuario" />
-                <span>Bienvenido, <strong id="userName"><?php echo htmlspecialchars($nombreCompleto); ?></strong></span>
+                <span>Bienvenido, <strong id="userName"><?= htmlspecialchars($nombreCompleto); ?></strong></span>
             </div>
         </div>
 
@@ -88,9 +60,8 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                         <button class="btn-search" onclick="filterDomiciliarios()">Buscar</button>
                     </div>
                     <select id="filterStatus" class="filter-select" onchange="filterDomiciliarios()">
-                        <option value="">Todos los estados</option>
                         <option value="disponible">Disponible</option>
-                        <option value="ocupado">En Servicio</option>
+                        <option value="en servicio">En Servicio</option>
                         <option value="inactivo">Inactivo</option>
                     </select>
                 </div>
@@ -107,42 +78,23 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                             <th>Nombre</th>
                             <th>Teléfono</th>
                             <th>Vehículo</th>
+                            <th>Placa</th>
                             <th>Zona Asignada</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="domiciliariosTableBody">
-                        <tr>
-                            <td>1</td>
-                            <td>Juan Pérez</td>
-                            <td>3001234567</td>
-                            <td>Disponible</td>
-                            <td>Sin pedido</td>
-                            <td>
-                                <span class="estado-disponible">Disponible</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-editar" onclick="editarDomiciliario(1)">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-eliminar" onclick="eliminarDomiciliario(1)">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <!-- Más filas se pueden agregar dinámicamente -->
-                    </tbody>
+                    <tbody id="domiciliariosTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Edición/Nuevo Domiciliario -->
+    <!-- Modal -->
     <div id="modalEditar" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Editar Domiciliario</h2>
+                <h2 id="modalTitle">Nuevo Domiciliario</h2>
                 <span class="close" onclick="closeModal('modalEditar')">×</span>
             </div>
             <form id="formEditar">
@@ -156,29 +108,34 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                     <input type="tel" id="telefono" name="telefono" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="vehiculo">Vehículo:</label>
-                    <input type="text" id="vehiculo" name="vehiculo" class="form-control" required>
+                    <label for="tipoVehiculo">Tipo de vehículo:</label>
+                    <select name="tipoVehiculo" id="tipoVehiculo">
+                        <option value="Moto">Moto</option>
+                        <option value="Carguero">Carguero</option>
+                        <option value="Camioneta">Camioneta</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="placa">Placa:</label>
                     <input type="text" id="placa" name="placa" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="zonaGroup" style="display: none;">
                     <label for="zona">Zona Asignada:</label>
-                    <select id="zona" name="zona" class="form-control" required>
+                    <select id="zona" name="zona" class="form-control">
                         <option value="norte">Norte</option>
                         <option value="sur">Sur</option>
                         <option value="este">Este</option>
                         <option value="oeste">Oeste</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="estadoGroup" style="display: none;">
                     <label for="estado">Estado:</label>
-                    <select id="estado" name="estado" class="form-control" required>
+                    <select id="estado" name="estado" class="form-control">
                         <option value="disponible">Disponible</option>
-                        <option value="ocupado">En Servicio</option>
+                        <option value="en servicio">En Servicio</option>
                         <option value="inactivo">Inactivo</option>
                     </select>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="closeModal('modalEditar')">Cancelar</button>
@@ -189,116 +146,137 @@ $nombreCompleto = $nombre . ' ' . $apellido;
     </div>
 
     <script>
-        // Variables globales
-        let currentDomiciliarioId = null;
-
-        // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
-            // Aquí podrías cargar los domiciliarios desde una base de datos
-            // loadDomiciliarios();
+            loadDomiciliarios();
+            setInterval(loadDomiciliarios, 5000);
         });
 
         function setupEventListeners() {
-            // Sidebar responsive
-            document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebarToggle').addEventListener('click', () => {
                 document.getElementById('sidebar').classList.toggle('collapsed');
             });
-
-            document.addEventListener('click', function(e) {
-                const sidebar = document.getElementById('sidebar');
-                const toggle = document.getElementById('sidebarToggle');
-                if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-                    sidebar.classList.remove('collapsed');
-                }
-            });
-
-            // Búsqueda y filtro en tiempo real
-            document.getElementById('searchInput').addEventListener('input', filterDomiciliarios);
-            document.getElementById('filterStatus').addEventListener('change', filterDomiciliarios);
-
-            // Formulario de edición
             document.getElementById('formEditar').addEventListener('submit', handleDomiciliarioSubmit);
+        }
+
+        function openNewDomiciliarioModal() {
+            document.getElementById('modalTitle').textContent = 'Nuevo Domiciliario';
+            document.getElementById('formEditar').reset();
+            document.getElementById('domiciliarioId').value = '';
+            document.getElementById('zonaGroup').style.display = 'none';
+            document.getElementById('estadoGroup').style.display = 'none';
+            document.getElementById('modalEditar').style.display = 'block';
+        }
+
+        function editarDomiciliario(id) {
+            fetch(`../servicios/obtener_domiciliario.php?id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('modalTitle').textContent = 'Editar Domiciliario';
+                    document.getElementById('domiciliarioId').value = id;
+                    document.getElementById('nombre').value = data.nombre || '';
+                    document.getElementById('telefono').value = data.telefono || '';
+                    document.getElementById('tipoVehiculo').value = data.vehiculo || 'Moto';
+                    document.getElementById('placa').value = data.placa || '';
+                    document.getElementById('zona').value = data.zona || 'norte';
+                    document.getElementById('estado').value = data.estado || 'disponible';
+                    document.getElementById('zonaGroup').style.display = 'block';
+                    document.getElementById('estadoGroup').style.display = 'block';
+                    document.getElementById('modalEditar').style.display = 'block';
+                });
+        }
+
+        function eliminarDomiciliario(id) {
+            if (confirm('¿Deseas eliminar este domiciliario?')) {
+                fetch('../servicios/eliminar_domiciliario.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `id=${id}`
+                }).then(res => res.json()).then(() => loadDomiciliarios());
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function loadDomiciliarios() {
+            fetch('../servicios/obtener_domiciliarios.php')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('domiciliariosTableBody');
+                    tbody.innerHTML = '';
+                    data.forEach(d => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${d.id_domiciliario}</td>
+                                <td>${d.nombre}</td>
+                                <td>${d.telefono}</td>
+                                <td>${d.vehiculo}</td>
+                                <td>${d.placa}</td>
+                                <td>${d.zona || 'Sin asignar'}</td>
+                                <td><span class="estado-${d.estado.replace(/\s/g, '')}">${d.estado}</span></td>
+                                <td>
+                                    <button class="btn btn-editar" onclick="editarDomiciliario(${d.id_domiciliario})"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-eliminar" onclick="eliminarDomiciliario(${d.id_domiciliario})"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>`;
+                    }); 
+                });
+        }
+
+        function handleDomiciliarioSubmit(e) {
+            e.preventDefault();
+
+            const telefono = document.getElementById('telefono').value;
+            const placa = document.getElementById('placa').value;
+
+            if (telefono.length !== 10 || isNaN(telefono)) {
+                alert('Teléfono debe tener 10 dígitos.');
+                return;
+            }
+
+            if (!/^[A-Z]{3}\d{3}$/.test(placa)) {
+                alert('Placa inválida. Formato: ABC123');
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            fetch('../servicios/guardar_domiciliario.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Domiciliario guardado correctamente.');
+                        closeModal('modalEditar');
+                        loadDomiciliarios();
+                    } else {
+                        alert('Error: ' + (data.error || 'No se pudo guardar'));
+                    }
+                });
         }
 
         function showUserMenu() {
             window.location.href = 'menuUsu.html';
         }
 
-        // Funciones para el modal
-        function openNewDomiciliarioModal() {
-            document.getElementById('modalTitle').textContent = 'Nuevo Domiciliario';
-            document.getElementById('formEditar').reset();
-            document.getElementById('domiciliarioId').value = '';
-            currentDomiciliarioId = null;
-            document.getElementById('modalEditar').style.display = 'block';
-        }
-
-        function editarDomiciliario(id) {
-            currentDomiciliarioId = id;
-            document.getElementById('modalTitle').textContent = 'Editar Domiciliario';
-            document.getElementById('domiciliarioId').value = id;
-
-            // Simular carga de datos (reemplazar con datos reales de la base de datos)
-            if (id === 1) {
-                document.getElementById('nombre').value = 'Juan Pérez';
-                document.getElementById('telefono').value = '3001234567';
-                document.getElementById('vehiculo').value = 'Moto';
-                document.getElementById('placa').value = 'ABC123';
-                document.getElementById('zona').value = 'norte';
-                document.getElementById('estado').value = 'disponible';
-            }
-
-            document.getElementById('modalEditar').style.display = 'block';
-        }
-
-        function eliminarDomiciliario(id) {
-            if (confirm('¿Estás seguro de que deseas eliminar este domiciliario?')) {
-                // Lógica para eliminar el domiciliario (puedes usar AJAX o recargar la página)
-                alert(`Domiciliario ${id} eliminado`);
-                document.getElementById('domiciliariosTableBody').innerHTML = ''; // Simulación
-            }
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        // Filtrado de domiciliarios
         function filterDomiciliarios() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('filterStatus').value.toLowerCase();
             const rows = document.querySelectorAll('#domiciliariosTableBody tr');
 
             rows.forEach(row => {
-                const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const status = row.querySelector('.estado-disponible, .estado-ocupado, .estado-inactivo').textContent.toLowerCase();
-
-                const matchesSearch = name.includes(searchTerm);
-                const matchesStatus = !statusFilter || status === statusFilter;
-
-                if (matchesSearch && matchesStatus) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                const name = row.children[1].textContent.toLowerCase();
+                const state = row.children[6].textContent.toLowerCase();
+                const show = (!status || state.replace(/\s+/g, '') === status.replace(/\s+/g, '')) && name.includes(search);
+                row.style.display = show ? '' : 'none';
             });
         }
 
-        // Manejar el envío del formulario
-        function handleDomiciliarioSubmit(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const domiciliarioData = Object.fromEntries(formData.entries());
-
-            // Simulación de guardado (reemplazar con lógica de backend)
-            console.log('Datos del domiciliario:', domiciliarioData);
-            alert(currentDomiciliarioId ? 'Domiciliario actualizado' : 'Domiciliario creado');
-            closeModal('modalEditar');
-            // Aquí podrías recargar la tabla o actualizarla dinámicamente
-        }
-
-        // Cerrar modales al hacer clic fuera
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';

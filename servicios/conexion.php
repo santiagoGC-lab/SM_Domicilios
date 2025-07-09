@@ -2,11 +2,12 @@
 function ConectarDB() {
     $conexion = new mysqli("localhost", "root", "root", "sm_domicilios");
 
-    if ($conexion->connect_errno) {
-        die("No se ha podido conectar con la base de datos: " . $conexion->connect_error);
+    if ($conexion->connect_error) {
+        http_response_code(500);
+        die(json_encode(['error' => 'Error de conexión: ' . $conexion->connect_error]));
     }
-    
-    mysqli_set_charset($conexion, 'utf8');
+
+    $conexion->set_charset("utf8mb4");
     return $conexion;
 }
 ?>
