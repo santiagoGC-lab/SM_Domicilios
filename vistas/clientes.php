@@ -180,7 +180,7 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                 .catch(error => console.error('Error:', error));
         });
 
-        function loadClients() {
+            function loadClients() {
             fetch('../servicios/obtener_clientes.php')
                 .then(res => res.json())
                 .then(clientes => {

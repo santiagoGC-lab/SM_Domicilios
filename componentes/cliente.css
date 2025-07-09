@@ -365,47 +365,48 @@
     border-radius: 15px;
     font-size: 0.9em;
     font-weight: 500;
-    width: 55%;
-    display: inline-block;
+    background-color: var(--vip-color);
+    color: white;
     text-transform: capitalize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    height: 100%;
 }
 
 .estado-regular {
-    background-color: var(--regular-color); /* Usa el mismo color púrpura que VIP */
-    color: white;
     padding: 5px 10px;
     border-radius: 15px;
     font-size: 0.9em;
     font-weight: 500;
-    width: 55%;
-    display: inline-block;
+    background-color: var(--regular-color);
+    color: white;
     text-transform: capitalize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    height: 100%;
 }
 
 .estado-corporativo {
-    background-color: var(--corporativo-color); /* Usa el mismo color púrpura que VIP */
-    color: white;
     padding: 5px 10px;
     border-radius: 15px;
     font-size: 0.9em;
     font-weight: 500;
-    width: 55%;
-    display: inline-block;
+    background-color: var(--corporativo-color);
+    color: white;
     text-transform: capitalize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    height: 100%;
 }
 
 .estado-activo {
     background-color: var(--success-color);
-    color: white;
-}
-
-.estado-inactivo {
-    background-color: var(--warning-color);
-    color: white;
-}
-
-.estado-vip {
-    background-color: var(--vip-color);
     color: white;
 }
 
