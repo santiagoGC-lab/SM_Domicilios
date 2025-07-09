@@ -119,7 +119,7 @@ if (!isset($_SESSION['usuario_id'])) {
             </div>
             <div class="activity-list">
                 <div class="activity-item">
-                    <span>Pedido #001 - Cliente: Juan Pérez - Producto: Pizza (2) - Estado: Pendiente</span>
+                    <span>Pedido #001 - Cliente: Juan Pérez - Estado: Pendiente - Repartidor: Pepito perez</span>
                     <span>02/07/2025 14:30</span>
                 </div>
             </div>

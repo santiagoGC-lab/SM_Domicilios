@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Recibir y validar datos
+$id = isset($_POST['id']) && $_POST['id'] !== '' ? (int) $_POST['id'] : null;
 $nombre = trim($_POST['nombre'] ?? '');
 $documento = trim($_POST['documento'] ?? '');
 $telefono = trim($_POST['telefono'] ?? '');
@@ -25,19 +26,23 @@ if (!$nombre || !$documento || !$telefono || !$direccion) {
 try {
     $db = ConectarDB();
 
-    $stmt = $db->prepare("INSERT INTO clientes (nombre, documento, telefono, direccion, barrio, tipo_cliente)
-                          VALUES (?, ?, ?, ?, ?, ?)");
-    if (!$stmt) {
-        throw new Exception("Error al preparar la consulta: " . $db->error);
+    if ($id) {
+        // Actualizar cliente existente
+        $stmt = $db->prepare("UPDATE clientes SET nombre = ?, documento = ?, telefono = ?, direccion = ?, barrio = ?, tipo_cliente = ? WHERE id_cliente = ?");
+        $stmt->bind_param("ssssssi", $nombre, $documento, $telefono, $direccion, $barrio, $tipoCliente, $id);
+    } else {
+        // Insertar nuevo cliente
+        $stmt = $db->prepare("INSERT INTO clientes (nombre, documento, telefono, direccion, barrio, tipo_cliente)
+                              VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $nombre, $documento, $telefono, $direccion, $barrio, $tipoCliente);
     }
 
-    $stmt->bind_param("ssssss", $nombre, $documento, $telefono, $direccion, $barrio, $tipoCliente);
     $stmt->execute();
 
     if ($stmt->affected_rows > 0) {
         echo json_encode(['success' => true]);
     } else {
-        throw new Exception("No se insertó ningún cliente");
+        throw new Exception("No se realizó ninguna modificación");
     }
 
     $stmt->close();
