@@ -79,8 +79,7 @@ $nombreCompleto = $nombre . ' ' . $apellido;
             <div class="clients-actions">
                 <div class="search-bar">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar Cliente..." id="searchInput">
-                    <button class="btn-search" onclick="loadClients()">Buscar</button>
+                    <input type="text" placeholder="Buscar Cliente..." id="searchInput" oninput="loadClients()">
                 </div>
                 <button class="btn-login" onclick="openNewClientModal()">
                     <i class="fas fa-user-plus"></i> Nuevo Cliente
@@ -180,27 +179,48 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                 .catch(error => console.error('Error:', error));
         });
 
-            function loadClients() {
+        function removeAccents(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function loadClients() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const searchTerm = removeAccents(searchInput);
+
             fetch('../servicios/obtener_clientes.php')
                 .then(res => res.json())
                 .then(clientes => {
                     const tbody = document.getElementById('clientsTableBody');
                     tbody.innerHTML = '';
-                    clientes.forEach(cliente => {
+
+                    const filtrados = clientes.filter(cliente => {
+                        return (
+                            removeAccents(cliente.nombre.toLowerCase()).includes(searchTerm) ||
+                            removeAccents(cliente.documento.toLowerCase()).includes(searchTerm) ||
+                            removeAccents(cliente.telefono.toLowerCase()).includes(searchTerm) ||
+                            removeAccents(cliente.direccion.toLowerCase()).includes(searchTerm) ||
+                            removeAccents(cliente.barrio.toLowerCase()).includes(searchTerm) ||
+                            removeAccents(cliente.tipo_cliente.toLowerCase()).includes(searchTerm)
+                        );
+                    });
+
+                    filtrados.forEach(cliente => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-          <td>${cliente.id_cliente}</td>
-          <td>${cliente.nombre}</td>
-          <td>${cliente.documento}</td>
-          <td>${cliente.telefono}</td>
-          <td>${cliente.direccion}</td>
-          <td class="estado-${cliente.tipo_cliente.toLowerCase()}">${cliente.tipo_cliente}</td>
-        `;
+                    <td>${cliente.id_cliente}</td>
+                    <td>${cliente.nombre}</td>
+                    <td>${cliente.documento}</td>
+                    <td>${cliente.telefono}</td>
+                    <td>${cliente.direccion} - ${cliente.barrio}</td>
+                    <td class="estado-${cliente.tipo_cliente.toLowerCase()}">${cliente.tipo_cliente}</td>
+                `;
                         tbody.appendChild(tr);
                     });
                 })
                 .catch(err => console.error('Error al cargar clientes:', err));
         }
+
+
 
         document.addEventListener('DOMContentLoaded', loadClients);
     </script>

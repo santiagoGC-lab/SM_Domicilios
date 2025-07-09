@@ -323,7 +323,6 @@
 
 .clients-table tbody tr {
     transition: all var(--transition-speed) var(--transition-timing);
-    cursor: pointer;
 }
 
 .clients-table tbody tr:hover {
