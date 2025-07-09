@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 09-07-2025 a las 19:15:06
+-- Tiempo de generación: 09-07-2025 a las 20:22:20
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -53,6 +53,13 @@ CREATE TABLE `clientes` (
   `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP,
   `estado` enum('activo','inactivo') NOT NULL DEFAULT 'activo'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Volcado de datos para la tabla `clientes`
+--
+
+INSERT INTO `clientes` (`id_cliente`, `nombre`, `documento`, `telefono`, `direccion`, `barrio`, `tipo_cliente`, `fecha_creacion`, `estado`) VALUES
+(1, 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90|', 'La Esperanza', 'regular', '2025-07-09 14:27:48', 'activo');
 
 -- --------------------------------------------------------
 
@@ -105,6 +112,13 @@ CREATE TABLE `usuarios` (
   `estado` enum('activo','inactivo') NOT NULL DEFAULT 'activo',
   `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Volcado de datos para la tabla `usuarios`
+--
+
+INSERT INTO `usuarios` (`id_usuario`, `nombre`, `apellido`, `numero_documento`, `contrasena`, `rol`, `estado`, `fecha_creacion`) VALUES
+(1, 'Santiago', 'Garcia', '1107841204', '$2y$10$W.D95lV8ZLQf4JxkqHIfpewW1eBihsmwOh848a4iACw//B2QyG9.K', 'admin', 'activo', '2025-07-09 14:25:23');
 
 -- --------------------------------------------------------
 
@@ -184,7 +198,7 @@ ALTER TABLE `actividad_reciente`
 -- AUTO_INCREMENT de la tabla `clientes`
 --
 ALTER TABLE `clientes`
-  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `domiciliarios`
@@ -202,7 +216,7 @@ ALTER TABLE `pedidos`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `zonas`
