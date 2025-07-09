@@ -20,7 +20,7 @@ $num_documento = filter_var($_POST['numeroDocumento'], FILTER_VALIDATE_INT);
 $contrasena = trim($_POST['contrasena']);
 
 if ($num_documento === false) {
-    header("Location: ../login.php?error=" . urlencode("Documento inválido."));
+    header("Location: ../login.html?error=" . urlencode("Documento inválido."));
     exit;
 }
 
@@ -51,14 +51,14 @@ try {
     }
 
     if ($result->num_rows === 0) {
-        header("Location: ../login.php?error=" . urlencode("Usuario no encontrado."));
+        header("Location: ../login.html?error=" . urlencode("Usuario no encontrado."));
         exit;
     }
 
     $usuario = $result->fetch_assoc();
 
     if (!password_verify($contrasena, $usuario['contrasena'])) {
-        header("Location: ../login.php?error=" . urlencode("Contraseña incorrecta."));
+        header("Location: ../login.html?error=" . urlencode("Contraseña incorrecta."));
         exit;
     }
 

@@ -57,7 +57,6 @@ if (!isset($_SESSION['usuario_id'])) {
                     <select id="rol" name="rol" class="input-form" required>
                         <option value="" disabled selected>Selecciona un rol</option>
                         <option value="admin">Administrador</option>
-                        <option value="cliente">Cliente</option>
                         <option value="repartidor">Repartidor</option>
                     </select>
                 </div>
