@@ -3,62 +3,59 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once 'conexion.php'; // Ajusta la ruta según tu estructura
+require_once 'conexion.php';
+header('Content-Type: application/json');
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $nombre = trim($_POST['nombreCompleto']);
-    $documento = trim($_POST['numeroDocumento']);
-    $correo = trim($_POST['email']);
-    $contrasena = $_POST['contrasena'];
-    $confirmar = $_POST['confirmarContrasena'];
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    http_response_code(405);
+    echo json_encode(['error' => 'Método no permitido']);
+    exit;
+}
 
-    // Validar que las contraseñas coincidan
-    if ($contrasena !== $confirmar) {
-        echo "Error: Las contraseñas no coinciden.";
+$nombreCompleto = trim($_POST['nombreCompleto'] ?? '');
+$numeroDocumento = trim($_POST['numeroDocumento'] ?? '');
+$contrasena = $_POST['contrasena'] ?? '';
+$rol = $_POST['rol'] ?? '';
+if (!$nombreCompleto || !$numeroDocumento || !$contrasena || !$rol) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Faltan campos obligatorios']);
+    exit;
+}
+
+$nombreArray = explode(' ', $nombreCompleto, 2);
+$nombre = $nombreArray[0];
+$apellido = $nombreArray[1] ?? '';
+
+try {
+    $conexion = ConectarDB();
+
+    // Validar si el documento ya existe
+    $stmt = $conexion->prepare("SELECT id_usuario FROM usuarios WHERE numero_documento = ?");
+    $stmt->bind_param("s", $numeroDocumento);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows > 0) {
+        http_response_code(409);
+        echo json_encode(['error' => 'El documento ya está registrado']);
         exit;
     }
 
     // Hashear la contraseña
     $contrasenaHash = password_hash($contrasena, PASSWORD_DEFAULT);
 
-    // Conexión a la BD
-    $conexion = ConectarDB();
-
-    // Validar si el documento o el correo ya existen
-    $sqlVerificar = "SELECT * FROM usuarios WHERE documento = ? OR correo = ?";
-    $stmt = $conexion->prepare($sqlVerificar);
-    $stmt->bind_param("ss", $documento, $correo);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-
-    if ($resultado->num_rows > 0) {
-        echo "Error: El documento o correo ya están registrados.";
-        exit;
-    }
-
-    // Insertar nuevo usuario
-    $rol = $_POST['rol'];
-    $fecha = date("Y-m-d");
-
-    $sqlInsertar = "INSERT INTO usuarios (nombre_completo, documento, correo, contraseña, rol, fecha_registro)
-                    VALUES (?, ?, ?, ?, ?, ?)";
-    $stmt = $conexion->prepare($sqlInsertar);
-    $stmt->bind_param("ssssss", $nombre, $documento, $correo, $contrasenaHash, $rol, $fecha);
-
+    // Insertar usuario
+    $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, apellido, numero_documento, contrasena, rol) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $nombre, $apellido, $numeroDocumento, $contrasenaHash, $rol);
+    
     if ($stmt->execute()) {
-        echo "Usuario creado correctamente.";
+        echo json_encode(['success' => true]);
     } else {
-        echo "Error al registrar el usuario: " . $stmt->error;
+        throw new Exception("Error al registrar el usuario: " . $stmt->error);
     }
-
-    if (!isset($_POST['rol'])) {
-        die("Error: Debes seleccionar un rol.");
-    }
-    $rol = $_POST['rol'];
-
 
     $stmt->close();
     $conexion->close();
-} else {
-    echo "Método de solicitud inválido.";
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Error general: ' . $e->getMessage()]);
 }
+?>

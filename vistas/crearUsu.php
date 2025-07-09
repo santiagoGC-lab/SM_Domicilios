@@ -1,13 +1,3 @@
-<?php
-session_start();
-
-if (!isset($_SESSION['usuario_id'])) {
-    // Si no ha iniciado sesión, lo redirigimos al login
-    header("Location: ../login.html");
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -49,15 +39,12 @@ if (!isset($_SESSION['usuario_id'])) {
                         maxlength="12" pattern="[0-9]+" required>
                 </div>
                 <div class="inputs-login">
-                    <label for="email" class="txt-form">Correo Electrónico</label>
-                    <input type="email" class="input-form" id="email" name="email" required>
-                </div>
-                <div class="inputs-login">
                     <label for="rol" class="txt-form">Rol</label>
                     <select id="rol" name="rol" class="input-form" required>
                         <option value="" disabled selected>Selecciona un rol</option>
                         <option value="admin">Administrador</option>
-                        <option value="repartidor">Repartidor</option>
+                        <option value="repartidor">Cajera</option>
+                        <option value="repartidor">Org domicilios</option>
                     </select>
                 </div>
 

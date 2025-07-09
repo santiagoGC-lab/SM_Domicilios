@@ -1,57 +1,36 @@
 <?php
 session_start();
-include "conexion.php";
+require_once "conexion.php";
+header('Content-Type: text/html; charset=utf-8');
 
-// Verifica el método
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo "Método no permitido";
+    header("Location: ../login.html?error=" . urlencode("Método no permitido"));
     exit;
 }
 
-// Verifica campos requeridos
 if (empty($_POST['numeroDocumento']) || empty($_POST['contrasena'])) {
-    header("Location: ../login.php?error=" . urlencode("Por favor, completa todos los campos."));
+    header("Location: ../login.html?error=" . urlencode("Por favor, completa todos los campos."));
     exit;
 }
 
-// Limpia entrada
-$num_documento = filter_var($_POST['numeroDocumento'], FILTER_VALIDATE_INT);
+$numeroDocumento = filter_var($_POST['numeroDocumento'], FILTER_SANITIZE_STRING);
 $contrasena = trim($_POST['contrasena']);
 
-if ($num_documento === false) {
-    header("Location: ../login.html?error=" . urlencode("Documento inválido."));
-    exit;
-}
-
 try {
-    echo "Intentando conectar a la base de datos...<br>";
-    $conexiondb = ConectarDB();
+    $conexion = ConectarDB();
 
-    if (!$conexiondb) {
-        echo "No se pudo conectar a la base de datos";
-        exit;
-    }
-
-    echo "Conexión exitosa<br>";
-
-    $stmt = $conexiondb->prepare("SELECT id_usuario, nombre_completo, rol, contrasena FROM usuarios WHERE documento = ?");
+    $stmt = $conexion->prepare("SELECT id_usuario, nombre, apellido, rol, contrasena FROM usuarios WHERE numero_documento = ? AND estado = 'activo'");
     if (!$stmt) {
-        throw new Exception("Error al preparar la consulta: " . $conexiondb->error);
+        throw new Exception("Error al preparar la consulta: " . $conexion->error);
     }
 
-    echo "Consulta preparada<br>";
-
-    $stmt->bind_param("i", $num_documento);
+    $stmt->bind_param("s", $numeroDocumento);
     $stmt->execute();
-
     $result = $stmt->get_result();
-    if (!$result) {
-        throw new Exception("Error al ejecutar consulta: " . $stmt->error);
-    }
 
     if ($result->num_rows === 0) {
-        header("Location: ../login.html?error=" . urlencode("Usuario no encontrado."));
+        header("Location: ../login.html?error=" . urlencode("Usuario no encontrado o inactivo."));
         exit;
     }
 
@@ -62,9 +41,8 @@ try {
         exit;
     }
 
-    // Guarda sesión
     $_SESSION['usuario_id'] = $usuario['id_usuario'];
-    $_SESSION['nombre'] = $usuario['nombre_completo'];
+    $_SESSION['nombre'] = $usuario['nombre'] . ' ' . $usuario['apellido'];
     $_SESSION['rol'] = $usuario['rol'];
 
     session_regenerate_id(true);
@@ -72,6 +50,7 @@ try {
     header('Location: ../vistas/dashboard.php');
     exit;
 } catch (Exception $e) {
-    echo "Error atrapado: " . $e->getMessage();
+    header("Location: ../login.html?error=" . urlencode("Error: " . $e->getMessage()));
     exit;
 }
+?>
