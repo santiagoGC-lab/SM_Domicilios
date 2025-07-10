@@ -1,15 +1,41 @@
 <?php
 session_start();
 if (!isset($_SESSION['usuario_id'])) {
-    // Si no ha iniciado sesión, lo redirigimos al login
     header("Location: ../login.html");
     exit;
 }
+
+// Conexión a la base de datos
+try {
+    $pdo = new PDO("mysql:host=localhost;dbname=sm_domicilios", "root", "root");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Error de conexión: " . $e->getMessage());
+}
+
+// Obtener datos para las tarjetas del tablero
+$pendingOrders = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente'")->fetchColumn();
+$completedToday = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn();
+$revenueToday = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
+
+// Obtener pedidos recientes
+$stmt = $pdo->query("
+    SELECT p.id_pedido, c.nombre AS cliente, d.nombre AS domiciliario, p.estado, p.fecha_pedido
+    FROM pedidos p
+    LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+    LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+    ORDER BY p.fecha_pedido DESC
+    LIMIT 5
+");
+$recentOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Obtener clientes y zonas para el formulario
+$clients = $pdo->query("SELECT id_cliente, nombre, documento FROM clientes WHERE estado = 'activo'")->fetchAll(PDO::FETCH_ASSOC);
+$zones = $pdo->query("SELECT id_zona, nombre, tarifa_base FROM zonas WHERE estado = 'activo'")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,45 +48,20 @@ if (!isset($_SESSION['usuario_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-
 <body>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
-            <a href="dashboard.php" class="menu-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span class="menu-text">Inicio</span>
-            </a>
-            <a href="pedidos.php" class="menu-item active">
-                <i class="fas fa-shopping-bag"></i>
-                <span class="menu-text">Pedidos</span>
-            </a>
-            <a href="clientes.php" class="menu-item">
-                <i class="fas fa-users"></i>
-                <span class="menu-text">Clientes</span>
-            </a>
-            <a href="domiciliarios.php" class="menu-item">
-                <i class="fas fa-motorcycle"></i>
-                <span class="menu-text">Domiciliarios</span>
-            </a>
-            <a href="zonas.php" class="menu-item">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="menu-text">Zonas de Entrega</span>
-            </a>
-            <a href="reportes.php" class="menu-item">
-                <i class="fas fa-chart-bar"></i>
-                <span class="menu-text">Reportes</span>
-            </a>
-            <a href="configuracion.php" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span class="menu-text">Configuración</span>
-            </a>
-            <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="menu-text">Cerrar Sesión</span>
-            </a>
+            <a href="dashboard.php" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Inicio</span></a>
+            <a href="pedidos.php" class="menu-item active"><i class="fas fa-shopping-bag"></i><span class="menu-text">Pedidos</span></a>
+            <a href="clientes.php" class="menu-item"><i class="fas fa-users"></i><span class="menu-text">Clientes</span></a>
+            <a href="domiciliarios.php" class="menu-item"><i class="fas fa-motorcycle"></i><span class="menu-text">Domiciliarios</span></a>
+            <a href="zonas.php" class="menu-item"><i class="fas fa-map-marked-alt"></i><span class="menu-text">Zonas de Entrega</span></a>
+            <a href="reportes.php" class="menu-item"><i class="fas fa-chart-bar"></i><span class="menu-text">Reportes</span></a>
+            <a href="configuracion.php" class="menu-item"><i class="fas fa-cog"></i><span class="menu-text">Configuración</span></a>
+            <a href="../servicios/cerrar_sesion.php" class="menu-cerrar"><i class="fas fa-sign-out-alt"></i><span class="menu-text">Cerrar Sesión</span></a>
         </div>
     </div>
 
@@ -82,33 +83,26 @@ if (!isset($_SESSION['usuario_id'])) {
         <div class="dashboard-cards">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
+                    <div class="card-icon"><i class="fas fa-clock"></i></div>
                     <h3 class="card-title">Pedidos Pendientes</h3>
                 </div>
-                <div class="card-value">3</div>
+                <div class="card-value"><?php echo $pendingOrders; ?></div>
                 <div class="card-footer">Actualizado hace 5 minutos</div>
             </div>
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
+                    <div class="card-icon"><i class="fas fa-check-circle"></i></div>
                     <h3 class="card-title">Completados Hoy</h3>
                 </div>
-                <div class="card-value">2</div>
+                <div class="card-value"><?php echo $completedToday; ?></div>
                 <div class="card-footer">Actualizado hace 5 minutos</div>
             </div>
-
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
+                    <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
                     <h3 class="card-title">Ingresos del Día</h3>
                 </div>
-                <div class="card-value">$150.00</div>
+                <div class="card-value">$<?php echo number_format($revenueToday, 2); ?></div>
                 <div class="card-footer">Actualizado hace 5 minutos</div>
             </div>
         </div>
@@ -118,10 +112,12 @@ if (!isset($_SESSION['usuario_id'])) {
                 <h3>Pedidos Recientes</h3>
             </div>
             <div class="activity-list">
-                <div class="activity-item">
-                    <span>Pedido #001 - Cliente: Juan Pérez - Estado: Pendiente - Repartidor: Pepito perez</span>
-                    <span>02/07/2025 14:30</span>
-                </div>
+                <?php foreach ($recentOrders as $order): ?>
+                    <div class="activity-item">
+                        <span>Pedido #<?php echo $order['id_pedido']; ?> - Cliente: <?php echo htmlspecialchars($order['cliente']); ?> - Estado: <?php echo $order['estado']; ?> - Repartidor: <?php echo htmlspecialchars($order['domiciliario'] ?? 'No asignado'); ?></span>
+                        <span><?php echo date('d/m/Y H:i', strtotime($order['fecha_pedido'])); ?></span>
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>
@@ -129,19 +125,29 @@ if (!isset($_SESSION['usuario_id'])) {
     <!-- Modal de Nuevo Pedido -->
     <div id="modalNuevoPedido" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close">×</span>
             <h2>Nuevo Pedido</h2>
             <form id="formNuevoPedido">
                 <div class="form-group">
-                    <label for="cliente">Cliente:</label>
-                    <input type="text" id="cliente" name="cliente" class="form-control" required>
+                    <label for="numeroDocumento">Cédula:</label>
+                    <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="zona">Zona:</label>
-                    <select id="zona" name="zona" class="form-control" required>
+                    <label for="id_cliente">Cliente:</label>
+                    <select id="id_cliente" name="id_cliente" class="form-control" required>
+                        <option value="">Seleccione un cliente</option>
+                        <?php foreach ($clients as $client): ?>
+                            <option value="<?php echo $client['id_cliente']; ?>" data-documento="<?php echo $client['documento']; ?>"><?php echo htmlspecialchars($client['nombre']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="id_zona">Zona:</label>
+                    <select id="id_zona" name="id_zona" class="form-control" required>
                         <option value="">Seleccione una zona</option>
-                        <option value="norte">Norte</option>
-                        <option value="sur">Sur</option>
+                        <?php foreach ($zones as $zone): ?>
+                            <option value="<?php echo $zone['id_zona']; ?>" data-tarifa="<?php echo $zone['tarifa_base']; ?>"><?php echo htmlspecialchars($zone['nombre']); ?> ($<?php echo number_format($zone['tarifa_base'], 2); ?>)</option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="form-group">
@@ -154,17 +160,12 @@ if (!isset($_SESSION['usuario_id'])) {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="productos">Productos:</label>
-                    <div id="productosContainer" class="producto-item">
-                        <select class="form-control producto-select" required>
-                            <option value="">Seleccione un producto</option>
-                            <option value="pizza">Pizza</option>
-                            <option value="hamburguesa">Hamburguesa</option>
-                        </select>
-                        <input type="number" class="form-control cantidad" placeholder="Cantidad" min="1" required>
-                        <button type="button" class="btn-remove-producto btn" onclick="this.parentElement.remove()">-</button>
-                    </div>
-                    <button type="button" class="btn-login" onclick="agregarProducto()">+</button>
+                    <label for="bolsas">Cantidad de paquetes:</label>
+                    <input type="number" id="bolsas" name="bolsas" class="form-control" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="total">Total:</label>
+                    <input type="number" id="total" name="total" class="form-control" step="0.01" required>
                 </div>
                 <button type="submit" class="btn-login">Crear Pedido</button>
                 <button type="button" class="btn-login" onclick="cerrarModal('modalNuevoPedido')">Cancelar</button>
@@ -177,31 +178,25 @@ if (!isset($_SESSION['usuario_id'])) {
             const modal = document.getElementById('modalNuevoPedido');
             modal.classList.add('active');
             document.getElementById('formNuevoPedido').reset();
-            document.getElementById('productosContainer').innerHTML = `
-                <div class="producto-item">
-                    <select class="form-control producto-select" required>
-                        <option value="">Seleccione un producto</option>
-                        <option value="pizza">Pizza</option>
-                        <option value="hamburguesa">Hamburguesa</option>
-                    </select>
-                    <input type="number" class="form-control cantidad" placeholder="Cantidad" min="1" required>
-                    <button type="button" class="btn-remove-producto btn" onclick="this.parentElement.remove()">-</button>
-                </div>`;
-        }
-
-        function agregarProducto() {
-            const container = document.getElementById('productosContainer');
-            const newProducto = document.createElement('div');
-            newProducto.className = 'producto-item';
-            newProducto.innerHTML = `
-                <select class="form-control producto-select" required>
-                    <option value="">Seleccione un producto</option>
-                    <option value="pizza">Pizza</option>
-                    <option value="hamburguesa">Hamburguesa</option>
-                </select>
-                <input type="number" class="form-control cantidad" placeholder="Cantidad" min="1" required>
-                <button type="button" class="btn-remove-producto btn" onclick="this.parentElement.remove()">-</button>`;
-            container.appendChild(newProducto);
+            document.getElementById('total').value = ''; // Limpiar el campo total
+            // Sincronizar cédula y cliente
+            const numeroDocumento = document.getElementById('numeroDocumento');
+            const idCliente = document.getElementById('id_cliente');
+            numeroDocumento.addEventListener('input', () => {
+                const selectedOption = Array.from(idCliente.options).find(opt => opt.dataset.documento === numeroDocumento.value);
+                idCliente.value = selectedOption ? selectedOption.value : '';
+            });
+            idCliente.addEventListener('change', () => {
+                const selectedOption = idCliente.options[idCliente.selectedIndex];
+                numeroDocumento.value = selectedOption.dataset.documento || '';
+            });
+            // Actualizar total según la zona seleccionada
+            const idZona = document.getElementById('id_zona');
+            idZona.addEventListener('change', () => {
+                const selectedOption = idZona.options[idZona.selectedIndex];
+                const tarifa = selectedOption.dataset.tarifa || 0;
+                document.getElementById('total').value = parseFloat(tarifa).toFixed(2);
+            });
         }
 
         function cerrarModal(modalId) {
@@ -217,23 +212,69 @@ if (!isset($_SESSION['usuario_id'])) {
             if (event.target === modal) {
                 cerrarModal('modalNuevoPedido');
             }
+        };
+
+        function buscarPedido() {
+            const searchInput = document.getElementById('searchInput').value;
+            fetch('../servicios/buscar_pedido.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'query=' + encodeURIComponent(searchInput)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la solicitud: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                const activityList = document.querySelector('.activity-list');
+                activityList.innerHTML = '';
+                data.forEach(order => {
+                    const item = document.createElement('div');
+                    item.className = 'activity-item';
+                    item.innerHTML = `
+                        <span>Pedido #${order.id_pedido} - Cliente: ${order.cliente} - Estado: ${order.estado} - Repartidor: ${order.domiciliario || 'No asignado'}</span>
+                        <span>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</span>`;
+                    activityList.appendChild(item);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al buscar pedidos: ' + error.message);
+            });
         }
 
         document.getElementById('formNuevoPedido').onsubmit = function(e) {
             e.preventDefault();
-            const pedido = {
-                cliente: document.getElementById('cliente').value,
-                zona: document.getElementById('zona').value,
-                estado: document.getElementById('estado').value,
-                productos: Array.from(document.querySelectorAll('.producto-item')).map(item => ({
-                    producto: item.querySelector('.producto-select').value,
-                    cantidad: item.querySelector('.cantidad').value
-                }))
-            };
-            alert('Nuevo pedido creado: ' + JSON.stringify(pedido));
-            cerrarModal('modalNuevoPedido');
-        }
+            const formData = new FormData(this);
+            fetch('../servicios/procesar_pedido.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la solicitud: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('Pedido creado exitosamente');
+                    cerrarModal('modalNuevoPedido');
+                    location.reload();
+                } else {
+                    alert('Error al crear el pedido: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar el pedido: ' + error.message);
+            });
+        };
     </script>
 </body>
-
 </html>
