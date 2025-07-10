@@ -7,7 +7,7 @@ if (!isset($_SESSION['usuario_id'])) {
 
 // Conexión a la base de datos
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=sm_domicilios", "root", "root");
+    $pdo = new PDO("mysql:host=localhost;dbname=sm_domicilios", "root", "root"); // Cambia "tu_contraseña"
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     die("Error de conexión: " . $e->getMessage());
@@ -29,9 +29,10 @@ $stmt = $pdo->query("
 ");
 $recentOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Obtener clientes y zonas para el formulario
+// Obtener clientes, zonas y domiciliarios para el formulario
 $clients = $pdo->query("SELECT id_cliente, nombre, documento FROM clientes WHERE estado = 'activo'")->fetchAll(PDO::FETCH_ASSOC);
 $zones = $pdo->query("SELECT id_zona, nombre, tarifa_base FROM zonas WHERE estado = 'activo'")->fetchAll(PDO::FETCH_ASSOC);
+$domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios WHERE estado = 'disponible'")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -151,6 +152,15 @@ $zones = $pdo->query("SELECT id_zona, nombre, tarifa_base FROM zonas WHERE estad
                     </select>
                 </div>
                 <div class="form-group">
+                    <label for="id_domiciliario">Repartidor:</label>
+                    <select id="id_domiciliario" name="id_domiciliario" class="form-control" required>
+                        <option value="">Seleccione un repartidor</option>
+                        <?php foreach ($domiciliarios as $domiciliario): ?>
+                            <option value="<?php echo $domiciliario['id_domiciliario']; ?>"><?php echo htmlspecialchars($domiciliario['nombre']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="estado">Estado:</label>
                     <select id="estado" name="estado" class="form-control" required>
                         <option value="pendiente">Pendiente</option>
@@ -216,7 +226,7 @@ $zones = $pdo->query("SELECT id_zona, nombre, tarifa_base FROM zonas WHERE estad
 
         function buscarPedido() {
             const searchInput = document.getElementById('searchInput').value;
-            fetch('../servicios/buscar_pedido.php', {
+            fetch('../buscar_pedido.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'query=' + encodeURIComponent(searchInput)
@@ -251,7 +261,7 @@ $zones = $pdo->query("SELECT id_zona, nombre, tarifa_base FROM zonas WHERE estad
         document.getElementById('formNuevoPedido').onsubmit = function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            fetch('../servicios/procesar_pedido.php', {
+            fetch('../procesar_pedido.php', {
                 method: 'POST',
                 body: formData
             })
