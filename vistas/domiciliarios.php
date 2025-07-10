@@ -57,9 +57,9 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                     <div class="search-bar">
                         <i class="fas fa-search"></i>
                         <input type="text" id="searchInput" class="form-control" placeholder="Buscar domiciliario..." oninput="filterDomiciliarios()">
-                        <button class="btn-search" onclick="filterDomiciliarios()">Buscar</button>
                     </div>
                     <select id="filterStatus" class="filter-select" onchange="filterDomiciliarios()">
+                        <option value="">Todos</option> <!-- Agregado -->
                         <option value="disponible">Disponible</option>
                         <option value="en servicio">En Servicio</option>
                         <option value="inactivo">Inactivo</option>
@@ -135,7 +135,6 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                         <option value="en servicio">En Servicio</option>
                         <option value="inactivo">Inactivo</option>
                     </select>
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="closeModal('modalEditar')">Cancelar</button>
@@ -201,31 +200,6 @@ $nombreCompleto = $nombre . ' ' . $apellido;
             document.getElementById(id).style.display = 'none';
         }
 
-        function loadDomiciliarios() {
-            fetch('../servicios/obtener_domiciliarios.php')
-                .then(res => res.json())
-                .then(data => {
-                    const tbody = document.getElementById('domiciliariosTableBody');
-                    tbody.innerHTML = '';
-                    data.forEach(d => {
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${d.id_domiciliario}</td>
-                                <td>${d.nombre}</td>
-                                <td>${d.telefono}</td>
-                                <td>${d.vehiculo}</td>
-                                <td>${d.placa}</td>
-                                <td>${d.zona || 'Sin asignar'}</td>
-                                <td><span class="estado-${d.estado.replace(/\s/g, '')}">${d.estado}</span></td>
-                                <td>
-                                    <button class="btn btn-editar" onclick="editarDomiciliario(${d.id_domiciliario})"><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-eliminar" onclick="eliminarDomiciliario(${d.id_domiciliario})"><i class="fas fa-trash-alt"></i></button>
-                                </td>
-                            </tr>`;
-                    });
-                });
-        }
-
         function handleDomiciliarioSubmit(e) {
             e.preventDefault();
 
@@ -263,34 +237,64 @@ $nombreCompleto = $nombre . ' ' . $apellido;
             window.location.href = 'menuUsu.html';
         }
 
+        function quitarTildes(texto) {
+            return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
         function filterDomiciliarios() {
-            const search = quitarTildes(document.getElementById('searchInput').value.toLowerCase());
+            const searchInput = document.getElementById('searchInput').value.trim();
+            const search = quitarTildes(searchInput.toLowerCase());
             const status = document.getElementById('filterStatus').value.toLowerCase();
             const rows = document.querySelectorAll('#domiciliariosTableBody tr');
 
             rows.forEach(row => {
-                const nombre = quitarTildes(row.children[1].textContent.toLowerCase());
+                const nombre = quitarTildes(row.children[1].textContent);
                 const telefono = row.children[2].textContent.toLowerCase();
-                const vehiculo = quitarTildes(row.children[3].textContent.toLowerCase());
-                const zona = quitarTildes((row.children[5].textContent || '').toLowerCase());
-                const estado = quitarTildes(row.children[6].textContent.toLowerCase());
+                const vehiculo = quitarTildes(row.children[3].textContent);
+                const zona = quitarTildes((row.children[5].textContent || ''));
+                const estado = quitarTildes(row.children[6].textContent);
 
-                const coincideBusqueda =
+                const coincideTexto =
                     nombre.includes(search) ||
                     telefono.includes(search) ||
                     vehiculo.includes(search) ||
                     zona.includes(search);
 
-                const coincideEstado = !status || estado === status;
+                const coincideEstado = status === '' || estado === status;
 
-                row.style.display = coincideBusqueda && coincideEstado ? '' : 'none';
+                row.style.display = (coincideTexto && coincideEstado) ? '' : 'none';
             });
         }
 
-        function quitartilde(){
-            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        function loadDomiciliarios() {
+            fetch('../servicios/obtener_domiciliarios.php')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('domiciliariosTableBody');
+                    let html = '';
+
+                    data.forEach(d => {
+                        html += `
+                        <tr>
+                            <td>${d.id_domiciliario}</td>
+                            <td>${d.nombre}</td>
+                            <td>${d.telefono}</td>
+                            <td>${d.vehiculo}</td>
+                            <td>${d.placa}</td>
+                            <td>${d.zona || 'Sin asignar'}</td>
+                            <td><span class="estado-${d.estado.replace(/\s/g, '')}">${d.estado}</span></td>
+                            <td>
+                                <button class="btn btn-editar" onclick="editarDomiciliario(${d.id_domiciliario})"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-eliminar" onclick="eliminarDomiciliario(${d.id_domiciliario})"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+
+                    tbody.innerHTML = html;
+                    filterDomiciliarios();
+                });
         }
-        
+
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
