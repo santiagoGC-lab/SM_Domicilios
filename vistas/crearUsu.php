@@ -1,3 +1,12 @@
+<?php
+session_start();
+// Verificar si el usuario está autenticado
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: ../login.php?error=" . urlencode("Debes iniciar sesión para acceder."));
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -79,7 +88,7 @@
         }
 
         // Validación de contraseñas coincidentes
-        document.getElementById('formRegistro').addEventListener('submit', function (e) {
+        document.getElementById('formRegistro').addEventListener('submit', function(e) {
             const password = document.getElementById('contrasena').value;
             const confirmPassword = document.getElementById('confirmarContrasena').value;
 

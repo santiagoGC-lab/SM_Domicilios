@@ -149,7 +149,6 @@ $nombreCompleto = $nombre . ' ' . $apellido;
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             loadDomiciliarios();
-            setInterval(loadDomiciliarios, 5000);
         });
 
         function setupEventListeners() {
@@ -223,7 +222,7 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                                     <button class="btn btn-eliminar" onclick="eliminarDomiciliario(${d.id_domiciliario})"><i class="fas fa-trash-alt"></i></button>
                                 </td>
                             </tr>`;
-                    }); 
+                    });
                 });
         }
 
@@ -265,18 +264,33 @@ $nombreCompleto = $nombre . ' ' . $apellido;
         }
 
         function filterDomiciliarios() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
+            const search = quitarTildes(document.getElementById('searchInput').value.toLowerCase());
             const status = document.getElementById('filterStatus').value.toLowerCase();
             const rows = document.querySelectorAll('#domiciliariosTableBody tr');
 
             rows.forEach(row => {
-                const name = row.children[1].textContent.toLowerCase();
-                const state = row.children[6].textContent.toLowerCase();
-                const show = (!status || state.replace(/\s+/g, '') === status.replace(/\s+/g, '')) && name.includes(search);
-                row.style.display = show ? '' : 'none';
+                const nombre = quitarTildes(row.children[1].textContent.toLowerCase());
+                const telefono = row.children[2].textContent.toLowerCase();
+                const vehiculo = quitarTildes(row.children[3].textContent.toLowerCase());
+                const zona = quitarTildes((row.children[5].textContent || '').toLowerCase());
+                const estado = quitarTildes(row.children[6].textContent.toLowerCase());
+
+                const coincideBusqueda =
+                    nombre.includes(search) ||
+                    telefono.includes(search) ||
+                    vehiculo.includes(search) ||
+                    zona.includes(search);
+
+                const coincideEstado = !status || estado === status;
+
+                row.style.display = coincideBusqueda && coincideEstado ? '' : 'none';
             });
         }
 
+        function quitartilde(){
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+        
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
