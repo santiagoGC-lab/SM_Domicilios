@@ -81,7 +81,6 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                     <div class="search-bar">
                         <i class="fas fa-search"></i>
                         <input type="text" id="searchInput" class="form-control" placeholder="Buscar zona o ciudad..." oninput="cargarZonas()">
-                        <button class="btn btn-search" onclick="cargarZonas()">Buscar</button>
                     </div>
                     <select id="filterStatus" class="filter-select" onchange="cargarZonas()">
                         <option value="">Todos los estados</option>
