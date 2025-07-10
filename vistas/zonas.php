@@ -1,8 +1,6 @@
 <?php
-
 session_start();
 if (!isset($_SESSION['usuario_id'])) {
-    // Si no ha iniciado sesión, lo redirigimos al login
     header("Location: ../login.html");
     exit;
 }
@@ -72,21 +70,20 @@ $nombreCompleto = $nombre . ' ' . $apellido;
     <div class="main-content" id="mainContent">
         <div class="header">
             <h2>Gestión de Zonas de Entrega</h2>
-            <div class="user-info" onclick="showUserMenu()">
+            <div class="user-info">
                 <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Usuario" />
                 <span>Bienvenido, <strong id="userName"><?php echo htmlspecialchars($nombreCompleto); ?></strong></span>
             </div>
         </div>
-
         <div class="users-section">
             <div class="users-actions">
                 <div class="search-and-filter">
                     <div class="search-bar">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" class="form-control" placeholder="Buscar zona..." oninput="filterZonas()">
-                        <button class="btn btn-search" onclick="filterZonas()">Buscar</button>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Buscar zona o ciudad..." oninput="cargarZonas()">
+                        <button class="btn btn-search" onclick="cargarZonas()">Buscar</button>
                     </div>
-                    <select id="filterStatus" class="filter-select" onchange="filterZonas()">
+                    <select id="filterStatus" class="filter-select" onchange="cargarZonas()">
                         <option value="">Todos los estados</option>
                         <option value="activo">Activo</option>
                         <option value="inactivo">Inactivo</option>
@@ -109,44 +106,39 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="zonasTableBody">
-                        <tr>
-                            <td>1</td>
-                            <td>Norte</td>
-                            <td>Ciudad Principal</td>
-                            <td>$5.000</td>
-                            <td><span class="estado-activo">Activo</span></td>
-                            <td>
-                                <button class="btn btn-editar" onclick="editarZona(1)"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-eliminar" onclick="eliminarZona(1)"><i class="fas fa-trash-alt"></i></button>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="zonasTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Edición -->
-    <div id="modalEditar" class="modal">
+    <!-- Modal único para editar / crear -->
+    <div id="modalZona" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Editar Zona</h2>
-                <span class="close" onclick="closeModal('modalEditar')">×</span>
+                <h2 id="modalTitle">Zona</h2>
+                <span class="close" onclick="closeModal('modalZona')">×</span>
             </div>
-            <form id="formEditar">
+            <form id="formZona">
                 <input type="hidden" id="zonaId" name="id">
                 <div class="form-group">
-                    <label for="nombre">Nombre de la Zona:</label>
-                    <input type="text" id="nombre" name="nombre" class="form-control" required placeholder="Ej. Norte">
+                    <label for="nuevoNombre">Nombre de la Zona:</label>
+                    <select id="nuevoNombre" name="nombre" class="form-control" required>
+                        <option value="">Selecciona una zona</option>
+                        <option value="Norte">Norte</option>
+                        <option value="Sur">Sur</option>
+                        <option value="Centro">Centro</option>
+                        <option value="Occidente">Occidente</option>
+                        <option value="Oriente">Oriente</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="ciudad">Ciudad:</label>
-                    <input type="text" id="ciudad" name="ciudad" class="form-control" required placeholder="Ej. Ciudad Principal">
+                    <input type="text" id="ciudad" name="ciudad" class="form-control" required placeholder="Ej. Bogotá">
                 </div>
                 <div class="form-group">
                     <label for="tarifa">Tarifa Base:</label>
-                    <input type="number" id="tarifa" name="tarifa" class="form-control" required placeholder="Ej. 5000">
+                    <input type="number" id="tarifa" name="tarifa" class="form-control" required placeholder="Ej. 5000" min="0" step="1">
                 </div>
                 <div class="form-group">
                     <label for="estado">Estado:</label>
@@ -156,161 +148,138 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                     </select>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalEditar')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Nueva Zona -->
-    <div id="modalNueva" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Nueva Zona</h2>
-                <span class="close" onclick="closeModal('modalNueva')">×</span>
-            </div>
-            <form id="formNueva">
-                <div class="form-group">
-                    <label for="nuevoNombre">Nombre de la Zona:</label>
-                    <input type="text" id="nuevoNombre" name="nombre" class="form-control" required placeholder="Ej. Norte">
-                </div>
-                <div class="form-group">
-                    <label for="nuevoCiudad">Ciudad:</label>
-                    <input type="text" id="nuevoCiudad" name="ciudad" class="form-control" required placeholder="Ej. Ciudad Principal">
-                </div>
-                <div class="form-group">
-                    <label for="nuevoTarifa">Tarifa Base:</label>
-                    <input type="number" id="nuevoTarifa" name="tarifa" class="form-control" required placeholder="Ej. 5000">
-                </div>
-                <div class="form-group">
-                    <label for="nuevoEstado">Estado:</label>
-                    <select id="nuevoEstado" name="estado" class="form-control" required>
-                        <option value="activo">Activo</option>
-                        <option value="inactivo">Inactivo</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalNueva')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Crear Zona</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalZona')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar Zona</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Variables globales
-        let currentZonaId = null;
-
-        // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
-            setupEventListeners();
+            document.getElementById('formZona').addEventListener('submit', guardarZona);
+            cargarZonas();
         });
 
-        function setupEventListeners() {
-            document.getElementById('sidebarToggle').addEventListener('click', function() {
-                document.getElementById('sidebar').classList.toggle('collapsed');
-            });
-
-            document.addEventListener('click', function(e) {
-                const sidebar = document.getElementById('sidebar');
-                const toggle = document.getElementById('sidebarToggle');
-                if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-                    sidebar.classList.remove('collapsed');
-                }
-            });
-
-            document.getElementById('searchInput').addEventListener('input', filterZonas);
-            document.getElementById('filterStatus').addEventListener('change', filterZonas);
-            document.getElementById('formEditar').addEventListener('submit', handleZonaSubmit);
-            document.getElementById('formNueva').addEventListener('submit', handleNewZonaSubmit);
-        }
-
-        function showUserMenu() {
-            window.location.href = 'menuUsu.html';
-        }
-
-        function editarZona(id) {
-            currentZonaId = id;
-            document.getElementById('modalTitle').textContent = 'Editar Zona';
-            document.getElementById('zonaId').value = id;
-
-            if (id === 1) {
-                document.getElementById('nombre').value = 'Norte';
-                document.getElementById('ciudad').value = 'Ciudad Principal';
-                document.getElementById('tarifa').value = 5000;
-                document.getElementById('estado').value = 'activo';
-            }
-
-            document.getElementById('modalEditar').style.display = 'block';
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
         }
 
         function abrirModalNueva() {
-            document.getElementById('modalNueva').style.display = 'block';
-            document.getElementById('formNueva').reset();
+            document.getElementById('formZona').reset();
+            document.getElementById('zonaId').value = '';
+            document.getElementById('modalTitle').textContent = 'Nueva Zona';
+            document.getElementById('modalZona').style.display = 'block';
+        }
+
+        function editarZona(id) {
+            fetch('../servicios/obtener_zona_por_id.php?id=' + id)
+                .then(res => res.json())
+                .then(zona => {
+                    if (zona.error) {
+                        alert('Error: ' + zona.error);
+                        return;
+                    }
+                    document.getElementById('modalTitle').textContent = 'Editar Zona';
+                    document.getElementById('zonaId').value = zona.id_zona;
+                    document.getElementById('nuevoNombre').value = zona.nombre;
+                    document.getElementById('ciudad').value = zona.ciudad;
+                    document.getElementById('tarifa').value = zona.tarifa_base;
+                    document.getElementById('estado').value = zona.estado;
+                    document.getElementById('modalZona').style.display = 'block';
+                })
+                .catch(error => alert('Error al cargar la zona: ' + error.message));
         }
 
         function eliminarZona(id) {
             if (confirm('¿Estás seguro de que deseas eliminar esta zona?')) {
-                alert(`Zona con ID ${id} eliminada`);
-                document.getElementById('zonasTableBody').innerHTML = '';
+                const formData = new FormData();
+                formData.append('id', id);
+
+                fetch('../servicios/eliminar_zona.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Zona eliminada exitosamente');
+                            cargarZonas();
+                        } else {
+                            alert('Error al eliminar la zona: ' + (data.error || 'Desconocido'));
+                        }
+                    })
+                    .catch(error => alert('Error al eliminar la zona: ' + error.message));
             }
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        function filterZonas() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
-            const rows = document.querySelectorAll('#zonasTableBody tr');
-
-            rows.forEach(row => {
-                const zonaName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const status = row.querySelector('.estado-activo, .estado-inactivo').textContent.toLowerCase();
-
-                const matchesSearch = zonaName.includes(searchTerm);
-                const matchesStatus = !statusFilter || status === statusFilter;
-
-                if (matchesSearch && matchesStatus) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        function handleZonaSubmit(e) {
+        function guardarZona(e) {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const zonaData = Object.fromEntries(formData.entries());
+            const form = e.target;
+            const tarifa = form.tarifa.value;
 
-            console.log('Zona actualizada:', zonaData);
-            alert('Zona actualizada exitosamente');
-            closeModal('modalEditar');
-        }
-
-        function handleNewZonaSubmit(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const nuevaZonaData = Object.fromEntries(formData.entries());
-
-            console.log('Nueva zona creada:', nuevaZonaData);
-            alert('Nueva zona creada exitosamente');
-            closeModal('modalNueva');
-        }
-
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
+            // Validación en el frontend
+            if (tarifa < 0) {
+                alert('La tarifa base no puede ser negativa');
+                return;
             }
+
+            const formData = new FormData(form);
+
+            fetch('../servicios/guardar_zona.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Zona guardada exitosamente');
+                        closeModal('modalZona');
+                        cargarZonas();
+                    } else {
+                        alert('Error al guardar la zona: ' + (data.error || 'Desconocido'));
+                    }
+                })
+                .catch(error => alert('Error al guardar la zona: ' + error.message));
         }
 
-        window.editarZona = editarZona;
-        window.abrirModalNueva = abrirModalNueva;
-        window.eliminarZona = eliminarZona;
-        window.showUserMenu = showUserMenu;
+        function removeAccents(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function cargarZonas() {
+            const search = removeAccents(document.getElementById('searchInput').value.toLowerCase());
+            const estado = document.getElementById('filterStatus').value;
+
+            fetch('../servicios/obtener_zonas.php')
+                .then(res => res.json())
+                .then(zonas => {
+                    const tbody = document.getElementById('zonasTableBody');
+                    tbody.innerHTML = '';
+
+                    zonas.forEach(z => {
+                        const nombreZona = removeAccents(z.nombre.toLowerCase());
+                        const ciudadZona = removeAccents(z.ciudad.toLowerCase());
+                        const estadoZona = z.estado;
+
+                        if ((nombreZona.includes(search) || ciudadZona.includes(search) || !search) && (!estado || estado === estadoZona)) {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${z.id_zona}</td>
+                                <td>${z.nombre}</td>
+                                <td>${z.ciudad}</td>
+                                <td>$${parseInt(z.tarifa_base).toLocaleString()}</td>
+                                <td><span class="estado-${estadoZona}">${estadoZona.charAt(0).toUpperCase() + estadoZona.slice(1)}</span></td>
+                                <td>
+                                    <button class="btn btn-editar" onclick="editarZona(${z.id_zona})"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-eliminar" onclick="eliminarZona(${z.id_zona})"><i class="fas fa-trash-alt"></i></button>
+                                </td>`;
+                            tbody.appendChild(tr);
+                        }
+                    });
+                })
+                .catch(error => alert('Error al cargar las zonas: ' + error.message));
+        }
     </script>
 </body>
 
