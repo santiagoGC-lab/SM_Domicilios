@@ -323,7 +323,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         document.getElementById('formNuevoPedido').onsubmit = function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            const url = document.getElementById('id_pedido').value ? '../servicios/actualizar_pedido.php' : '../procesar_pedido.php';
+            const url = document.getElementById('id_pedido').value ? '../servicios/actualizar_pedido.php' : '../servicios/procesar_pedido.php';
             fetch(url, {
                     method: 'POST',
                     body: formData

@@ -395,14 +395,14 @@
     font-size: 0.9em;
     font-weight: 500;
     background-color: var(--regular-color);
-    color: white;
+    color: black;
     text-transform: capitalize;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 80%;
     height: 100%;
-    color: #856404;
+    background-color: #dbb647;
 }
 
 .estado-en_camino {
