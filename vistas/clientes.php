@@ -55,10 +55,6 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
-            <a href="configuracion.php" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span class="menu-text">Configuración</span>
-            </a>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
                 <i class="fas fa-sign-out-alt"></i>
                 <span class="menu-text">Cerrar Sesión</span>

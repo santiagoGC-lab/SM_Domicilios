@@ -1,15 +1,66 @@
 <?php
-
 session_start();
-
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: ../login.php?error=" . urlencode("Debes iniciar sesión para acceder."));
+    header("Location: ../login.html");
     exit;
 }
 
-$nombre = $_SESSION['nombre'] ?? '';
-$apellido = $_SESSION['apellido'] ?? '';
-$nombreCompleto = $nombre . ' ' . $apellido;
+require_once '../servicios/conexion.php';
+
+// Obtener estadísticas en tiempo real
+try {
+    // Estadísticas principales
+    $pedidosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
+    $pedidosEntregadosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn();
+    $pedidosPendientes = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente'")->fetchColumn();
+    $ingresosHoy = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
+    
+    // Domiciliarios
+    $domiciliariosActivos = $pdo->query("SELECT COUNT(*) FROM domiciliarios WHERE estado IN ('disponible', 'ocupado')")->fetchColumn();
+    $domiciliariosDisponibles = $pdo->query("SELECT COUNT(*) FROM domiciliarios WHERE estado = 'disponible'")->fetchColumn();
+    $domiciliariosOcupados = $pdo->query("SELECT COUNT(*) FROM domiciliarios WHERE estado = 'ocupado'")->fetchColumn();
+    
+    // Clientes activos
+    $clientesActivos = $pdo->query("SELECT COUNT(*) FROM clientes WHERE estado = 'activo'")->fetchColumn();
+    
+    // Zonas activas
+    $zonasActivas = $pdo->query("SELECT COUNT(*) FROM zonas WHERE estado = 'activo'")->fetchColumn();
+    
+    // Actividad reciente (últimos 10 pedidos)
+    $actividadReciente = $pdo->query("
+        SELECT p.id_pedido, c.nombre as cliente, d.nombre as domiciliario, p.estado, p.fecha_pedido, p.total
+        FROM pedidos p
+        LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+        LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+        ORDER BY p.fecha_pedido DESC
+        LIMIT 10
+    ")->fetchAll();
+    
+    // Top domiciliarios del día
+    $topDomiciliarios = $pdo->query("
+        SELECT d.nombre, COUNT(p.id_pedido) as entregas
+        FROM domiciliarios d
+        LEFT JOIN pedidos p ON d.id_domiciliario = p.id_domiciliario 
+        AND p.estado = 'entregado' 
+        AND DATE(p.fecha_pedido) = CURDATE()
+        WHERE d.estado IN ('disponible', 'ocupado')
+        GROUP BY d.id_domiciliario, d.nombre
+        ORDER BY entregas DESC
+        LIMIT 5
+    ")->fetchAll();
+    
+    // Pedidos por estado (para gráfico)
+    $pedidosPorEstado = $pdo->query("
+        SELECT estado, COUNT(*) as total
+        FROM pedidos
+        WHERE DATE(fecha_pedido) = CURDATE()
+        GROUP BY estado
+        ORDER BY total DESC
+    ")->fetchAll();
+    
+} catch (Exception $e) {
+    $error = $e->getMessage();
+}
 ?>
 
 <!DOCTYPE html>
@@ -25,13 +76,10 @@ $nombreCompleto = $nombre . ' ' . $apellido;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
-    <button class="sidebar-toggle" id="sidebarToggle">
-        <i class="fas fa-bars"></i>
-    </button>
-
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="../componentes/img/logo2.png" alt="Logo" />
@@ -61,10 +109,6 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
-            <a href="configuracion.php" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span class="menu-text">Configuración</span>
-            </a>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
                 <i class="fas fa-sign-out-alt"></i>
                 <span class="menu-text">Cerrar Sesión</span>
@@ -72,15 +116,18 @@ $nombreCompleto = $nombre . ' ' . $apellido;
         </div>
     </div>
 
-    <div class="main-content" id="mainContent">
+    <div class="main-content">
         <div class="header">
-            <h2>Panel de Control - Domicilios</h2>
-            <div class="user-info" onclick="showUserMenu()">
-                <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Usuario" />
-                <span>Bienvenido, <strong id="userName"><?php echo htmlspecialchars($nombreCompleto); ?></strong></span>
+            <h2>Panel de Control - SM Domicilios</h2>
+            <div class="header-actions">
+                <button class="btn-login" onclick="actualizarDashboard()">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                </button>
+                <span class="last-update">Última actualización: <?php echo date('H:i:s'); ?></span>
             </div>
         </div>
 
+        <!-- Tarjetas principales -->
         <div class="dashboard-cards">
             <div class="card" onclick="navigateTo('pedidos.php')">
                 <div class="card-header">
@@ -89,8 +136,8 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                         <i class="fas fa-shopping-bag"></i>
                     </div>
                 </div>
-                <div class="card-value" id="totalPedidos">25</div>
-                <div class="card-footer">10 en proceso, 15 entregados</div>
+                <div class="card-value"><?php echo number_format($pedidosHoy); ?></div>
+                <div class="card-footer"><?php echo $pedidosEntregadosHoy; ?> entregados</div>
             </div>
 
             <div class="card" onclick="navigateTo('domiciliarios.php')">
@@ -100,120 +147,203 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                         <i class="fas fa-motorcycle"></i>
                     </div>
                 </div>
-                <div class="card-value" id="domiciliariosActivos">8</div>
-                <div class="card-footer">5 en ruta, 3 disponibles</div>
+                <div class="card-value"><?php echo number_format($domiciliariosActivos); ?></div>
+                <div class="card-footer"><?php echo $domiciliariosDisponibles; ?> disponibles</div>
             </div>
 
             <div class="card" onclick="navigateTo('pedidos.php?estado=pendiente')">
                 <div class="card-header">
-                    <h3 class="card-title">Tiempo Promedio</h3>
+                    <h3 class="card-title">Pedidos Pendientes</h3>
                     <div class="card-icon">
                         <i class="fas fa-clock"></i>
                     </div>
                 </div>
-                <div class="card-value" id="tiempoPromedio">35 min</div>
-                <div class="card-footer">Meta: 30 minutos</div>
+                <div class="card-value"><?php echo number_format($pedidosPendientes); ?></div>
+                <div class="card-footer">Requieren atención</div>
             </div>
 
-            <div class="card" onclick="showAlerts()">
+            <div class="card" onclick="navigateTo('reportes.php')">
                 <div class="card-header">
-                    <h3 class="card-title">Pedidos Pendientes</h3>
+                    <h3 class="card-title">Ingresos Hoy</h3>
                     <div class="card-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
+                        <i class="fas fa-dollar-sign"></i>
                     </div>
                 </div>
-                <div class="card-value" id="pedidosPendientes">5</div>
-                <div class="card-footer">Requieren atención inmediata</div>
+                <div class="card-value">$<?php echo number_format($ingresosHoy, 2); ?></div>
+                <div class="card-footer">Pedidos entregados</div>
             </div>
         </div>
 
-        <div class="recent-activity">
-            <div class="activity-header">
-                <h3>Actividad Reciente</h3>
-                <a href="#" class="btn-login" onclick="refreshActivity()">Actualizar</a>
+        <!-- Contenido principal -->
+        <div class="dashboard-content">
+            <!-- Gráfico y estadísticas -->
+            <div class="dashboard-left">
+                <!-- Gráfico de pedidos por estado -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Pedidos por Estado (Hoy)</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="estadosChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top domiciliarios -->
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <h3>Top Domiciliarios del Día</h3>
+                    </div>
+                    <div class="stats-list">
+                        <?php if (empty($topDomiciliarios)): ?>
+                            <p class="no-data">No hay entregas registradas hoy</p>
+                        <?php else: ?>
+                            <?php foreach ($topDomiciliarios as $index => $domiciliario): ?>
+                                <div class="stat-item">
+                                    <div class="stat-rank">#<?php echo $index + 1; ?></div>
+                                    <div class="stat-info">
+                                        <div class="stat-name"><?php echo htmlspecialchars($domiciliario['nombre']); ?></div>
+                                        <div class="stat-value"><?php echo $domiciliario['entregas']; ?> entregas</div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
 
-            <ul class="activity-list" id="activityList">
-                <li class="activity-item" onclick="showActivityDetails(1)">
-                    <div class="activity-icon">
-                        <i class="fas fa-check-circle"></i>
+            <!-- Actividad reciente -->
+            <div class="dashboard-right">
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <h3>Actividad Reciente</h3>
+                        <button class="btn-refresh" onclick="actualizarActividad()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
                     </div>
-                    <div class="activity-details">
-                        <div class="activity-title">Pedido #123 entregado exitosamente</div>
-                        <div class="activity-time">Hace 10 minutos - por Juan Pérez</div>
+                    <div class="activity-list">
+                        <?php if (empty($actividadReciente)): ?>
+                            <p class="no-data">No hay actividad reciente</p>
+                        <?php else: ?>
+                            <?php foreach ($actividadReciente as $actividad): ?>
+                                <div class="activity-item" onclick="verPedido(<?php echo $actividad['id_pedido']; ?>)">
+                                    <div class="activity-icon">
+                                        <?php 
+                                        switch ($actividad['estado']) {
+                                            case 'entregado':
+                                                echo '<i class="fas fa-check-circle" style="color: #2ed573;"></i>';
+                                                break;
+                                            case 'pendiente':
+                                                echo '<i class="fas fa-clock" style="color: #ffa502;"></i>';
+                                                break;
+                                            case 'cancelado':
+                                                echo '<i class="fas fa-times-circle" style="color: #ff4757;"></i>';
+                                                break;
+                                            default:
+                                                echo '<i class="fas fa-shopping-bag" style="color: #747d8c;"></i>';
+                                        }
+                                        ?>
+                                    </div>
+                                    <div class="activity-details">
+                                        <div class="activity-title">
+                                            Pedido #<?php echo $actividad['id_pedido']; ?> - 
+                                            <?php echo htmlspecialchars($actividad['cliente']); ?>
+                                        </div>
+                                        <div class="activity-subtitle">
+                                            <?php echo ucfirst($actividad['estado']); ?> - 
+                                            $<?php echo number_format($actividad['total'], 2); ?>
+                                        </div>
+                                        <div class="activity-time">
+                                            <?php echo date('H:i', strtotime($actividad['fecha_pedido'])); ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
-                </li>
+                </div>
 
-                <li class="activity-item" onclick="showActivityDetails(2)">
-                    <div class="activity-icon">
-                        <i class="fas fa-motorcycle"></i>
+                <!-- Resumen rápido -->
+                <div class="quick-stats">
+                    <div class="quick-stat">
+                        <div class="quick-stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="quick-stat-info">
+                            <div class="quick-stat-value"><?php echo number_format($clientesActivos); ?></div>
+                            <div class="quick-stat-label">Clientes Activos</div>
+                        </div>
                     </div>
-                    <div class="activity-details">
-                        <div class="activity-title">Nuevo pedido asignado a domiciliario</div>
-                        <div class="activity-time">Hace 15 minutos - Pedido #124</div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <div class="quick-stat-info">
+                            <div class="quick-stat-value"><?php echo number_format($zonasActivas); ?></div>
+                            <div class="quick-stat-label">Zonas Activas</div>
+                        </div>
                     </div>
-                </li>
-
-                <li class="activity-item" onclick="showActivityDetails(3)">
-                    <div class="activity-icon">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                    <div class="activity-details">
-                        <div class="activity-title">Nuevo cliente registrado</div>
-                        <div class="activity-time">Hace 30 minutos - María López</div>
-                    </div>
-                </li>
-            </ul>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeDashboard();
-            setupEventListeners();
-            loadDashboardData();
+        // Datos para el gráfico
+        const estadosData = <?php echo json_encode($pedidosPorEstado); ?>;
+        
+        // Gráfico de pedidos por estado
+        const ctx = document.getElementById('estadosChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: estadosData.map(item => item.estado.charAt(0).toUpperCase() + item.estado.slice(1)),
+                datasets: [{
+                    data: estadosData.map(item => item.total),
+                    backgroundColor: ['#2ed573', '#ffa502', '#ff4757', '#747d8c'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
         });
 
-        function initializeDashboard() {
-            const cards = document.querySelectorAll('.card');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-            });
-        }
-
-        function setupEventListeners() {
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                document.getElementById('mainContent').classList.toggle('expanded');
-            });
-        }
-
-        function loadDashboardData() {
-            // Aquí irían las llamadas a la API para cargar datos en tiempo real
-        }
-
-        function showUserMenu() {
-            // Implementar menú de usuario
-        }
-
+        // Funciones de navegación
         function navigateTo(url) {
             window.location.href = url;
         }
 
-        function showAlerts() {
-            // Implementar vista de alertas
+        function verPedido(id) {
+            window.location.href = `pedidos.php?pedido=${id}`;
         }
 
-        function refreshActivity() {
-            // Actualizar lista de actividades
+        function actualizarDashboard() {
+            location.reload();
         }
 
-        function showActivityDetails(id) {
-            // Mostrar detalles de la actividad
+        function actualizarActividad() {
+            // Aquí se podría implementar una actualización AJAX
+            location.reload();
         }
+
+        // Actualizar automáticamente cada 5 minutos
+        setInterval(() => {
+            const lastUpdate = document.querySelector('.last-update');
+            if (lastUpdate) {
+                lastUpdate.textContent = 'Última actualización: ' + new Date().toLocaleTimeString();
+            }
+        }, 300000); // 5 minutos
     </script>
 </body>
 

@@ -1,68 +1,69 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+if (!isset($_SESSION['usuario_id'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'No autorizado']);
+    exit;
+}
+
+require_once 'conexion.php';
+
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=sm_domicilios", "root", "root"); // Cambia "tu_contraseña"
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Validar datos
-    $id_cliente = $_POST['id_cliente'] ?? null;
-    $id_domiciliario = $_POST['id_domiciliario'] ?? null;
-    $id_zona = $_POST['id_zona'] ?? null;
-    $estado = $_POST['estado'] ?? 'pendiente';
-    $bolsas = $_POST['bolsas'] ?? null;
-    $total = $_POST['total'] ?? null;
-
-    if (!$id_cliente || !$id_domiciliario || !$id_zona || !$bolsas || !$total) {
-        throw new Exception("Todos los campos son obligatorios, incluido el repartidor");
+    // Validar datos requeridos
+    $required_fields = ['id_cliente', 'id_zona', 'id_domiciliario', 'estado', 'bolsas', 'total'];
+    foreach ($required_fields as $field) {
+        if (!isset($_POST[$field]) || empty($_POST[$field])) {
+            throw new Exception("Campo requerido: $field");
+        }
     }
-
-    // Verificar que el cliente exista y esté activo
+    
+    $id_cliente = intval($_POST['id_cliente']);
+    $id_zona = intval($_POST['id_zona']);
+    $id_domiciliario = intval($_POST['id_domiciliario']);
+    $estado = $_POST['estado'];
+    $cantidad_paquetes = intval($_POST['bolsas']);
+    $total = floatval($_POST['total']);
+    $tiempo_estimado = intval($_POST['tiempo_estimado'] ?? 30);
+    
+    // Validar que el cliente existe
     $stmt = $pdo->prepare("SELECT id_cliente FROM clientes WHERE id_cliente = ? AND estado = 'activo'");
     $stmt->execute([$id_cliente]);
     if (!$stmt->fetch()) {
-        throw new Exception("Cliente no encontrado o inactivo");
+        throw new Exception('Cliente no válido');
     }
-
-    // Verificar que la zona exista y esté activa
+    
+    // Validar que la zona existe
     $stmt = $pdo->prepare("SELECT id_zona FROM zonas WHERE id_zona = ? AND estado = 'activo'");
     $stmt->execute([$id_zona]);
     if (!$stmt->fetch()) {
-        throw new Exception("Zona no encontrada o inactiva");
+        throw new Exception('Zona no válida');
     }
-
-    // Verificar que el domiciliario exista y esté disponible
+    
+    // Validar que el domiciliario existe y está disponible
     $stmt = $pdo->prepare("SELECT id_domiciliario FROM domiciliarios WHERE id_domiciliario = ? AND estado = 'disponible'");
     $stmt->execute([$id_domiciliario]);
     if (!$stmt->fetch()) {
-        throw new Exception("Domiciliario no encontrado o no disponible");
+        throw new Exception('Domiciliario no disponible');
     }
-
-    // Iniciar transacción
-    $pdo->beginTransaction();
-
-    // Actualizar el estado y zona del domiciliario
-    $stmt = $pdo->prepare("UPDATE domiciliarios SET estado = 'ocupado', id_zona = ? WHERE id_domiciliario = ?");
-    $stmt->execute([$id_zona, $id_domiciliario]);
-
-    // Insertar pedido
-    $stmt = $pdo->prepare("INSERT INTO pedidos (id_cliente, id_domiciliario, id_zona, estado, cantidad_paquetes, total) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$id_cliente, $id_domiciliario, $id_zona, $estado, $bolsas, $total]);
-    $id_pedido = $pdo->lastInsertId();
-
-    // Registrar actividad
-    $stmt = $pdo->prepare("INSERT INTO actividad_reciente (tipo_actividad, descripcion, id_usuario, id_pedido) VALUES (?, ?, ?, ?)");
-    $descripcion = "Nuevo pedido creado para el cliente ID $id_cliente en la zona ID $id_zona asignado al domiciliario ID $id_domiciliario";
-    $stmt->execute(['pedido_asignado', $descripcion, $_SESSION['usuario_id'], $id_pedido]);
-
-    // Confirmar transacción
-    $pdo->commit();
-
-    echo json_encode(['success' => true]);
+    
+    // Insertar el pedido
+    $stmt = $pdo->prepare("
+        INSERT INTO pedidos (id_cliente, id_zona, id_domiciliario, estado, cantidad_paquetes, total, tiempo_estimado, fecha_pedido)
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+    ");
+    
+    $stmt->execute([$id_cliente, $id_zona, $id_domiciliario, $estado, $cantidad_paquetes, $total, $tiempo_estimado]);
+    
+    // Actualizar estado del domiciliario según el estado del pedido
+    if ($estado === 'entregado' || $estado === 'cancelado') {
+        $stmt = $pdo->prepare("UPDATE domiciliarios SET estado = 'disponible' WHERE id_domiciliario = ?");
+        $stmt->execute([$id_domiciliario]);
+    }
+    
+    echo json_encode(['success' => true, 'message' => 'Pedido creado exitosamente']);
+    
 } catch (Exception $e) {
-    // Revertir transacción en caso de error
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
+    http_response_code(400);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+?> 

@@ -444,7 +444,7 @@
     align-items: center;
     width: 80%;
     height: 100%;
-    background-color: #721c24;
+    background-color: #ef5e6d;
 }
 
 /* Estilos para el formulario de pedidos */
@@ -494,8 +494,124 @@
 }
 
 .btn-editar:hover {
-    background-color: var(--primary-color);
+    background-color: var(--secondary-color);
 }
+
+.btn-eliminar {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.btn-eliminar:hover {
+    background-color: #c82333;
+}
+
+/* Estilos para notificaciones */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.notification-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ff4757;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    animation: pulse 2s infinite;
+}
+
+.badge-count {
+    background: white;
+    color: #ff4757;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Estilos para botones de acción */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+
+
+.btn-entregar {
+    background-color: #2ed573;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.btn-entregar:hover {
+    background-color: #26d0ce;
+}
+
+.btn-cancelar {
+    background-color: #ff4757;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.btn-cancelar:hover {
+    background-color: #ff3742;
+}
+
+/* Estilos para tiempo */
+
+.tiempo-pendiente {
+    color: #747d8c;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.tiempo-entregado {
+    color: #2ed573;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.tiempo-cancelado {
+    color: #ff4757;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+
 
 @media (max-width: 768px) {
     .producto-item {

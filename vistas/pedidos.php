@@ -20,7 +20,7 @@ $revenueToday = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entr
 
 // Obtener pedidos recientes
 $stmt = $pdo->query("
-    SELECT p.id_pedido, c.nombre AS cliente, c.documento, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.id_cliente, p.id_domiciliario, p.id_zona, p.cantidad_paquetes, p.total
+    SELECT p.id_pedido, c.nombre AS cliente, c.documento, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.id_cliente, p.id_domiciliario, p.id_zona, p.cantidad_paquetes, p.total, p.tiempo_estimado
     FROM pedidos p
     LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
     LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
@@ -63,14 +63,22 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <a href="domiciliarios.php" class="menu-item"><i class="fas fa-motorcycle"></i><span class="menu-text">Domiciliarios</span></a>
             <a href="zonas.php" class="menu-item"><i class="fas fa-map-marked-alt"></i><span class="menu-text">Zonas de Entrega</span></a>
             <a href="reportes.php" class="menu-item"><i class="fas fa-chart-bar"></i><span class="menu-text">Reportes</span></a>
-            <a href="configuracion.php" class="menu-item"><i class="fas fa-cog"></i><span class="menu-text">Configuración</span></a>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar"><i class="fas fa-sign-out-alt"></i><span class="menu-text">Cerrar Sesión</span></a>
         </div>
     </div>
 
     <div class="main-content">
         <div class="header">
-            <h2>Gestión de Pedidos</h2>
+            <div class="header-left">
+                <h2>Gestión de Pedidos</h2>
+                <?php if ($pendingOrders > 0): ?>
+                    <div class="notification-badge">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge-count"><?php echo $pendingOrders; ?></span>
+                        <span class="badge-text">Pedidos pendientes</span>
+                    </div>
+                <?php endif; ?>
+            </div>
             <div class="search-bar">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Buscar pedidos..." id="searchInput">
@@ -89,7 +97,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     <h3 class="card-title">Pedidos Pendientes</h3>
                 </div>
                 <div class="card-value"><?php echo $pendingOrders; ?></div>
-                <div class="card-footer">Actualizado hace 5 minutos</div>
             </div>
             <div class="card">
                 <div class="card-header">
@@ -97,7 +104,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     <h3 class="card-title">Completados Hoy</h3>
                 </div>
                 <div class="card-value"><?php echo $completedToday; ?></div>
-                <div class="card-footer">Actualizado hace 5 minutos</div>
             </div>
             <div class="card">
                 <div class="card-header">
@@ -105,7 +111,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     <h3 class="card-title">Ingresos del Día</h3>
                 </div>
                 <div class="card-value">$<?php echo number_format($revenueToday, 2); ?></div>
-                <div class="card-footer">Actualizado hace 5 minutos</div>
             </div>
         </div>
 
@@ -119,6 +124,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             <th>Domiciliario</th>
                             <th>Estado</th>
                             <th>Fecha</th>
+                            <th>Tiempo</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -131,7 +137,31 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                                 <td><span class="estado-<?php echo strtolower($pedido['estado']); ?> estado"><?php echo ucfirst($pedido['estado']); ?></span></td>
                                 <td><?php echo date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])); ?></td>
                                 <td>
-                                    <button class="btn btn-editar" onclick="editarPedido(<?php echo $pedido['id_pedido']; ?>)"><i class="fas fa-edit"></i></button>
+                                    <?php 
+                                    $tiempo_estimado = $pedido['tiempo_estimado'] ?? 30; // 30 minutos por defecto
+                                    
+                                    if ($pedido['estado'] === 'pendiente') {
+                                        echo "<span class='tiempo-pendiente'>⏳ {$tiempo_estimado} min</span>";
+                                    } elseif ($pedido['estado'] === 'entregado') {
+                                        echo "<span class='tiempo-entregado'>✅ Entregado</span>";
+                                    } else {
+                                        echo "<span class='tiempo-cancelado'>❌ Cancelado</span>";
+                                    }
+                                    ?>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <?php if ($pedido['estado'] === 'pendiente'): ?>
+                                            <button class="btn btn-entregar" onclick="cambiarEstado(<?php echo $pedido['id_pedido']; ?>, 'entregado')" title="Marcar como entregado"><i class="fas fa-check"></i></button>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (in_array($pedido['estado'], ['pendiente'])): ?>
+                                            <button class="btn btn-cancelar" onclick="cambiarEstado(<?php echo $pedido['id_pedido']; ?>, 'cancelado')" title="Cancelar pedido"><i class="fas fa-times"></i></button>
+                                        <?php endif; ?>
+                                        
+                                        <button class="btn btn-editar" onclick="editarPedido(<?php echo $pedido['id_pedido']; ?>)" title="Editar"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-eliminar" onclick="eliminarPedido(<?php echo $pedido['id_pedido']; ?>)" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -183,7 +213,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     <label for="estado">Estado:</label>
                     <select id="estado" name="estado" class="form-control" required>
                         <option value="pendiente">Pendiente</option>
-                        <option value="en_camino">En Camino</option>
                         <option value="entregado">Entregado</option>
                         <option value="cancelado">Cancelado</option>
                     </select>
@@ -195,6 +224,10 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 <div class="form-group">
                     <label for="total">Total:</label>
                     <input type="number" id="total" name="total" class="form-control" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="tiempo_estimado">Tiempo estimado (minutos):</label>
+                    <input type="number" id="tiempo_estimado" name="tiempo_estimado" class="form-control" min="15" max="120" value="30" required>
                 </div>
                 <button type="submit" class="btn-login">Guardar</button>
                 <button type="button" class="btn-login" onclick="cerrarModal('modalNuevoPedido')">Cancelar</button>
@@ -211,6 +244,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             form.reset();
             document.getElementById('id_pedido').value = '';
             document.getElementById('total').value = '';
+            document.getElementById('tiempo_estimado').value = '30';
             modal.classList.add('active');
             setupFormListeners();
         }
@@ -238,6 +272,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     document.getElementById('estado').value = data.estado || 'pendiente';
                     document.getElementById('bolsas').value = data.cantidad_paquetes || 1;
                     document.getElementById('total').value = parseFloat(data.total || 0).toFixed(2);
+                    document.getElementById('tiempo_estimado').value = data.tiempo_estimado || 30;
                     modal.classList.add('active');
                     setupFormListeners();
                 })
@@ -282,7 +317,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
 
         function buscarPedido() {
             const searchInput = document.getElementById('searchInput').value;
-            fetch('../buscar_pedido.php', {
+            fetch('../servicios/buscar_pedido.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -303,13 +338,38 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     tbody.innerHTML = '';
                     data.forEach(order => {
                         const tr = document.createElement('tr');
+                        const tiempoEstimado = order.tiempo_estimado || 30;
+                        
+                        let tiempoHtml = '';
+                        if (order.estado === 'pendiente') {
+                            tiempoHtml = `<span class='tiempo-pendiente'>⏳ ${tiempoEstimado} min</span>`;
+                        } else if (order.estado === 'entregado') {
+                            tiempoHtml = `<span class='tiempo-entregado'>✅ Entregado</span>`;
+                        } else {
+                            tiempoHtml = `<span class='tiempo-cancelado'>❌ Cancelado</span>`;
+                        }
+                        
+                        let botonesHtml = '<div class="action-buttons">';
+                        if (order.estado === 'pendiente') {
+                            botonesHtml += `<button class="btn btn-entregar" onclick="cambiarEstado(${order.id_pedido}, 'entregado')" title="Marcar como entregado"><i class="fas fa-check"></i></button>`;
+                        }
+                        
+                        if (['pendiente'].includes(order.estado)) {
+                            botonesHtml += `<button class="btn btn-cancelar" onclick="cambiarEstado(${order.id_pedido}, 'cancelado')" title="Cancelar pedido"><i class="fas fa-times"></i></button>`;
+                        }
+                        
+                        botonesHtml += `<button class="btn btn-editar" onclick="editarPedido(${order.id_pedido})" title="Editar"><i class="fas fa-edit"></i></button>`;
+                        botonesHtml += `<button class="btn btn-eliminar" onclick="eliminarPedido(${order.id_pedido})" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+                        botonesHtml += '</div>';
+                        
                         tr.innerHTML = `
                             <td>#${order.id_pedido}</td>
                             <td>${order.cliente}</td>
                             <td>${order.domiciliario || 'No asignado'}</td>
                             <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
                             <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                            <td><button class="btn btn-editar" onclick="editarPedido(${order.id_pedido})"><i class="fas fa-edit"></i></button></td>
+                            <td>${tiempoHtml}</td>
+                            <td>${botonesHtml}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -318,6 +378,83 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     console.error('Error:', error);
                     alert('Error al buscar pedidos: ' + error.message);
                 });
+        }
+
+        // Agregar evento de búsqueda en tiempo real
+        document.getElementById('searchInput').addEventListener('input', function() {
+            buscarPedido();
+        });
+
+        function eliminarPedido(id) {
+            if (confirm('¿Está seguro de que desea eliminar este pedido?')) {
+                const formData = new FormData();
+                formData.append('id_pedido', id);
+                
+                fetch('../servicios/eliminar_pedido.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('Pedido eliminado exitosamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al eliminar el pedido: ' + error.message);
+                });
+            }
+        }
+
+        function cambiarEstado(id, nuevoEstado) {
+            const estados = {
+                'entregado': 'marcar como entregado',
+                'cancelado': 'cancelar'
+            };
+            
+            if (confirm(`¿Está seguro de que desea ${estados[nuevoEstado]} este pedido?`)) {
+                const formData = new FormData();
+                formData.append('id_pedido', id);
+                formData.append('nuevo_estado', nuevoEstado);
+                
+                fetch('../servicios/cambiar_estado_pedido.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('Estado actualizado exitosamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cambiar el estado: ' + error.message);
+                });
+            }
+        }
+
+        // Función para actualizar contadores de tiempo en tiempo real (simplificada)
+        function actualizarTiempos() {
+            // Por ahora no necesitamos actualización en tiempo real
+            // ya que solo mostramos tiempo estimado para pedidos pendientes
         }
 
         document.getElementById('formNuevoPedido').onsubmit = function(e) {
