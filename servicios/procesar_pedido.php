@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=sm_domicilios", "root", "tu_contraseña"); // Cambia "tu_contraseña"
+    $pdo = new PDO("mysql:host=localhost;dbname=sm_domicilios", "root", "root"); // Cambia "tu_contraseña"
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Validar datos
@@ -66,4 +66,3 @@ try {
     }
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-?>

@@ -20,7 +20,7 @@ $revenueToday = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entr
 
 // Obtener pedidos recientes
 $stmt = $pdo->query("
-    SELECT p.id_pedido, c.nombre AS cliente, d.nombre AS domiciliario, p.estado, p.fecha_pedido
+    SELECT p.id_pedido, c.nombre AS cliente, c.documento, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.id_cliente, p.id_domiciliario, p.id_zona, p.cantidad_paquetes, p.total
     FROM pedidos p
     LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
     LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
@@ -37,6 +37,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,6 +50,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -72,7 +74,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <div class="search-bar">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Buscar pedidos..." id="searchInput">
-                <button class="btn-search" onclick="buscarPedido()">Buscar</button>
             </div>
             <div class="action-buttons">
                 <button class="btn-login" id="btnAddPedido" onclick="abrirModalNuevoPedido()">
@@ -109,26 +110,44 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         </div>
 
         <div class="recent-activity">
-            <div class="activity-header">
-                <h3>Pedidos Recientes</h3>
-            </div>
-            <div class="activity-list">
-                <?php foreach ($recentOrders as $order): ?>
-                    <div class="activity-item">
-                        <span>Pedido #<?php echo $order['id_pedido']; ?> - Cliente: <?php echo htmlspecialchars($order['cliente']); ?> - Estado: <?php echo $order['estado']; ?> - Repartidor: <?php echo htmlspecialchars($order['domiciliario'] ?? 'No asignado'); ?></span>
-                        <span><?php echo date('d/m/Y H:i', strtotime($order['fecha_pedido'])); ?></span>
-                    </div>
-                <?php endforeach; ?>
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Pedido</th>
+                            <th>Cliente</th>
+                            <th>Domiciliario</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recentOrders as $pedido): ?>
+                            <tr>
+                                <td>#<?php echo $pedido['id_pedido']; ?></td>
+                                <td><?php echo htmlspecialchars($pedido['cliente']); ?></td>
+                                <td><?php echo htmlspecialchars($pedido['domiciliario'] ?? 'No asignado'); ?></td>
+                                <td><span class="estado-<?php echo strtolower($pedido['estado']); ?> estado"><?php echo ucfirst($pedido['estado']); ?></span></td>
+                                <td><?php echo date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])); ?></td>
+                                <td>
+                                    <button class="btn btn-editar" onclick="editarPedido(<?php echo $pedido['id_pedido']; ?>)"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Nuevo Pedido -->
+    <!-- Modal de Nuevo/Editar Pedido -->
     <div id="modalNuevoPedido" class="modal">
         <div class="modal-content">
             <span class="close">×</span>
-            <h2>Nuevo Pedido</h2>
+            <h2 id="modalTitle">Nuevo Pedido</h2>
             <form id="formNuevoPedido">
+                <input type="hidden" id="id_pedido" name="id_pedido">
                 <div class="form-group">
                     <label for="numeroDocumento">Cédula:</label>
                     <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-control" required>
@@ -177,7 +196,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     <label for="total">Total:</label>
                     <input type="number" id="total" name="total" class="form-control" step="0.01" required>
                 </div>
-                <button type="submit" class="btn-login">Crear Pedido</button>
+                <button type="submit" class="btn-login">Guardar</button>
                 <button type="button" class="btn-login" onclick="cerrarModal('modalNuevoPedido')">Cancelar</button>
             </form>
         </div>
@@ -186,12 +205,51 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
     <script>
         function abrirModalNuevoPedido() {
             const modal = document.getElementById('modalNuevoPedido');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('formNuevoPedido');
+            modalTitle.textContent = 'Nuevo Pedido';
+            form.reset();
+            document.getElementById('id_pedido').value = '';
+            document.getElementById('total').value = '';
             modal.classList.add('active');
-            document.getElementById('formNuevoPedido').reset();
-            document.getElementById('total').value = ''; // Limpiar el campo total
-            // Sincronizar cédula y cliente
+            setupFormListeners();
+        }
+
+        function editarPedido(id) {
+            fetch(`../servicios/obtener_pedido.php?id=${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error en la solicitud: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    const modal = document.getElementById('modalNuevoPedido');
+                    const modalTitle = document.getElementById('modalTitle');
+                    modalTitle.textContent = 'Editar Pedido';
+                    document.getElementById('id_pedido').value = data.id_pedido || '';
+                    document.getElementById('numeroDocumento').value = data.documento || '';
+                    document.getElementById('id_cliente').value = data.id_cliente || '';
+                    document.getElementById('id_zona').value = data.id_zona || '';
+                    document.getElementById('id_domiciliario').value = data.id_domiciliario || '';
+                    document.getElementById('estado').value = data.estado || 'pendiente';
+                    document.getElementById('bolsas').value = data.cantidad_paquetes || 1;
+                    document.getElementById('total').value = parseFloat(data.total || 0).toFixed(2);
+                    modal.classList.add('active');
+                    setupFormListeners();
+                })
+                .catch(error => {
+                    alert('Error al cargar el pedido: ' + error.message);
+                });
+        }
+
+        function setupFormListeners() {
             const numeroDocumento = document.getElementById('numeroDocumento');
             const idCliente = document.getElementById('id_cliente');
+            const idZona = document.getElementById('id_zona');
             numeroDocumento.addEventListener('input', () => {
                 const selectedOption = Array.from(idCliente.options).find(opt => opt.dataset.documento === numeroDocumento.value);
                 idCliente.value = selectedOption ? selectedOption.value : '';
@@ -200,8 +258,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 const selectedOption = idCliente.options[idCliente.selectedIndex];
                 numeroDocumento.value = selectedOption.dataset.documento || '';
             });
-            // Actualizar total según la zona seleccionada
-            const idZona = document.getElementById('id_zona');
             idZona.addEventListener('change', () => {
                 const selectedOption = idZona.options[idZona.selectedIndex];
                 const tarifa = selectedOption.dataset.tarifa || 0;
@@ -227,64 +283,72 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         function buscarPedido() {
             const searchInput = document.getElementById('searchInput').value;
             fetch('../buscar_pedido.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'query=' + encodeURIComponent(searchInput)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error en la solicitud: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                const activityList = document.querySelector('.activity-list');
-                activityList.innerHTML = '';
-                data.forEach(order => {
-                    const item = document.createElement('div');
-                    item.className = 'activity-item';
-                    item.innerHTML = `
-                        <span>Pedido #${order.id_pedido} - Cliente: ${order.cliente} - Estado: ${order.estado} - Repartidor: ${order.domiciliario || 'No asignado'}</span>
-                        <span>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</span>`;
-                    activityList.appendChild(item);
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'query=' + encodeURIComponent(searchInput)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    const tbody = document.querySelector('.orders-table tbody');
+                    tbody.innerHTML = '';
+                    data.forEach(order => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>#${order.id_pedido}</td>
+                            <td>${order.cliente}</td>
+                            <td>${order.domiciliario || 'No asignado'}</td>
+                            <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
+                            <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                            <td><button class="btn btn-editar" onclick="editarPedido(${order.id_pedido})"><i class="fas fa-edit"></i></button></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al buscar pedidos: ' + error.message);
                 });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al buscar pedidos: ' + error.message);
-            });
         }
 
         document.getElementById('formNuevoPedido').onsubmit = function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            fetch('../procesar_pedido.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error en la solicitud: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    alert('Pedido creado exitosamente');
-                    cerrarModal('modalNuevoPedido');
-                    location.reload();
-                } else {
-                    alert('Error al crear el pedido: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al procesar el pedido: ' + error.message);
-            });
+            const url = document.getElementById('id_pedido').value ? '../servicios/actualizar_pedido.php' : '../procesar_pedido.php';
+            fetch(url, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert(document.getElementById('id_pedido').value ? 'Pedido actualizado exitosamente' : 'Pedido creado exitosamente');
+                        cerrarModal('modalNuevoPedido');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al procesar el pedido: ' + error.message);
+                });
         };
     </script>
 </body>
+
 </html>

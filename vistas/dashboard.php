@@ -163,16 +163,6 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                         <div class="activity-time">Hace 30 minutos - María López</div>
                     </div>
                 </li>
-
-                <li class="activity-item" onclick="showActivityDetails(4)">
-                    <div class="activity-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <div class="activity-details">
-                        <div class="activity-title">Nueva zona de entrega agregada</div>
-                        <div class="activity-time">Hace 1 hora - Zona Norte</div>
-                    </div>
-                </li>
             </ul>
         </div>
     </div>

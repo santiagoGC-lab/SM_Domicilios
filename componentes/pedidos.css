@@ -10,14 +10,17 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: #f0f3fa; /* color claro del fondo */
+    background: #f0f3fa;
+    /* color claro del fondo */
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: var(--primary-color); /* verde institucional */
+    background-color: var(--primary-color);
+    /* verde institucional */
     border-radius: 10px;
-    border: 2px solid #f0f3fa; /* para espacio alrededor del thumb */
+    border: 2px solid #f0f3fa;
+    /* para espacio alrededor del thumb */
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -124,7 +127,7 @@
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     max-width: 300px;
     gap: 8px;
 }
@@ -342,68 +345,106 @@
     border-radius: 4px;
 }
 
-/* Estilos específicos para la gestión de pedidos */
 .orders-table {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
-    overflow: hidden;
+    margin-top: 30px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+    overflow-x: auto;
+    font-family: 'Poppins', sans-serif;
 }
 
 .orders-table table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 700px;
 }
 
 .orders-table th,
 .orders-table td {
-    padding: 12px 15px;
+    padding: 14px 16px;
     text-align: left;
+    font-size: 14px;
+    color: #333;
     border-bottom: 1px solid #eee;
 }
 
 .orders-table th {
-    background-color: #f8f9fa;
+    background-color: var(--primary-color);
+    color: white;
     font-weight: 600;
-    color: #333;
+    text-transform: uppercase;
 }
 
-/* Estados de pedidos */
-.estado-pendiente,
-.estado-en_proceso,
-.estado-en_camino,
-.estado-entregado,
-.estado-cancelado {
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 0.85em;
-    font-weight: 500;
+.orders-table tr:hover {
+    background-color: #f9f9f9;
+    transition: background-color 0.3s ease;
 }
 
+.orders-table td.estado {
+    font-weight: 600;
+    border-radius: 16px;
+    padding: 6px 10px;
+    display: inline-block;
+}
+
+/* Puedes reutilizar estas clases o asegurarte que estén aplicadas dinámicamente */
 .estado-pendiente {
-    background-color: #fff3cd;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: 500;
+    background-color: var(--regular-color);
+    color: white;
+    text-transform: capitalize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    height: 100%;
     color: #856404;
 }
 
-.estado-en_proceso {
-    background-color: #cce5ff;
-    color: #004085;
-}
-
 .estado-en_camino {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: #d1ecf1;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: 500;
+    text-transform: capitalize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    height: 100%;
 }
 
 .estado-entregado {
-    background-color: #c3e6cb;
-    color: #155724;
+    background-color: #38bd57;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: 500;
+    text-transform: capitalize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    height: 100%;
 }
 
 .estado-cancelado {
-    background-color: #f8d7da;
-    color: #721c24;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: 500;
+    text-transform: capitalize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    height: 100%;
+    background-color: #721c24;
 }
 
 /* Estilos para el formulario de pedidos */
@@ -441,6 +482,19 @@
     flex-direction: row;
     gap: 10px;
     align-items: center;
+}
+
+.btn-editar {
+    background-color: var(--primary-color);
+    padding: 8px;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-editar:hover {
+    background-color: var(--primary-color);
 }
 
 @media (max-width: 768px) {
