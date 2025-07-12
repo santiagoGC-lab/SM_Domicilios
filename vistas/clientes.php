@@ -1,12 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['usuario_id'])) {
-    header("Location: ../login.html");
-    exit;
-}
-$nombre = $_SESSION['nombre'] ?? '';
-$apellido = $_SESSION['apellido'] ?? '';
-$nombreCompleto = $nombre . ' ' . $apellido;
+require_once '../servicios/verificar_permisos.php';
+verificarAcceso('clientes');
+$nombreCompleto = obtenerNombreUsuario();
 ?>
 
 <!DOCTYPE html>
@@ -31,10 +26,12 @@ $nombreCompleto = $nombre . ' ' . $apellido;
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
+            <?php if (tienePermiso('dashboard')): ?>
             <a href="dashboard.php" class="menu-item">
                 <i class="fas fa-tachometer-alt"></i>
                 <span class="menu-text">Inicio</span>
             </a>
+            <?php endif; ?>
             <a href="pedidos.php" class="menu-item">
                 <i class="fas fa-shopping-bag"></i>
                 <span class="menu-text">Pedidos</span>
@@ -43,18 +40,25 @@ $nombreCompleto = $nombre . ' ' . $apellido;
                 <i class="fas fa-users"></i>
                 <span class="menu-text">Clientes</span>
             </a>
+            <?php if (tienePermiso('domiciliarios')): ?>
             <a href="domiciliarios.php" class="menu-item">
                 <i class="fas fa-motorcycle"></i>
                 <span class="menu-text">Domiciliarios</span>
             </a>
+            <?php endif; ?>
+            <?php if (tienePermiso('zonas')): ?>
             <a href="zonas.php" class="menu-item">
                 <i class="fas fa-map-marked-alt"></i>
                 <span class="menu-text">Zonas de Entrega</span>
             </a>
+            <?php endif; ?>
             <a href="reportes.php" class="menu-item">
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
+            <?php if (esAdmin()): ?>
+            <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
+            <?php endif; ?>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
                 <i class="fas fa-sign-out-alt"></i>
                 <span class="menu-text">Cerrar Sesión</span>

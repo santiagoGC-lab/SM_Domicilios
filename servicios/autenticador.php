@@ -47,7 +47,13 @@ try {
 
     session_regenerate_id(true);
 
-    header('Location: ../vistas/dashboard.php');
+    // Redirigir según el rol
+    if ($usuario['rol'] === 'admin') {
+        header('Location: ../vistas/dashboard.php');
+    } else {
+        // Los gestores y cajeras van directamente a pedidos
+        header('Location: ../vistas/pedidos.php');
+    }
     exit;
 } catch (Exception $e) {
     header("Location: ../login.html?error=" . urlencode("Error: " . $e->getMessage()));
