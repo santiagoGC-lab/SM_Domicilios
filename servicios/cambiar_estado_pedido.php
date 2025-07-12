@@ -17,7 +17,7 @@ try {
     $nuevo_estado = $_POST['nuevo_estado'];
     
     // Validar estado válido
-    $estados_validos = ['pendiente', 'entregado', 'cancelado'];
+    $estados_validos = ['pendiente', 'en_camino', 'entregado', 'cancelado'];
     if (!in_array($nuevo_estado, $estados_validos)) {
         throw new Exception('Estado no válido');
     }
