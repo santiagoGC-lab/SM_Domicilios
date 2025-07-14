@@ -15,12 +15,13 @@ $pendingOrders = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendi
 $completedToday = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn();
 $revenueToday = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
 
-// Obtener pedidos recientes
+// Obtener pedidos activos (no movidos al histórico)
 $stmt = $pdo->query("
     SELECT p.id_pedido, c.nombre AS cliente, c.documento, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.id_cliente, p.id_domiciliario, p.id_zona, p.cantidad_paquetes, p.total, p.tiempo_estimado
     FROM pedidos p
     LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
     LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+    WHERE p.movido_historico = FALSE
     ORDER BY p.fecha_pedido DESC
     LIMIT 5
 ");
@@ -57,7 +58,8 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <?php if (tienePermiso('dashboard')): ?>
             <a href="dashboard.php" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Inicio</span></a>
             <?php endif; ?>
-            <a href="pedidos.php" class="menu-item active"><i class="fas fa-shopping-bag"></i><span class="menu-text">Pedidos</span></a>
+            <a href="pedidos.php" class="menu-item active"><i class="fas fa-shopping-bag"></i><span class="menu-text">Pedidos Activos</span></a>
+            <a href="historico_pedidos.php" class="menu-item"><i class="fas fa-history"></i><span class="menu-text">Histórico</span></a>
             <a href="clientes.php" class="menu-item"><i class="fas fa-users"></i><span class="menu-text">Clientes</span></a>
             <?php if (tienePermiso('domiciliarios')): ?>
             <a href="domiciliarios.php" class="menu-item"><i class="fas fa-motorcycle"></i><span class="menu-text">Domiciliarios</span></a>

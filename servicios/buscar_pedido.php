@@ -13,24 +13,26 @@ try {
     $query = isset($_POST['query']) ? trim($_POST['query']) : '';
     
     if (empty($query)) {
-        // Si no hay búsqueda, devolver los últimos 10 pedidos
+        // Si no hay búsqueda, devolver los últimos 10 pedidos activos
         $sql = "SELECT p.id_pedido, c.nombre AS cliente, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.tiempo_estimado
                 FROM pedidos p
                 LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
                 LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+                WHERE p.movido_historico = FALSE
                 ORDER BY p.fecha_pedido DESC
                 LIMIT 10";
         $stmt = $pdo->prepare($sql);
         $stmt->execute();
     } else {
-        // Búsqueda por ID de pedido, nombre de cliente o documento
+        // Búsqueda por ID de pedido, nombre de cliente o documento (solo pedidos activos)
         $sql = "SELECT p.id_pedido, c.nombre AS cliente, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.tiempo_estimado
                 FROM pedidos p
                 LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
                 LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
-                WHERE c.nombre LIKE :query 
-                   OR c.documento LIKE :query 
-                   OR p.id_pedido = :id_pedido
+                WHERE p.movido_historico = FALSE 
+                   AND (c.nombre LIKE :query 
+                        OR c.documento LIKE :query 
+                        OR p.id_pedido = :id_pedido)
                 ORDER BY p.fecha_pedido DESC
                 LIMIT 20";
         $stmt = $pdo->prepare($sql);

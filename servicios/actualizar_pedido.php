@@ -73,6 +73,14 @@ try {
     if ($estado === 'entregado' || $estado === 'cancelado') {
         $stmt = $pdo->prepare("UPDATE domiciliarios SET estado = 'disponible' WHERE id_domiciliario = ?");
         $stmt->execute([$id_domiciliario]);
+        
+        // Mover automáticamente al histórico si está entregado o cancelado
+        require_once 'mover_a_historico.php';
+        $movido = moverPedidoAHistorico($id_pedido);
+        
+        if ($movido) {
+            error_log("Pedido ID $id_pedido movido automáticamente al histórico");
+        }
     }
     
     echo json_encode(['success' => true, 'message' => 'Pedido actualizado exitosamente']);
