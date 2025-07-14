@@ -399,31 +399,47 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         });
 
         function eliminarPedido(id) {
+            console.log('Intentando eliminar pedido ID:', id);
+            
             if (confirm('¿Está seguro de que desea eliminar este pedido?')) {
                 const formData = new FormData();
                 formData.append('id_pedido', id);
                 
+                console.log('Enviando petición de eliminación...');
+                
                 fetch('../servicios/eliminar_pedido.php', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin' // Incluir cookies de sesión
                 })
                 .then(response => {
+                    console.log('Respuesta recibida:', response.status, response.statusText);
+                    
                     if (!response.ok) {
-                        throw new Error('Error en la solicitud: ' + response.status);
+                        throw new Error('Error HTTP ' + response.status + ': ' + response.statusText);
                     }
+                    
+                    // Verificar si la respuesta es JSON válido
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('La respuesta no es JSON válido');
+                    }
+                    
                     return response.json();
                 })
                 .then(data => {
+                    console.log('Datos recibidos:', data);
+                    
                     if (data.success) {
                         alert('Pedido eliminado exitosamente');
                         location.reload();
                     } else {
-                        alert('Error: ' + data.message);
+                        alert('Error: ' + (data.message || 'Error desconocido'));
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al eliminar el pedido: ' + error.message);
+                    console.error('Error completo:', error);
+                    alert('Error al eliminar el pedido: ' + error.message + '\n\nRevisa la consola del navegador (F12) para más detalles.');
                 });
             }
         }
