@@ -172,18 +172,32 @@ $nombreCompleto = obtenerNombreUsuario();
 
         document.getElementById('formClient').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const submitButton = document.getElementById('submitButton');
             submitButton.disabled = true;
-
+            // Validación básica en frontend
+            const nombre = document.getElementById('nombre').value.trim();
+            const documento = document.getElementById('documento').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const direccion = document.getElementById('direccion').value.trim();
+            const barrio = document.getElementById('barrio').value.trim();
+            if (!nombre || !documento || !telefono || !direccion || !barrio) {
+                alert('Por favor, complete todos los campos obligatorios.');
+                submitButton.disabled = false;
+                return;
+            }
             const formData = new FormData(this);
-            console.log('Datos enviados:', Object.fromEntries(formData)); // Depuración
-
             fetch('../servicios/guardar_cliente.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.status === 401) {
+                    alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                    window.location.href = '../login.html';
+                    return Promise.reject('Sesión expirada');
+                }
+                return response.json();
+            })
             .then(data => {
                 submitButton.disabled = false;
                 if (data.success) {
@@ -197,8 +211,10 @@ $nombreCompleto = obtenerNombreUsuario();
             })
             .catch(error => {
                 submitButton.disabled = false;
-                alert('Error al guardar el cliente');
-                console.error('Error:', error);
+                if (error !== 'Sesión expirada') {
+                    alert('Error al guardar el cliente');
+                    console.error('Error:', error);
+                }
             });
         });
 
@@ -278,7 +294,14 @@ $nombreCompleto = obtenerNombreUsuario();
 
         function editarCliente(id) {
             fetch(`../servicios/obtener_cliente_por_id.php?id=${id}`)
-                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return res.json();
+                })
                 .then(cliente => {
                     if (cliente.error) {
                         alert('Error: ' + cliente.error);
@@ -295,10 +318,27 @@ $nombreCompleto = obtenerNombreUsuario();
                     document.getElementById('modalClient').style.display = 'block';
                 })
                 .catch(err => {
-                    alert('Error al cargar el cliente');
-                    console.error(err);
+                    if (err !== 'Sesión expirada') {
+                        alert('Error al cargar el cliente');
+                        console.error(err);
+                    }
                 });
         }
+
+        // Manejo global de errores de sesión para todos los fetch
+        (function() {
+            const originalFetch = window.fetch;
+            window.fetch = function() {
+                return originalFetch.apply(this, arguments).then(response => {
+                    if (response.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return response;
+                });
+            };
+        })();
     </script>
 </body>
 

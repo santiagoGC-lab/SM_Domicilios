@@ -171,7 +171,14 @@ $nombreCompleto = obtenerNombreUsuario();
 
         function editarZona(id) {
             fetch('../servicios/obtener_zona_por_id.php?id=' + id)
-                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return res.json();
+                })
                 .then(zona => {
                     if (zona.error) {
                         alert('Error: ' + zona.error);
@@ -185,7 +192,11 @@ $nombreCompleto = obtenerNombreUsuario();
                     document.getElementById('estado').value = zona.estado;
                     document.getElementById('modalZona').style.display = 'block';
                 })
-                .catch(error => alert('Error al cargar la zona: ' + error.message));
+                .catch(error => {
+                    if (error !== 'Sesión expirada') {
+                        alert('Error al cargar la zona: ' + error.message);
+                    }
+                });
         }
 
         function eliminarZona(id) {
@@ -197,7 +208,14 @@ $nombreCompleto = obtenerNombreUsuario();
                         method: 'POST',
                         body: formData
                     })
-                    .then(res => res.json())
+                    .then(res => {
+                        if (res.status === 401) {
+                            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                            window.location.href = '../login.html';
+                            return Promise.reject('Sesión expirada');
+                        }
+                        return res.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             alert('Zona eliminada exitosamente');
@@ -206,7 +224,11 @@ $nombreCompleto = obtenerNombreUsuario();
                             alert('Error al eliminar la zona: ' + (data.error || 'Desconocido'));
                         }
                     })
-                    .catch(error => alert('Error al eliminar la zona: ' + error.message));
+                    .catch(error => {
+                        if (error !== 'Sesión expirada') {
+                            alert('Error al eliminar la zona: ' + error.message);
+                        }
+                    });
             }
         }
 
@@ -227,7 +249,14 @@ $nombreCompleto = obtenerNombreUsuario();
                     method: 'POST',
                     body: formData
                 })
-                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     if (data.success) {
                         alert('Zona guardada exitosamente');
@@ -237,7 +266,11 @@ $nombreCompleto = obtenerNombreUsuario();
                         alert('Error al guardar la zona: ' + (data.error || 'Desconocido'));
                     }
                 })
-                .catch(error => alert('Error al guardar la zona: ' + error.message));
+                .catch(error => {
+                    if (error !== 'Sesión expirada') {
+                        alert('Error al guardar la zona: ' + error.message);
+                    }
+                });
         }
 
         function removeAccents(str) {
@@ -249,7 +282,14 @@ $nombreCompleto = obtenerNombreUsuario();
             const estado = document.getElementById('filterStatus').value;
 
             fetch('../servicios/obtener_zonas.php')
-                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return res.json();
+                })
                 .then(zonas => {
                     const tbody = document.getElementById('zonasTableBody');
                     tbody.innerHTML = '';
@@ -275,8 +315,27 @@ $nombreCompleto = obtenerNombreUsuario();
                         }
                     });
                 })
-                .catch(error => alert('Error al cargar las zonas: ' + error.message));
+                .catch(error => {
+                    if (error !== 'Sesión expirada') {
+                        alert('Error al cargar las zonas: ' + error.message);
+                    }
+                });
         }
+
+        // Manejo global de errores de sesión para todos los fetch
+        (function() {
+            const originalFetch = window.fetch;
+            window.fetch = function() {
+                return originalFetch.apply(this, arguments).then(response => {
+                    if (response.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return response;
+                });
+            };
+        })();
     </script>
 </body>
 

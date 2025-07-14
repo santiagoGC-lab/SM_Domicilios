@@ -166,7 +166,14 @@ $nombreCompleto = obtenerNombreUsuario();
 
         function editarDomiciliario(id) {
             fetch(`../servicios/obtener_domiciliario.php?id=${id}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     document.getElementById('modalTitle').textContent = 'Editar Domiciliario';
                     document.getElementById('domiciliarioId').value = id;
@@ -179,8 +186,13 @@ $nombreCompleto = obtenerNombreUsuario();
                     document.getElementById('zonaGroup').style.display = 'block';
                     document.getElementById('estadoGroup').style.display = 'block';
                     document.getElementById('modalEditar').style.display = 'block';
+                })
+                .catch(error => {
+                    if (error !== 'Sesión expirada') {
+                        alert('Error al cargar el domiciliario');
+                        console.error(error);
+                    }
                 });
-
         }
 
         function eliminarDomiciliario(id) {
@@ -191,7 +203,22 @@ $nombreCompleto = obtenerNombreUsuario();
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: `id=${id}`
-                }).then(res => res.json()).then(() => loadDomiciliarios());
+                })
+                .then(res => {
+                    if (res.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return res.json();
+                })
+                .then(() => loadDomiciliarios())
+                .catch(error => {
+                    if (error !== 'Sesión expirada') {
+                        alert('Error al eliminar el domiciliario');
+                        console.error(error);
+                    }
+                });
             }
         }
 
@@ -220,7 +247,14 @@ $nombreCompleto = obtenerNombreUsuario();
                     method: 'POST',
                     body: formData
                 })
-                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     if (data.success) {
                         alert('Domiciliario guardado correctamente.');
@@ -228,6 +262,12 @@ $nombreCompleto = obtenerNombreUsuario();
                         loadDomiciliarios();
                     } else {
                         alert('Error: ' + (data.error || 'No se pudo guardar'));
+                    }
+                })
+                .catch(error => {
+                    if (error !== 'Sesión expirada') {
+                        alert('Error al guardar el domiciliario');
+                        console.error(error);
                     }
                 });
         }
@@ -267,7 +307,14 @@ $nombreCompleto = obtenerNombreUsuario();
 
         function loadDomiciliarios() {
             fetch('../servicios/obtener_domiciliarios.php')
-                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     const tbody = document.getElementById('domiciliariosTableBody');
                     let html = '';
@@ -291,6 +338,12 @@ $nombreCompleto = obtenerNombreUsuario();
 
                     tbody.innerHTML = html;
                     filterDomiciliarios();
+                })
+                .catch(error => {
+                    if (error !== 'Sesión expirada') {
+                        alert('Error al cargar domiciliarios');
+                        console.error(error);
+                    }
                 });
         }
 
@@ -299,8 +352,22 @@ $nombreCompleto = obtenerNombreUsuario();
                 event.target.style.display = 'none';
             }
         }
+
+        // Manejo global de errores de sesión para todos los fetch
+        (function() {
+            const originalFetch = window.fetch;
+            window.fetch = function() {
+                return originalFetch.apply(this, arguments).then(response => {
+                    if (response.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return response;
+                });
+            };
+        })();
     </script>
 </body>
 
-</html>
 </html>

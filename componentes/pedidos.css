@@ -191,8 +191,8 @@
     animation: fadeIn 0.3s ease-in-out;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--primary-color);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    border: 2px solid var(--primary-color);
     font-family: 'Poppins', sans-serif;
 }
 
@@ -485,32 +485,72 @@
 }
 
 .btn-editar {
-    background-color: var(--primary-color);
-    padding: 8px;
+    background-color: #ffc107;
+    color: #fff;
     border: none;
-    color: white;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 14px;
+    margin-right: 4px;
+    transition: background 0.2s;
 }
 
 .btn-editar:hover {
-    background-color: var(--secondary-color);
+    background-color: #e0a800;
 }
 
 .btn-eliminar {
     background-color: #dc3545;
-    color: white;
+    color: #fff;
     border: none;
-    padding: 6px 10px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
     cursor: pointer;
-    margin-left: 5px;
-    font-size: 12px;
-    transition: background-color 0.2s;
+    font-size: 14px;
+    margin-right: 4px;
+    transition: background 0.2s;
 }
 
 .btn-eliminar:hover {
-    background-color: #c82333;
+    background-color: #b52a37;
+}
+
+.btn-entregar {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 4px;
+    transition: background 0.2s;
+}
+
+.btn-entregar:hover {
+    background-color: #218838;
+}
+
+.btn-cancelar {
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 4px;
+    transition: background 0.2s;
+}
+
+.btn-cancelar:hover {
+    background-color: #495057;
+}
+
+.modal-content input:disabled, .modal-content select:disabled {
+    background: #e9ecef;
+    color: #888;
 }
 
 /* Estilos para notificaciones */

@@ -258,14 +258,19 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         function editarPedido(id) {
             fetch(`../servicios/obtener_pedido.php?id=${id}`)
                 .then(response => {
+                    if (response.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
                     if (!response.ok) {
                         throw new Error(`Error en la solicitud: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
+                    if (!data || data.error) {
+                        throw new Error(data && data.error ? data.error : 'No se pudo cargar el pedido');
                     }
                     const modal = document.getElementById('modalNuevoPedido');
                     const modalTitle = document.getElementById('modalTitle');
@@ -283,7 +288,9 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     setupFormListeners();
                 })
                 .catch(error => {
-                    alert('Error al cargar el pedido: ' + error.message);
+                    if (error !== 'Sesión expirada') {
+                        alert('Error al cargar el pedido: ' + error.message);
+                    }
                 });
         }
 
@@ -463,8 +470,33 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             // ya que solo mostramos tiempo estimado para pedidos pendientes
         }
 
+        // Manejo global de errores de sesión para todos los fetch
+        (function() {
+            const originalFetch = window.fetch;
+            window.fetch = function() {
+                return originalFetch.apply(this, arguments).then(response => {
+                    if (response.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return response;
+                });
+            };
+        })();
+
         document.getElementById('formNuevoPedido').onsubmit = function(e) {
             e.preventDefault();
+            // Validación básica en frontend
+            const idCliente = document.getElementById('id_cliente').value;
+            const idZona = document.getElementById('id_zona').value;
+            const idDomiciliario = document.getElementById('id_domiciliario').value;
+            const bolsas = document.getElementById('bolsas').value;
+            const total = document.getElementById('total').value;
+            if (!idCliente || !idZona || !idDomiciliario || !bolsas || !total) {
+                alert('Por favor, complete todos los campos obligatorios.');
+                return;
+            }
             const formData = new FormData(this);
             const url = document.getElementById('id_pedido').value ? '../servicios/actualizar_pedido.php' : '../servicios/procesar_pedido.php';
             fetch(url, {
@@ -487,8 +519,10 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al procesar el pedido: ' + error.message);
+                    if (error !== 'Sesión expirada') {
+                        console.error('Error:', error);
+                        alert('Error al procesar el pedido: ' + error.message);
+                    }
                 });
         };
     </script>
