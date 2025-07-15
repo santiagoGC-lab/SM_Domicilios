@@ -187,7 +187,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 return originalFetch.apply(this, arguments).then(response => {
                     if (response.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return response;

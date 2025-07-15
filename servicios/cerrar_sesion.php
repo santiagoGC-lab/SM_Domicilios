@@ -24,6 +24,6 @@ if (isset($_COOKIE['PHPSESSID'])) {
 }
 
 // Redirigir al login con mensaje de confirmación
-header("Location: ../login.html?success=" . urlencode("Sesión cerrada exitosamente. ¡Hasta pronto!"));
+header('Location: ../vistas/login.html');
 exit();
 ?>

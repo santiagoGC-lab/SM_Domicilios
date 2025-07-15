@@ -165,11 +165,14 @@ $nombreCompleto = obtenerNombreUsuario();
         }
 
         function editarDomiciliario(id) {
-            fetch(`../servicios/obtener_domiciliario.php?id=${id}`)
+            fetch(`../servicios/domiciliarios.php`, {
+                method: 'POST',
+                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener_por_id'); fd.append('id', id); return fd; })()
+            })
                 .then(response => {
                     if (response.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return response.json();
@@ -197,17 +200,17 @@ $nombreCompleto = obtenerNombreUsuario();
 
         function eliminarDomiciliario(id) {
             if (confirm('¿Deseas eliminar este domiciliario?')) {
-                fetch('../servicios/eliminar_domiciliario.php', {
+                const formData = new FormData();
+                formData.append('id', id);
+                formData.append('accion', 'eliminar');
+                fetch('../servicios/domiciliarios.php', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `id=${id}`
+                    body: formData
                 })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return res.json();
@@ -243,14 +246,15 @@ $nombreCompleto = obtenerNombreUsuario();
             }
 
             const formData = new FormData(e.target);
-            fetch('../servicios/guardar_domiciliario.php', {
+            formData.append('accion', 'guardar');
+            fetch('../servicios/domiciliarios.php', {
                     method: 'POST',
                     body: formData
                 })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return res.json();
@@ -273,7 +277,7 @@ $nombreCompleto = obtenerNombreUsuario();
         }
 
         function showUserMenu() {
-            window.location.href = 'menuUsu.html';
+            window.location.href = '../vistas/login.html';
         }
 
         function quitarTildes(texto) {
@@ -306,11 +310,14 @@ $nombreCompleto = obtenerNombreUsuario();
         }
 
         function loadDomiciliarios() {
-            fetch('../servicios/obtener_domiciliarios.php')
+            fetch('../servicios/domiciliarios.php', {
+                method: 'POST',
+                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener'); return fd; })()
+            })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return res.json();
@@ -360,7 +367,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 return originalFetch.apply(this, arguments).then(response => {
                     if (response.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return response;

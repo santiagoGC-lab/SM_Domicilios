@@ -86,13 +86,12 @@ $nombreCompleto = obtenerNombreUsuario();
                         <option value="inactivo">Inactivo</option>
                     </select>
                 </div>
-                <button class="btn btn-primary" onclick="abrirModalNueva()">
+                <button class="btn-login" onclick="abrirModalNueva()">
                     <i class="fas fa-plus"></i> Nueva Zona
                 </button>
             </div>
-
-            <div class="table-container">
-                <table class="table">
+            <div class="users-table-container">
+                <table class="users-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -170,11 +169,14 @@ $nombreCompleto = obtenerNombreUsuario();
         }
 
         function editarZona(id) {
-            fetch('../servicios/obtener_zona_por_id.php?id=' + id)
+            fetch(`../servicios/zonas.php`, {
+                method: 'POST',
+                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener_por_id'); fd.append('id', id); return fd; })()
+            })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return res.json();
@@ -203,15 +205,16 @@ $nombreCompleto = obtenerNombreUsuario();
             if (confirm('¿Estás seguro de que deseas eliminar esta zona?')) {
                 const formData = new FormData();
                 formData.append('id', id);
+                formData.append('accion', 'eliminar');
 
-                fetch('../servicios/eliminar_zona.php', {
+                fetch('../servicios/zonas.php', {
                         method: 'POST',
                         body: formData
                     })
                     .then(res => {
                         if (res.status === 401) {
                             alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                            window.location.href = '../login.html';
+                            window.location.href = '../vistas/login.html';
                             return Promise.reject('Sesión expirada');
                         }
                         return res.json();
@@ -244,15 +247,16 @@ $nombreCompleto = obtenerNombreUsuario();
             }
 
             const formData = new FormData(form);
+            formData.append('accion', 'guardar');
 
-            fetch('../servicios/guardar_zona.php', {
+            fetch('../servicios/zonas.php', {
                     method: 'POST',
                     body: formData
                 })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return res.json();
@@ -281,11 +285,14 @@ $nombreCompleto = obtenerNombreUsuario();
             const search = removeAccents(document.getElementById('searchInput').value.toLowerCase());
             const estado = document.getElementById('filterStatus').value;
 
-            fetch('../servicios/obtener_zonas.php')
+            fetch('../servicios/zonas.php', {
+                method: 'POST',
+                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener'); return fd; })()
+            })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return res.json();
@@ -329,7 +336,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 return originalFetch.apply(this, arguments).then(response => {
                     if (response.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return response;

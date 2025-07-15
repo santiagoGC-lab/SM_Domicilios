@@ -186,14 +186,15 @@ $nombreCompleto = obtenerNombreUsuario();
                 return;
             }
             const formData = new FormData(this);
-            fetch('../servicios/guardar_cliente.php', {
+            formData.append('accion', 'guardar');
+            fetch('../servicios/clientes.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
                 if (response.status === 401) {
                     alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                    window.location.href = '../login.html';
+                    window.location.href = '../vistas/login.html';
                     return Promise.reject('Sesión expirada');
                 }
                 return response.json();
@@ -222,8 +223,9 @@ $nombreCompleto = obtenerNombreUsuario();
             if (confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
                 const formData = new FormData();
                 formData.append('id', id);
+                formData.append('accion', 'eliminar');
 
-                fetch('../servicios/eliminar_cliente.php', {
+                fetch('../servicios/clientes.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -251,7 +253,10 @@ $nombreCompleto = obtenerNombreUsuario();
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
             const searchTerm = removeAccents(searchInput);
 
-            fetch('../servicios/obtener_clientes.php')
+            fetch('../servicios/clientes.php', {
+                method: 'POST',
+                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener'); return fd; })()
+            })
                 .then(res => res.json())
                 .then(clientes => {
                     const tbody = document.getElementById('clientsTableBody');
@@ -293,11 +298,17 @@ $nombreCompleto = obtenerNombreUsuario();
         }
 
         function editarCliente(id) {
-            fetch(`../servicios/obtener_cliente_por_id.php?id=${id}`)
+            const formData = new FormData();
+            formData.append('accion', 'obtener_por_id');
+            formData.append('id', id);
+            fetch('../servicios/clientes.php', {
+                method: 'POST',
+                body: formData
+            })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return res.json();
@@ -332,7 +343,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 return originalFetch.apply(this, arguments).then(response => {
                     if (response.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return response;

@@ -12,11 +12,11 @@ if (isset($_GET['token'])) {
     $resultado = $stmt->get_result();
 
     if ($resultado->num_rows === 0) {
-        header('Location: ../login.html?error=' . urlencode('El enlace ha expirado o no es válido'));
+        header('Location: ../vistas/login.html?error=' . urlencode('El enlace ha expirado o no es válido'));
         exit();
     }
 } else {
-    header('Location: ../login.html');
+    header('Location: ../vistas/login.html');
     exit();
 }
 
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ss", $hashed_password, $token);
         $stmt->execute();
 
-        header('Location: ../login.html?success=' . urlencode('Tu contraseña ha sido actualizada'));
+        header('Location: ../vistas/login.html?success=' . urlencode('Tu contraseña ha sido actualizada'));
         exit();
     } else {
         $error = 'Las contraseñas no coinciden';

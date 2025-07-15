@@ -256,11 +256,17 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         }
 
         function editarPedido(id) {
-            fetch(`../servicios/obtener_pedido.php?id=${id}`)
+            const formData = new FormData();
+            formData.append('accion', 'obtener');
+            formData.append('id', id);
+            fetch('../servicios/pedidos.php', {
+                method: 'POST',
+                body: formData
+            })
                 .then(response => {
                     if (response.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     if (!response.ok) {
@@ -330,12 +336,12 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
 
         function buscarPedido() {
             const searchInput = document.getElementById('searchInput').value;
-            fetch('../servicios/buscar_pedido.php', {
+            const formData = new FormData();
+            formData.append('accion', 'buscar');
+            formData.append('query', encodeURIComponent(searchInput));
+            fetch('../servicios/pedidos.php', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: 'query=' + encodeURIComponent(searchInput)
+                    body: formData
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -399,8 +405,9 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         function eliminarPedido(id) {
             if (confirm('¿Está seguro de que desea eliminar este pedido?')) {
                 const formData = new FormData();
-                formData.append('id_pedido', id);
-                fetch('../servicios/eliminar_pedido.php', {
+                formData.append('accion', 'eliminar');
+                formData.append('id', id);
+                fetch('../servicios/pedidos.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -432,9 +439,10 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             };
             if (confirm(`¿Está seguro de que desea ${estados[nuevoEstado]} este pedido?`)) {
                 const formData = new FormData();
-                formData.append('id_pedido', id);
-                formData.append('nuevo_estado', nuevoEstado);
-                fetch('../servicios/cambiar_estado_pedido.php', {
+                formData.append('accion', 'cambiar_estado');
+                formData.append('id', id);
+                formData.append('estado', nuevoEstado);
+                fetch('../servicios/pedidos.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -462,8 +470,9 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         function archivarPedido(id) {
             if (confirm('¿Está seguro de que desea archivar este pedido?')) {
                 const formData = new FormData();
-                formData.append('id_pedido', id);
-                fetch('../servicios/mover_pedido_historial.php', {
+                formData.append('accion', 'mover_historial');
+                formData.append('id', id);
+                fetch('../servicios/pedidos.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -495,7 +504,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 return originalFetch.apply(this, arguments).then(response => {
                     if (response.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../login.html';
+                        window.location.href = '../vistas/login.html';
                         return Promise.reject('Sesión expirada');
                     }
                     return response;
@@ -515,7 +524,8 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 return;
             }
             const formData = new FormData(this);
-            const url = document.getElementById('id_pedido').value ? '../servicios/actualizar_pedido.php' : '../servicios/procesar_pedido.php';
+            const url = document.getElementById('id_pedido').value ? '../servicios/pedidos.php' : '../servicios/pedidos.php';
+            formData.append('accion', document.getElementById('id_pedido').value ? 'actualizar' : 'procesar');
             fetch(url, {
                     method: 'POST',
                     body: formData

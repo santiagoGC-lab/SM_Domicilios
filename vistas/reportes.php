@@ -400,8 +400,27 @@ try {
 
         // Función para exportar reportes
         function exportarReporte(tipo) {
-            const url = `../servicios/generar_reporte_pdf.php?tipo=${tipo}`;
-            window.open(url, '_blank');
+            const formData = new FormData();
+            formData.append('accion', 'exportar');
+            fetch('../servicios/reportes.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reporte_${tipo}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Error al exportar el reporte:', error);
+                alert('Error al exportar el reporte.');
+            });
         }
     </script>
 </body>
