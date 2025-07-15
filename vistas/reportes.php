@@ -120,6 +120,10 @@ try {
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
+            <a href="historial_pedidos.php" class="menu-item">
+                <i class="fas fa-history"></i>
+                <span class="menu-text">Historial Pedidos</span>
+            </a>
             <?php if (esAdmin()): ?>
             <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
             <?php endif; ?>
@@ -314,6 +318,85 @@ try {
                 </div>
             </div>
         </div>
+
+        <!-- Pedidos Mensuales Archivados (ahora ocupa todo el ancho, debajo de los reportes) -->
+        <?php
+        $meses_es = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+        ];
+        ?>
+        <div class="report-card" style="max-width:100%;margin-top:30px;">
+            <div class="report-header">
+                <h3>Pedidos Mensuales Archivados</h3>
+            </div>
+            <form method="GET" style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                <label for="mes">Mes:</label>
+                <select name="mes" id="mes" required class="select-mes">
+                    <?php for ($m = 1; $m <= 12; $m++): ?>
+                        <option value="<?php echo $m; ?>" <?php if(isset($_GET['mes']) && $_GET['mes'] == $m) echo 'selected'; ?>>
+                            <?php echo $meses_es[$m]; ?>
+                        </option>
+                    <?php endfor; ?>
+                </select>
+                <label for="anio">Año:</label>
+                <select name="anio" id="anio" required class="select-anio">
+                    <?php $anioActual = date('Y');
+                    for ($a = $anioActual; $a >= $anioActual-5; $a--): ?>
+                        <option value="<?php echo $a; ?>" <?php if(isset($_GET['anio']) && $_GET['anio'] == $a) echo 'selected'; ?>><?php echo $a; ?></option>
+                    <?php endfor; ?>
+                </select>
+                <button type="submit" class="btn-login"><i class="fas fa-search"></i> Consultar</button>
+            </form>
+            <?php
+            $pedidosMensuales = [];
+            if (isset($_GET['mes']) && isset($_GET['anio'])) {
+                $mes = intval($_GET['mes']);
+                $anio = intval($_GET['anio']);
+                $db = new mysqli('localhost', 'root', 'root', 'sm_domicilios');
+                $db->set_charset('utf8mb4');
+                $sql = "SELECT * FROM pedidos_mensuales WHERE mes = $mes AND anio = $anio ORDER BY fecha_pedido DESC";
+                $result = $db->query($sql);
+                while ($row = $result->fetch_assoc()) {
+                    $pedidosMensuales[] = $row;
+                }
+                $db->close();
+            }
+            ?>
+            <div class="table-container" style="width:100%;">
+                <table class="data-table" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>ID Pedido</th>
+                            <th>Cliente</th>
+                            <th>Domiciliario</th>
+                            <th>Zona</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (count($pedidosMensuales) > 0): ?>
+                            <?php foreach ($pedidosMensuales as $pedido): ?>
+                                <tr>
+                                    <td>#<?php echo $pedido['id_pedido_original']; ?></td>
+                                    <td><?php echo htmlspecialchars($pedido['cliente_nombre']); ?></td>
+                                    <td><?php echo htmlspecialchars($pedido['domiciliario_nombre'] ?? 'No asignado'); ?></td>
+                                    <td><?php echo htmlspecialchars($pedido['zona_nombre'] ?? ''); ?></td>
+                                    <td><span class="estado-<?php echo strtolower($pedido['estado']); ?> estado"><?php echo ucfirst($pedido['estado']); ?></span></td>
+                                    <td><?php echo date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])); ?></td>
+                                    <td>$<?php echo number_format($pedido['total'], 2); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="7" style="text-align:center;">No hay pedidos para este mes.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -423,6 +506,23 @@ try {
             });
         }
     </script>
+    <style>
+        .select-mes, .select-anio {
+            padding: 8px 12px;
+            border: 1px solid #b2b2b2;
+            border-radius: 6px;
+            font-size: 15px;
+            background: #f9f9f9;
+            color: #015938;
+            margin-right: 8px;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.2s;
+        }
+        .select-mes:focus, .select-anio:focus {
+            border-color: #007B55;
+            background: #fff;
+        }
+    </style>
 </body>
 
 </html>

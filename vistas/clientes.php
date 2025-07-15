@@ -27,10 +27,10 @@ $nombreCompleto = obtenerNombreUsuario();
         </div>
         <div class="sidebar-menu">
             <?php if (tienePermiso('dashboard')): ?>
-            <a href="dashboard.php" class="menu-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span class="menu-text">Inicio</span>
-            </a>
+                <a href="dashboard.php" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-text">Inicio</span>
+                </a>
             <?php endif; ?>
             <a href="pedidos.php" class="menu-item">
                 <i class="fas fa-shopping-bag"></i>
@@ -41,23 +41,27 @@ $nombreCompleto = obtenerNombreUsuario();
                 <span class="menu-text">Clientes</span>
             </a>
             <?php if (tienePermiso('domiciliarios')): ?>
-            <a href="domiciliarios.php" class="menu-item">
-                <i class="fas fa-motorcycle"></i>
-                <span class="menu-text">Domiciliarios</span>
-            </a>
+                <a href="domiciliarios.php" class="menu-item">
+                    <i class="fas fa-motorcycle"></i>
+                    <span class="menu-text">Domiciliarios</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
-            <a href="zonas.php" class="menu-item">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="menu-text">Zonas de Entrega</span>
-            </a>
+                <a href="zonas.php" class="menu-item">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span class="menu-text">Zonas de Entrega</span>
+                </a>
             <?php endif; ?>
             <a href="reportes.php" class="menu-item">
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
+            <a href="historial_pedidos.php" class="menu-item">
+                <i class="fas fa-history"></i>
+                <span class="menu-text">Historial Pedidos</span>
+            </a>
             <?php if (esAdmin()): ?>
-            <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
+                <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
             <?php endif; ?>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
                 <i class="fas fa-sign-out-alt"></i>
@@ -188,35 +192,35 @@ $nombreCompleto = obtenerNombreUsuario();
             const formData = new FormData(this);
             formData.append('accion', 'guardar');
             fetch('../servicios/clientes.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.status === 401) {
-                    alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                    window.location.href = '../vistas/login.html';
-                    return Promise.reject('Sesión expirada');
-                }
-                return response.json();
-            })
-            .then(data => {
-                submitButton.disabled = false;
-                if (data.success) {
-                    alert('Cliente guardado exitosamente');
-                    closeModal('modalClient');
-                    loadClients();
-                    document.getElementById('formClient').reset();
-                } else {
-                    alert('Error: ' + (data.error || 'Error desconocido'));
-                }
-            })
-            .catch(error => {
-                submitButton.disabled = false;
-                if (error !== 'Sesión expirada') {
-                    alert('Error al guardar el cliente');
-                    console.error('Error:', error);
-                }
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                        window.location.href = '../vistas/login.html';
+                        return Promise.reject('Sesión expirada');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    submitButton.disabled = false;
+                    if (data.success) {
+                        alert('Cliente guardado exitosamente');
+                        closeModal('modalClient');
+                        loadClients();
+                        document.getElementById('formClient').reset();
+                    } else {
+                        alert('Error: ' + (data.error || 'Error desconocido'));
+                    }
+                })
+                .catch(error => {
+                    submitButton.disabled = false;
+                    if (error !== 'Sesión expirada') {
+                        alert('Error al guardar el cliente');
+                        console.error('Error:', error);
+                    }
+                });
         });
 
         function eliminarCliente(id) {
@@ -226,22 +230,22 @@ $nombreCompleto = obtenerNombreUsuario();
                 formData.append('accion', 'eliminar');
 
                 fetch('../servicios/clientes.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Cliente eliminado exitosamente');
-                        loadClients();
-                    } else {
-                        alert('Error: ' + (data.error || 'No se pudo eliminar'));
-                    }
-                })
-                .catch(err => {
-                    alert('Error al eliminar el cliente');
-                    console.error(err);
-                });
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Cliente eliminado exitosamente');
+                            loadClients();
+                        } else {
+                            alert('Error: ' + (data.error || 'No se pudo eliminar'));
+                        }
+                    })
+                    .catch(err => {
+                        alert('Error al eliminar el cliente');
+                        console.error(err);
+                    });
             }
         }
 
@@ -254,9 +258,13 @@ $nombreCompleto = obtenerNombreUsuario();
             const searchTerm = removeAccents(searchInput);
 
             fetch('../servicios/clientes.php', {
-                method: 'POST',
-                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener'); return fd; })()
-            })
+                    method: 'POST',
+                    body: (() => {
+                        const fd = new FormData();
+                        fd.append('accion', 'obtener');
+                        return fd;
+                    })()
+                })
                 .then(res => res.json())
                 .then(clientes => {
                     const tbody = document.getElementById('clientsTableBody');
@@ -302,9 +310,9 @@ $nombreCompleto = obtenerNombreUsuario();
             formData.append('accion', 'obtener_por_id');
             formData.append('id', id);
             fetch('../servicios/clientes.php', {
-                method: 'POST',
-                body: formData
-            })
+                    method: 'POST',
+                    body: formData
+                })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');

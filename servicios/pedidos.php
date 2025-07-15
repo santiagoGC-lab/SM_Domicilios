@@ -4,7 +4,7 @@ require_once 'conexion.php';
 session_start();
 
 // Verificar autenticación
-if (!isset($_SESSION['usuario_id'])) {
+if (!isset($_SESSION['id_usuario'])) {
     http_response_code(401);
     echo json_encode(['error' => 'No autorizado']);
     exit;
@@ -304,17 +304,64 @@ function buscarHistorialPedidos($filtros) {
 function moverPedidoHistorial($id) {
     try {
         $db = ConectarDB();
-        
-        // Actualizar el estado del pedido a 'entregado' o 'cancelado'
-        $stmt = $db->prepare("UPDATE pedidos SET estado = 'entregado' WHERE id_pedido = ?");
+        // 1. Obtener todos los datos del pedido y sus relaciones
+        $stmt = $db->prepare("
+            SELECT p.*, c.nombre AS cliente_nombre, c.documento AS cliente_documento, c.telefono AS cliente_telefono, c.direccion AS cliente_direccion,
+                   z.nombre AS zona_nombre, z.tarifa_base AS zona_tarifa,
+                   d.nombre AS domiciliario_nombre, d.telefono AS domiciliario_telefono
+            FROM pedidos p
+            LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+            LEFT JOIN zonas z ON p.id_zona = z.id_zona
+            LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+            WHERE p.id_pedido = ?
+        ");
         $stmt->bind_param("i", $id);
         $stmt->execute();
-        
+        $result = $stmt->get_result();
+        $pedido = $result->fetch_assoc();
+        $stmt->close();
+        if (!$pedido) {
+            $db->close();
+            return ['error' => 'Pedido no encontrado'];
+        }
+        // 2. Insertar en historico_pedidos
+        $stmt = $db->prepare("
+            INSERT INTO historico_pedidos (
+                id_pedido_original, id_cliente, id_zona, id_domiciliario, estado, cantidad_paquetes, total, tiempo_estimado, fecha_pedido, fecha_completado,
+                cliente_nombre, cliente_documento, cliente_telefono, cliente_direccion, zona_nombre, zona_tarifa, domiciliario_nombre, domiciliario_telefono, usuario_proceso
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $usuario_proceso = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : null;
+        $stmt->bind_param(
+            "iiiisidssssssssssi",
+            $pedido['id_pedido'],
+            $pedido['id_cliente'],
+            $pedido['id_zona'],
+            $pedido['id_domiciliario'],
+            $pedido['estado'],
+            $pedido['cantidad_paquetes'],
+            $pedido['total'],
+            $pedido['tiempo_estimado'],
+            $pedido['fecha_pedido'],
+            $pedido['cliente_nombre'],
+            $pedido['cliente_documento'],
+            $pedido['cliente_telefono'],
+            $pedido['cliente_direccion'],
+            $pedido['zona_nombre'],
+            $pedido['zona_tarifa'],
+            $pedido['domiciliario_nombre'],
+            $pedido['domiciliario_telefono'],
+            $usuario_proceso
+        );
+        $stmt->execute();
+        $stmt->close();
+        // 3. Eliminar el pedido de la tabla principal
+        $stmt = $db->prepare("DELETE FROM pedidos WHERE id_pedido = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
         $stmt->close();
         $db->close();
-        
-        return ['success' => true, 'message' => 'Pedido movido a historial'];
-
+        return ['success' => true, 'message' => 'Pedido archivado correctamente'];
     } catch (Exception $e) {
         return ['error' => 'Error al mover pedido: ' . $e->getMessage()];
     }

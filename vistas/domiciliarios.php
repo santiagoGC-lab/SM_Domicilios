@@ -26,15 +26,36 @@ $nombreCompleto = obtenerNombreUsuario();
         </div>
         <div class="sidebar-menu">
             <?php if (tienePermiso('dashboard')): ?>
-            <a href="dashboard.php" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Inicio</span></a>
+                <a href="dashboard.php" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-text">Inicio</span>
+                </a>
             <?php endif; ?>
-            <a href="pedidos.php" class="menu-item"><i class="fas fa-shopping-bag"></i><span class="menu-text">Pedidos</span></a>
-            <a href="clientes.php" class="menu-item"><i class="fas fa-users"></i><span class="menu-text">Clientes</span></a>
-            <a href="domiciliarios.php" class="menu-item active"><i class="fas fa-motorcycle"></i><span class="menu-text">Domiciliarios</span></a>
-            <a href="zonas.php" class="menu-item"><i class="fas fa-map-marked-alt"></i><span class="menu-text">Zonas de Entrega</span></a>
-            <a href="reportes.php" class="menu-item"><i class="fas fa-chart-bar"></i><span class="menu-text">Reportes</span></a>
+            <a href="pedidos.php" class="menu-item">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="menu-text">Pedidos</span>
+            </a>
+            <a href="clientes.php" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span class="menu-text">Clientes</span>
+            </a>
+            <a href="domiciliarios.php" class="menu-item active">
+                <i class="fas fa-motorcycle"></i>
+                <span class="menu-text">Domiciliarios</span>
+            </a>
+            <a href="zonas.php" class="menu-item">
+                <i class="fas fa-map-marked-alt"></i>
+                <span class="menu-text">Zonas de Entrega</span>
+            </a>
+            <a href="reportes.php" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span class="menu-text">Reportes</span></a>
+            <a href="historial_pedidos.php" class="menu-item">
+                <i class="fas fa-history"></i>
+                <span class="menu-text">Historial Pedidos</span>
+            </a>
             <?php if (esAdmin()): ?>
-            <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
+                <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
             <?php endif; ?>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar"><i class="fas fa-sign-out-alt"></i><span class="menu-text">Cerrar Sesión</span></a>
         </div>
@@ -166,9 +187,14 @@ $nombreCompleto = obtenerNombreUsuario();
 
         function editarDomiciliario(id) {
             fetch(`../servicios/domiciliarios.php`, {
-                method: 'POST',
-                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener_por_id'); fd.append('id', id); return fd; })()
-            })
+                    method: 'POST',
+                    body: (() => {
+                        const fd = new FormData();
+                        fd.append('accion', 'obtener_por_id');
+                        fd.append('id', id);
+                        return fd;
+                    })()
+                })
                 .then(response => {
                     if (response.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
@@ -204,24 +230,24 @@ $nombreCompleto = obtenerNombreUsuario();
                 formData.append('id', id);
                 formData.append('accion', 'eliminar');
                 fetch('../servicios/domiciliarios.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => {
-                    if (res.status === 401) {
-                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../vistas/login.html';
-                        return Promise.reject('Sesión expirada');
-                    }
-                    return res.json();
-                })
-                .then(() => loadDomiciliarios())
-                .catch(error => {
-                    if (error !== 'Sesión expirada') {
-                        alert('Error al eliminar el domiciliario');
-                        console.error(error);
-                    }
-                });
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => {
+                        if (res.status === 401) {
+                            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                            window.location.href = '../vistas/login.html';
+                            return Promise.reject('Sesión expirada');
+                        }
+                        return res.json();
+                    })
+                    .then(() => loadDomiciliarios())
+                    .catch(error => {
+                        if (error !== 'Sesión expirada') {
+                            alert('Error al eliminar el domiciliario');
+                            console.error(error);
+                        }
+                    });
             }
         }
 
@@ -311,9 +337,13 @@ $nombreCompleto = obtenerNombreUsuario();
 
         function loadDomiciliarios() {
             fetch('../servicios/domiciliarios.php', {
-                method: 'POST',
-                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener'); return fd; })()
-            })
+                    method: 'POST',
+                    body: (() => {
+                        const fd = new FormData();
+                        fd.append('accion', 'obtener');
+                        return fd;
+                    })()
+                })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');

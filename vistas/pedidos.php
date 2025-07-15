@@ -13,7 +13,10 @@ try {
 // Obtener datos para las tarjetas del tablero
 $pendingOrders = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente' AND movido_historico = 0")->fetchColumn();
 $completedToday = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE() AND movido_historico = 0")->fetchColumn();
-$revenueToday = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE() AND movido_historico = 0")->fetchColumn() ?? 0.00;
+// Calcular ingresos del día sumando pedidos entregados activos y archivados
+$revenueTodayPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
+$revenueTodayArchivados = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
+$revenueToday = $revenueTodayPedidos + $revenueTodayArchivados;
 
 // Obtener pedidos recientes
 $stmt = $pdo->query("
@@ -122,7 +125,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
 
         <div class="recent-activity">
             <div class="orders-table">
-                <table>
+                <table id="ordersTable">
                     <thead>
                         <tr>
                             <th>ID Pedido</th>
@@ -134,7 +137,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="ordersTableBody">
                         <?php foreach ($recentOrders as $pedido): ?>
                             <tr>
                                 <td>#<?php echo $pedido['id_pedido']; ?></td>
@@ -173,6 +176,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                <div id="paginationPedidos" class="pagination"></div>
             </div>
         </div>
     </div>
@@ -213,14 +217,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                         <?php foreach ($domiciliarios as $domiciliario): ?>
                             <option value="<?php echo $domiciliario['id_domiciliario']; ?>"><?php echo htmlspecialchars($domiciliario['nombre']); ?></option>
                         <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="estado">Estado:</label>
-                    <select id="estado" name="estado" class="form-control" required>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="entregado">Entregado</option>
-                        <option value="cancelado">Cancelado</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -286,7 +282,8 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     document.getElementById('id_cliente').value = data.id_cliente || '';
                     document.getElementById('id_zona').value = data.id_zona || '';
                     document.getElementById('id_domiciliario').value = data.id_domiciliario || '';
-                    document.getElementById('estado').value = data.estado || 'pendiente';
+                    // Guardar el estado actual del pedido para enviarlo al actualizar
+                    window.estadoPedidoActual = data.estado || 'pendiente';
                     document.getElementById('bolsas').value = data.cantidad_paquetes || 1;
                     document.getElementById('total').value = parseFloat(data.total || 0).toFixed(2);
                     document.getElementById('tiempo_estimado').value = data.tiempo_estimado || 30;
@@ -524,6 +521,17 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 return;
             }
             const formData = new FormData(this);
+            // Si es nuevo pedido, agregamos el estado pendiente por defecto
+            if (!document.getElementById('id_pedido').value) {
+                formData.append('estado', 'pendiente');
+            } else {
+                // Si es edición, enviamos el estado actual del pedido (lo obtenemos del backend al editar)
+                if (window.estadoPedidoActual) {
+                    formData.append('estado', window.estadoPedidoActual);
+                } else {
+                    formData.append('estado', 'pendiente'); // fallback
+                }
+            }
             const url = document.getElementById('id_pedido').value ? '../servicios/pedidos.php' : '../servicios/pedidos.php';
             formData.append('accion', document.getElementById('id_pedido').value ? 'actualizar' : 'procesar');
             fetch(url, {
@@ -531,18 +539,20 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     body: formData
                 })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error en la solicitud: ' + response.status);
-                    }
-                    return response.json();
+                    // Mostrar el mensaje real del backend si hay error
+                    return response.json().then(data => ({ status: response.status, body: data }));
                 })
-                .then(data => {
-                    if (data.success) {
+                .then(({ status, body }) => {
+                    if (status !== 200) {
+                        alert(body.error || 'Error desconocido al procesar el pedido.');
+                        return;
+                    }
+                    if (body.success) {
                         alert(document.getElementById('id_pedido').value ? 'Pedido actualizado exitosamente' : 'Pedido creado exitosamente');
                         cerrarModal('modalNuevoPedido');
                         location.reload();
                     } else {
-                        alert('Error: ' + data.message);
+                        alert('Error: ' + (body.message || body.error));
                     }
                 })
                 .catch(error => {
@@ -552,6 +562,42 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     }
                 });
         };
+
+        // Paginación de pedidos (frontend)
+        (function() {
+            const rowsPerPage = 10;
+            const table = document.getElementById('ordersTable');
+            const tbody = document.getElementById('ordersTableBody');
+            const pagination = document.getElementById('paginationPedidos');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            let currentPage = 1;
+            const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+            function showPagePedidos(page) {
+                currentPage = page;
+                rows.forEach((row, i) => {
+                    row.style.display = (i >= (page-1)*rowsPerPage && i < page*rowsPerPage) ? '' : 'none';
+                });
+                renderPaginationPedidos();
+            }
+
+            function renderPaginationPedidos() {
+                let html = '';
+                if (totalPages > 1) {
+                    html += `<button onclick=\"showPagePedidos(1)\" ${currentPage===1?'disabled':''}>Primera</button>`;
+                    html += `<button onclick=\"showPagePedidos(${currentPage-1})\" ${currentPage===1?'disabled':''}>Anterior</button>`;
+                    for (let i = 1; i <= totalPages; i++) {
+                        html += `<button onclick=\"showPagePedidos(${i})\" ${currentPage===i?'class=active':''}>${i}</button>`;
+                    }
+                    html += `<button onclick=\"showPagePedidos(${currentPage+1})\" ${currentPage===totalPages?'disabled':''}>Siguiente</button>`;
+                    html += `<button onclick=\"showPagePedidos(${totalPages})\" ${currentPage===totalPages?'disabled':''}>Última</button>`;
+                }
+                pagination.innerHTML = html;
+            }
+
+            window.showPagePedidos = showPagePedidos;
+            showPagePedidos(1);
+        })();
     </script>
 </body>
 </html>

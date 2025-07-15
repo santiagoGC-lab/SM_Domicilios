@@ -10,7 +10,11 @@ try {
     $pedidosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
     $pedidosEntregadosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn();
     $pedidosPendientes = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente'")->fetchColumn();
-    $ingresosHoy = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
+    
+    // Ingresos de hoy: sumar pedidos entregados en ambas tablas
+    $ingresosHoyPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
+    $ingresosHoyHistorico = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE DATE(fecha_completado) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
+    $ingresosHoy = $ingresosHoyPedidos + $ingresosHoyHistorico;
     
     // Domiciliarios
     $domiciliariosActivos = $pdo->query("SELECT COUNT(*) FROM domiciliarios WHERE estado IN ('disponible', 'ocupado')")->fetchColumn();
@@ -111,6 +115,10 @@ try {
             <a href="reportes.php" class="menu-item">
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
+            </a>
+            <a href="historial_pedidos.php" class="menu-item">
+                <i class="fas fa-history"></i>
+                <span class="menu-text">Historial Pedidos</span>
             </a>
             <?php if (esAdmin()): ?>
             <a href="tabla_usuarios.php" class="menu-item">

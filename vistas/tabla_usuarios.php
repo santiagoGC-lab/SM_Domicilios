@@ -68,6 +68,10 @@ mysqli_close($conexion);
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
+            <a href="historial_pedidos.php" class="menu-item">
+                <i class="fas fa-history"></i>
+                <span class="menu-text">Historial Pedidos</span>
+            </a>
             <?php if (esAdmin()): ?>
             <a href="tabla_usuarios.php" class="menu-item active">
                 <i class="fas fa-users-cog"></i>
@@ -145,7 +149,7 @@ mysqli_close($conexion);
 
         <!-- Tabla de usuarios -->
         <div class="table-container">
-            <table class="users-table">
+            <table class="users-table" id="usersTable">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -200,6 +204,7 @@ mysqli_close($conexion);
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            <div id="pagination" class="pagination"></div>
         </div>
     </div>
 
@@ -373,6 +378,43 @@ mysqli_close($conexion);
             }
         }
     </script>
+    <script>
+// Paginación de usuarios (frontend)
+(function() {
+    const rowsPerPage = 10;
+    const table = document.getElementById('usersTable');
+    const tbody = document.getElementById('usersTableBody');
+    const pagination = document.getElementById('pagination');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    let currentPage = 1;
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+    function showPage(page) {
+        currentPage = page;
+        rows.forEach((row, i) => {
+            row.style.display = (i >= (page-1)*rowsPerPage && i < page*rowsPerPage) ? '' : 'none';
+        });
+        renderPagination();
+    }
+
+    function renderPagination() {
+        let html = '';
+        if (totalPages > 1) {
+            html += `<button onclick="showPage(1)" ${currentPage===1?'disabled':''}>Primera</button>`;
+            html += `<button onclick="showPage(${currentPage-1})" ${currentPage===1?'disabled':''}>Anterior</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button onclick="showPage(${i})" ${currentPage===i?'class=active':''}>${i}</button>`;
+            }
+            html += `<button onclick="showPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Siguiente</button>`;
+            html += `<button onclick="showPage(${totalPages})" ${currentPage===totalPages?'disabled':''}>Última</button>`;
+        }
+        pagination.innerHTML = html;
+    }
+
+    window.showPage = showPage;
+    showPage(1);
+})();
+</script>
 </body>
 
 </html>
