@@ -138,42 +138,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody">
-                        <?php foreach ($recentOrders as $pedido): ?>
-                            <tr>
-                                <td>#<?php echo $pedido['id_pedido']; ?></td>
-                                <td><?php echo htmlspecialchars($pedido['cliente']); ?></td>
-                                <td><?php echo htmlspecialchars($pedido['domiciliario'] ?? 'No asignado'); ?></td>
-                                <td><span class="estado-<?php echo strtolower($pedido['estado']); ?> estado"><?php echo ucfirst($pedido['estado']); ?></span></td>
-                                <td><?php echo date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])); ?></td>
-                                <td>
-                                    <?php 
-                                    $tiempo_estimado = $pedido['tiempo_estimado'] ?? 30;
-                                    if ($pedido['estado'] === 'pendiente') {
-                                        echo "<span class='tiempo-pendiente'>⏳ {$tiempo_estimado} min</span>";
-                                    } elseif ($pedido['estado'] === 'entregado') {
-                                        echo "<span class='tiempo-entregado'>✅ Entregado</span>";
-                                    } else {
-                                        echo "<span class='tiempo-cancelado'>❌ Cancelado</span>";
-                                    }
-                                    ?>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <?php if ($pedido['estado'] === 'pendiente'): ?>
-                                            <button class="btn btn-entregar" onclick="cambiarEstado(<?php echo $pedido['id_pedido']; ?>, 'entregado')" title="Marcar como entregado"><i class="fas fa-check"></i></button>
-                                        <?php endif; ?>
-                                        <?php if (in_array($pedido['estado'], ['pendiente'])): ?>
-                                            <button class="btn btn-cancelar" onclick="cambiarEstado(<?php echo $pedido['id_pedido']; ?>, 'cancelado')" title="Cancelar pedido"><i class="fas fa-times"></i></button>
-                                        <?php endif; ?>
-                                        <button class="btn btn-editar" onclick="editarPedido(<?php echo $pedido['id_pedido']; ?>)" title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-eliminar" onclick="eliminarPedido(<?php echo $pedido['id_pedido']; ?>)" title="Eliminar"><i class="fas fa-trash"></i></button>
-                                        <?php if (in_array($pedido['estado'], ['entregado', 'cancelado'])): ?>
-                                            <button class="btn btn-archivar" onclick="archivarPedido(<?php echo $pedido['id_pedido']; ?>)" title="Archivar"><i class="fas fa-archive"></i></button>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
+                        <!-- Aquí se llenarán los pedidos paginados -->
                     </tbody>
                 </table>
                 <div id="paginationPedidos" class="pagination"></div>
@@ -563,41 +528,93 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 });
         };
 
-        // Paginación de pedidos (frontend)
-        (function() {
-            const rowsPerPage = 10;
-            const table = document.getElementById('ordersTable');
+        // PAGINACIÓN PROFESIONAL
+        const rowsPerPage = 5;
+        let currentPage = 1;
+        let totalPedidos = 0;
+
+        function cargarPedidos(page = 1) {
+            fetch('../servicios/pedidos.php', {
+                method: 'POST',
+                body: (() => {
+                    const fd = new FormData();
+                    fd.append('accion', 'paginar');
+                    fd.append('pagina', page);
+                    fd.append('por_pagina', rowsPerPage);
+                    return fd;
+                })()
+            })
+            .then(res => res.json())
+            .then(data => {
+                totalPedidos = data.total;
+                renderPedidos(data.pedidos);
+                renderPagination(page);
+            })
+            .catch(err => {
+                alert('Error al cargar pedidos');
+                console.error(err);
+            });
+        }
+
+        function renderPedidos(pedidos) {
             const tbody = document.getElementById('ordersTableBody');
-            const pagination = document.getElementById('paginationPedidos');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            let currentPage = 1;
-            const totalPages = Math.ceil(rows.length / rowsPerPage);
-
-            function showPagePedidos(page) {
-                currentPage = page;
-                rows.forEach((row, i) => {
-                    row.style.display = (i >= (page-1)*rowsPerPage && i < page*rowsPerPage) ? '' : 'none';
-                });
-                renderPaginationPedidos();
-            }
-
-            function renderPaginationPedidos() {
-                let html = '';
-                if (totalPages > 1) {
-                    html += `<button onclick=\"showPagePedidos(1)\" ${currentPage===1?'disabled':''}>Primera</button>`;
-                    html += `<button onclick=\"showPagePedidos(${currentPage-1})\" ${currentPage===1?'disabled':''}>Anterior</button>`;
-                    for (let i = 1; i <= totalPages; i++) {
-                        html += `<button onclick=\"showPagePedidos(${i})\" ${currentPage===i?'class=active':''}>${i}</button>`;
-                    }
-                    html += `<button onclick=\"showPagePedidos(${currentPage+1})\" ${currentPage===totalPages?'disabled':''}>Siguiente</button>`;
-                    html += `<button onclick=\"showPagePedidos(${totalPages})\" ${currentPage===totalPages?'disabled':''}>Última</button>`;
+            tbody.innerHTML = '';
+            pedidos.forEach(order => {
+                const tr = document.createElement('tr');
+                let tiempoHtml = '';
+                if (order.estado === 'pendiente') {
+                    tiempoHtml = `<span class='tiempo-pendiente'>⏳ ${order.tiempo_estimado || 30} min</span>`;
+                } else if (order.estado === 'entregado') {
+                    tiempoHtml = `<span class='tiempo-entregado'>✅ Entregado</span>`;
+                } else {
+                    tiempoHtml = `<span class='tiempo-cancelado'>❌ Cancelado</span>`;
                 }
-                pagination.innerHTML = html;
-            }
+                let botonesHtml = '<div class="action-buttons">';
+                if (order.estado === 'pendiente') {
+                    botonesHtml += `<button class="btn btn-entregar" onclick="cambiarEstado(${order.id_pedido}, 'entregado')" title="Marcar como entregado"><i class="fas fa-check"></i></button>`;
+                }
+                if (['pendiente'].includes(order.estado)) {
+                    botonesHtml += `<button class="btn btn-cancelar" onclick="cambiarEstado(${order.id_pedido}, 'cancelado')" title="Cancelar pedido"><i class="fas fa-times"></i></button>`;
+                }
+                botonesHtml += `<button class="btn btn-editar" onclick="editarPedido(${order.id_pedido})" title="Editar"><i class="fas fa-edit"></i></button>`;
+                botonesHtml += `<button class="btn btn-eliminar" onclick="eliminarPedido(${order.id_pedido})" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+                if (['entregado', 'cancelado'].includes(order.estado)) {
+                    botonesHtml += `<button class="btn btn-archivar" onclick="archivarPedido(${order.id_pedido})" title="Archivar"><i class="fas fa-archive"></i></button>`;
+                }
+                botonesHtml += '</div>';
+                tr.innerHTML = `
+                    <td>#${order.id_pedido}</td>
+                    <td>${order.cliente}</td>
+                    <td>${order.domiciliario || 'No asignado'}</td>
+                    <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
+                    <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                    <td>${tiempoHtml}</td>
+                    <td>${botonesHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
-            window.showPagePedidos = showPagePedidos;
-            showPagePedidos(1);
-        })();
+        function renderPagination(page) {
+            const pagination = document.getElementById('paginationPedidos');
+            const totalPages = Math.ceil(totalPedidos / rowsPerPage) || 1;
+            let html = '';
+            if (totalPages > 1) {
+                html += `<button onclick="cargarPedidos(1)" ${page===1?'disabled':''}>Primera</button>`;
+                html += `<button onclick="cargarPedidos(${page-1})" ${page===1?'disabled':''}>Anterior</button>`;
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `<button onclick="cargarPedidos(${i})" ${page===i?'class=active':''}>${i}</button>`;
+                }
+                html += `<button onclick="cargarPedidos(${page+1})" ${page===totalPages?'disabled':''}>Siguiente</button>`;
+                html += `<button onclick="cargarPedidos(${totalPages})" ${page===totalPages?'disabled':''}>Última</button>`;
+            }
+            pagination.innerHTML = html;
+        }
+
+        // Inicializar pedidos paginados al cargar la página
+        window.addEventListener('DOMContentLoaded', function() {
+            cargarPedidos(1);
+        });
     </script>
 </body>
 </html>

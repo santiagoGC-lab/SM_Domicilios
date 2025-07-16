@@ -144,55 +144,6 @@ function obtenerUsuarioPorId($id) {
         return ['error' => 'Error al obtener el usuario: ' . $e->getMessage()];
     }
 }
-
-// Función para crear usuarios de prueba
-function crearUsuariosPrueba() {
-    try {
-        $conexion = ConectarDB();
-        
-        // Usuarios de prueba
-        $usuarios = [
-            ['admin', 'Administrador', '123456789', 'admin123', 'admin'],
-            ['gestor', 'Gestor Domicilios', '987654321', 'gestor123', 'org_domicilios'],
-            ['cajera', 'Cajera', '456789123', 'cajera123', 'cajera']
-        ];
-
-        foreach ($usuarios as $usuario) {
-            $numeroDocumento = $usuario[2];
-            $nombreCompleto = $usuario[1];
-            $contrasena = $usuario[3];
-            $rol = $usuario[4];
-
-            $nombreArray = explode(' ', $nombreCompleto, 2);
-            $nombre = $nombreArray[0];
-            $apellido = $nombreArray[1] ?? '';
-
-            // Verificar si ya existe
-            $checkStmt = $conexion->prepare("SELECT id_usuario FROM usuarios WHERE numero_documento = ?");
-            $checkStmt->bind_param("s", $numeroDocumento);
-            $checkStmt->execute();
-            if ($checkStmt->get_result()->num_rows > 0) {
-                $checkStmt->close();
-                continue; // Saltar si ya existe
-            }
-            $checkStmt->close();
-
-            // Insertar usuario
-            $contrasenaHash = password_hash($contrasena, PASSWORD_DEFAULT);
-            $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, apellido, numero_documento, contrasena, rol) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssss", $nombre, $apellido, $numeroDocumento, $contrasenaHash, $rol);
-            $stmt->execute();
-            $stmt->close();
-        }
-
-        $conexion->close();
-        return ['success' => true, 'message' => 'Usuarios de prueba creados correctamente'];
-
-    } catch (Exception $e) {
-        return ['error' => 'Error al crear usuarios de prueba: ' . $e->getMessage()];
-    }
-}
-
 // Función para cerrar sesión
 function cerrarSesion() {
     // Regenerar ID de sesión para mayor seguridad
@@ -268,6 +219,66 @@ function verificarPermisos($usuario, $permiso) {
     return ['success' => true, 'tiene_permiso' => $tienePermiso];
 }
 
+// Función para actualizar usuario
+function actualizarUsuario($datos) {
+    try {
+        $conexion = ConectarDB();
+        $id = $datos['id'] ?? null;
+        $nombre = trim($datos['nombre'] ?? '');
+        $apellido = trim($datos['apellido'] ?? '');
+        $numeroDocumento = trim($datos['numeroDocumento'] ?? '');
+        $rol = $datos['rol'] ?? '';
+        $estado = $datos['estado'] ?? '';
+        if (!$id || !$nombre || !$apellido || !$numeroDocumento || !$rol || !$estado) {
+            return ['error' => 'Faltan campos obligatorios'];
+        }
+        $stmt = $conexion->prepare("UPDATE usuarios SET nombre=?, apellido=?, numero_documento=?, rol=?, estado=? WHERE id_usuario=?");
+        $stmt->bind_param("sssssi", $nombre, $apellido, $numeroDocumento, $rol, $estado, $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        $conexion->close();
+        return $success ? ['success' => true] : ['error' => 'No se pudo actualizar el usuario'];
+    } catch (Exception $e) {
+        return ['error' => 'Error al actualizar: ' . $e->getMessage()];
+    }
+}
+
+// Función para eliminar usuario
+function eliminarUsuario($id) {
+    try {
+        $conexion = ConectarDB();
+        if (!$id || !is_numeric($id)) {
+            return ['error' => 'ID inválido'];
+        }
+        $stmt = $conexion->prepare("DELETE FROM usuarios WHERE id_usuario = ?");
+        $stmt->bind_param("i", $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        $conexion->close();
+        return $success ? ['success' => true] : ['error' => 'No se pudo eliminar el usuario'];
+    } catch (Exception $e) {
+        return ['error' => 'Error al eliminar: ' . $e->getMessage()];
+    }
+}
+
+// Función para cambiar el estado de usuario (activo/inactivo)
+function cambiarEstadoUsuario($id, $nuevoEstado) {
+    try {
+        $conexion = ConectarDB();
+        if (!$id || !is_numeric($id) || !in_array($nuevoEstado, ['activo', 'inactivo'])) {
+            return ['error' => 'Datos inválidos'];
+        }
+        $stmt = $conexion->prepare("UPDATE usuarios SET estado=? WHERE id_usuario=?");
+        $stmt->bind_param("si", $nuevoEstado, $id);
+        $success = $stmt->execute();
+        $stmt->close();
+        $conexion->close();
+        return $success ? ['success' => true] : ['error' => 'No se pudo cambiar el estado'];
+    } catch (Exception $e) {
+        return ['error' => 'Error al cambiar estado: ' . $e->getMessage()];
+    }
+}
+
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -312,14 +323,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode($resultado);
             break;
             
-        case 'crear_prueba':
-            $resultado = crearUsuariosPrueba();
-            if (isset($resultado['error'])) {
-                http_response_code(500);
-            }
-            echo json_encode($resultado);
-            break;
-            
         case 'cerrar_sesion':
             $resultado = cerrarSesion();
             echo json_encode($resultado);
@@ -327,6 +330,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
         case 'verificar_permisos':
             $resultado = verificarPermisos($_POST['usuario'], $_POST['permiso']);
+            if (isset($resultado['error'])) {
+                http_response_code(400);
+            }
+            echo json_encode($resultado);
+            break;
+            
+        case 'actualizar':
+            $resultado = actualizarUsuario($_POST);
+            if (isset($resultado['error'])) {
+                http_response_code(400);
+            }
+            echo json_encode($resultado);
+            break;
+        case 'eliminar':
+            $resultado = eliminarUsuario($_POST['id']);
+            if (isset($resultado['error'])) {
+                http_response_code(400);
+            }
+            echo json_encode($resultado);
+            break;
+        case 'cambiar_estado':
+            $resultado = cambiarEstadoUsuario($_POST['id'], $_POST['estado']);
             if (isset($resultado['error'])) {
                 http_response_code(400);
             }

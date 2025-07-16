@@ -107,6 +107,7 @@ $nombreCompleto = obtenerNombreUsuario();
                         <!-- Cargado dinámicamente -->
                     </tbody>
                 </table>
+                <div id="pagination" class="pagination"></div>
             </div>
         </div>
     </div>
@@ -281,26 +282,64 @@ $nombreCompleto = obtenerNombreUsuario();
                         );
                     });
 
-                    filtrados.forEach(cliente => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${cliente.id_cliente}</td>
-                            <td>${cliente.nombre}</td>
-                            <td>${cliente.documento}</td>
-                            <td>${cliente.telefono}</td>
-                            <td>${cliente.direccion} - ${cliente.barrio}</td>
-                            <td class="estado-${cliente.tipo_cliente.toLowerCase()}">${cliente.tipo_cliente}</td>
-                            <td>
-                                <button class="btn btn-editar" onclick="editarCliente(${cliente.id_cliente})">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-eliminar" onclick="eliminarCliente(${cliente.id_cliente})">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+                    // PAGINACIÓN
+                    const rowsPerPage = 5;
+                    let currentPage = 1;
+                    const pagination = document.getElementById('pagination');
+
+                    function renderTable(page) {
+                        tbody.innerHTML = '';
+                        const start = (page - 1) * rowsPerPage;
+                        const end = start + rowsPerPage;
+                        filtrados.slice(start, end).forEach(cliente => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${cliente.id_cliente}</td>
+                                <td>${cliente.nombre}</td>
+                                <td>${cliente.documento}</td>
+                                <td>${cliente.telefono}</td>
+                                <td>${cliente.direccion} - ${cliente.barrio}</td>
+                                <td class="estado-${cliente.tipo_cliente.toLowerCase()}">${cliente.tipo_cliente}</td>
+                                <td>
+                                    <button class="btn btn-editar" onclick="editarCliente(${cliente.id_cliente})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-eliminar" onclick="eliminarCliente(${cliente.id_cliente})">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    function renderPagination(page) {
+                        const totalPages = Math.ceil(filtrados.length / rowsPerPage) || 1;
+                        let html = '';
+                        if (totalPages > 1) {
+                            html += `<button onclick="changePage(1)" ${page===1?'disabled':''}>Primera</button>`;
+                            html += `<button onclick="changePage(${page-1})" ${page===1?'disabled':''}>Anterior</button>`;
+                            for (let i = 1; i <= totalPages; i++) {
+                                html += `<button onclick="changePage(${i})" ${page===i?'class=active':''}>${i}</button>`;
+                            }
+                            html += `<button onclick="changePage(${page+1})" ${page===totalPages?'disabled':''}>Siguiente</button>`;
+                            html += `<button onclick="changePage(${totalPages})" ${page===totalPages?'disabled':''}>Última</button>`;
+                        }
+                        pagination.innerHTML = html;
+                    }
+
+                    window.changePage = function(page) {
+                        const totalPages = Math.ceil(filtrados.length / rowsPerPage) || 1;
+                        if (page < 1) page = 1;
+                        if (page > totalPages) page = totalPages;
+                        currentPage = page;
+                        renderTable(currentPage);
+                        renderPagination(currentPage);
+                    }
+
+                    // Inicializar
+                    renderTable(currentPage);
+                    renderPagination(currentPage);
                 })
                 .catch(err => console.error('Error al cargar clientes:', err));
         }

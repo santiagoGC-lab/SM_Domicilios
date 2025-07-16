@@ -89,7 +89,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 </button>
             </div>
 
-            <div class="users-table-container">
+            <div class="users-table-container" style="background: #fff; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.07); overflow-x: auto;">
                 <table class="users-table">
                     <thead>
                         <tr>
@@ -105,6 +105,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     </thead>
                     <tbody id="domiciliariosTableBody"></tbody>
                 </table>
+                <div id="paginationDomiciliarios" class="pagination"></div>
             </div>
         </div>
     </div>
@@ -164,9 +165,13 @@ $nombreCompleto = obtenerNombreUsuario();
     </div>
 
     <script>
+        const rowsPerPage = 5;
+        let currentPage = 1;
+        let totalDomiciliarios = 0;
+
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
-            loadDomiciliarios();
+            loadDomiciliarios(currentPage);
         });
 
         function setupEventListeners() {
@@ -335,53 +340,70 @@ $nombreCompleto = obtenerNombreUsuario();
             });
         }
 
-        function loadDomiciliarios() {
+        function loadDomiciliarios(page = 1) {
             fetch('../servicios/domiciliarios.php', {
-                    method: 'POST',
-                    body: (() => {
-                        const fd = new FormData();
-                        fd.append('accion', 'obtener');
-                        return fd;
-                    })()
-                })
-                .then(res => {
-                    if (res.status === 401) {
-                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../vistas/login.html';
-                        return Promise.reject('Sesión expirada');
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    const tbody = document.getElementById('domiciliariosTableBody');
-                    let html = '';
+                method: 'POST',
+                body: (() => {
+                    const fd = new FormData();
+                    fd.append('accion', 'paginar');
+                    fd.append('pagina', page);
+                    fd.append('por_pagina', rowsPerPage);
+                    return fd;
+                })()
+            })
+            .then(res => res.json())
+            .then(data => {
+                totalDomiciliarios = data.total;
+                renderDomiciliarios(data.domiciliarios);
+                renderPaginationDomiciliarios(page);
+            })
+            .catch(error => {
+                alert('Error al cargar domiciliarios');
+                console.error(error);
+            });
+        }
 
-                    data.forEach(d => {
-                        html += `
-                        <tr>
-                            <td>${d.id_domiciliario}</td>
-                            <td>${d.nombre}</td>
-                            <td>${d.telefono}</td>
-                            <td>${d.vehiculo}</td>
-                            <td>${d.placa}</td>
-                            <td>${d.zona || 'Sin asignar'}</td>
-                            <td><span class="estado-${d.estado.replace(/\s/g, '')}">${d.estado}</span></td>
-                            <td>
-                                <button class="btn btn-editar" onclick="editarDomiciliario(${d.id_domiciliario})"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-eliminar" onclick="eliminarDomiciliario(${d.id_domiciliario})"><i class="fas fa-trash-alt"></i></button>
-                            </td>
-                        </tr>`;
-                    });
+        function renderDomiciliarios(domiciliarios) {
+            const tbody = document.getElementById('domiciliariosTableBody');
+            let html = '';
+            domiciliarios.forEach(d => {
+                html += `
+                <tr>
+                    <td>${d.id_domiciliario}</td>
+                    <td>${d.nombre}</td>
+                    <td>${d.telefono}</td>
+                    <td>${d.vehiculo}</td>
+                    <td>${d.placa}</td>
+                    <td>${d.zona || 'Sin asignar'}</td>
+                    <td><span class="estado-${d.estado.replace(/\s/g, '')}">${d.estado}</span></td>
+                    <td>
+                        <button class="btn btn-editar" onclick="editarDomiciliario(${d.id_domiciliario})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-eliminar" onclick="eliminarDomiciliario(${d.id_domiciliario})"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+            filterDomiciliarios();
+        }
 
-                    tbody.innerHTML = html;
-                    filterDomiciliarios();
-                })
-                .catch(error => {
-                    if (error !== 'Sesión expirada') {
-                        alert('Error al cargar domiciliarios');
-                        console.error(error);
+        function renderPaginationDomiciliarios(page) {
+            const pagination = document.getElementById('paginationDomiciliarios');
+            const totalPages = Math.ceil(totalDomiciliarios / rowsPerPage);
+            let html = '';
+            if (totalPages > 1) {
+                html += `<button onclick="loadDomiciliarios(1)" ${page === 1 ? 'disabled' : ''}>Primera</button>`;
+                html += `<button onclick="loadDomiciliarios(${page - 1})" ${page === 1 ? 'disabled' : ''}>Anterior</button>`;
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === page) {
+                        html += `<button class="active">${i}</button>`;
+                    } else {
+                        html += `<button onclick="loadDomiciliarios(${i})">${i}</button>`;
                     }
-                });
+                }
+                html += `<button onclick="loadDomiciliarios(${page + 1})" ${page === totalPages ? 'disabled' : ''}>Siguiente</button>`;
+                html += `<button onclick="loadDomiciliarios(${totalPages})" ${page === totalPages ? 'disabled' : ''}>Última</button>`;
+            }
+            pagination.innerHTML = html;
         }
 
         window.onclick = function(event) {

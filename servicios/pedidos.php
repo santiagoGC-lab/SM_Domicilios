@@ -468,6 +468,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode($resultado);
             break;
             
+        case 'paginar':
+            $pagina = isset($_POST['pagina']) ? intval($_POST['pagina']) : 1;
+            $por_pagina = isset($_POST['por_pagina']) ? intval($_POST['por_pagina']) : 5;
+            $offset = ($pagina - 1) * $por_pagina;
+            $db = ConectarDB();
+            // Contar total de pedidos activos
+            $resTotal = $db->query("SELECT COUNT(*) as total FROM pedidos WHERE movido_historico = 0");
+            $total = $resTotal->fetch_assoc()['total'];
+            // Obtener pedidos paginados
+            $stmt = $db->prepare("
+                SELECT p.id_pedido, c.nombre AS cliente, c.documento, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.id_cliente, p.id_domiciliario, p.id_zona, p.cantidad_paquetes, p.total, p.tiempo_estimado
+                FROM pedidos p
+                LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+                LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+                WHERE p.movido_historico = 0
+                ORDER BY p.fecha_pedido DESC
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bind_param("ii", $por_pagina, $offset);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $pedidos = [];
+            while ($row = $result->fetch_assoc()) {
+                $pedidos[] = $row;
+            }
+            $stmt->close();
+            $db->close();
+            echo json_encode([
+                'pedidos' => $pedidos,
+                'total' => $total
+            ]);
+            break;
+            
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Acción no válida']);

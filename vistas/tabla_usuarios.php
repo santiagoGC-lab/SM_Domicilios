@@ -222,13 +222,13 @@ mysqli_close($conexion);
                            placeholder="Ej: Juan Pérez" required>
                 </div>
                 <div class="form-group">
-                    <label for="numeroDocumento">Número de Documento</label>
-                    <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-control" 
+                    <label for="numeroDocumentoNuevo">Número de Documento</label>
+                    <input type="text" id="numeroDocumentoNuevo" name="numeroDocumento" class="form-control" 
                            placeholder="Ej: 123456789" minlength="6" maxlength="12" pattern="[0-9]+" required>
                 </div>
                 <div class="form-group">
-                    <label for="rol">Rol</label>
-                    <select id="rol" name="rol" class="form-control" required>
+                    <label for="rolNuevo">Rol</label>
+                    <select id="rolNuevo" name="rol" class="form-control" required>
                         <option value="" disabled selected>Selecciona un rol</option>
                         <option value="admin">Administrador</option>
                         <option value="org_domicilios">Gestor de Domicilios</option>
@@ -269,12 +269,12 @@ mysqli_close($conexion);
                     <input type="text" id="apellido" name="apellido" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="numeroDocumento">Documento:</label>
-                    <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-control" required>
+                    <label for="numeroDocumentoEditar">Documento:</label>
+                    <input type="text" id="numeroDocumentoEditar" name="numeroDocumento" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="rol">Rol:</label>
-                    <select id="rol" name="rol" class="form-control" required>
+                    <label for="rolEditar">Rol:</label>
+                    <select id="rolEditar" name="rol" class="form-control" required>
                         <option value="admin">Administrador</option>
                         <option value="org_domicilios">Gestor de Domicilios</option>
                         <option value="cajera">Cajera</option>
@@ -334,8 +334,9 @@ mysqli_close($conexion);
             e.preventDefault();
             
             const formData = new FormData(this);
+            formData.append('accion', 'registrar'); // Agregar acción correcta
             
-            fetch('../servicios/registro.php', {
+            fetch('../servicios/usuarios.php', {
                 method: 'POST',
                 body: formData
             })
@@ -356,25 +357,112 @@ mysqli_close($conexion);
         });
 
         function editarUsuario(id) {
-            // Aquí implementarías la lógica para cargar los datos del usuario
-            // y mostrar el modal de edición
-            alert('Función de edición en desarrollo');
+            // Obtener datos del usuario y mostrar el modal de edición
+            fetch('../servicios/usuarios.php', {
+                method: 'POST',
+                body: (() => {
+                    const fd = new FormData();
+                    fd.append('accion', 'obtener_por_id');
+                    fd.append('id', id);
+                    return fd;
+                })()
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.usuario) {
+                    document.getElementById('usuarioId').value = data.usuario.id_usuario;
+                    document.getElementById('nombre').value = data.usuario.nombre;
+                    document.getElementById('apellido').value = data.usuario.apellido;
+                    document.getElementById('numeroDocumentoEditar').value = data.usuario.numero_documento;
+                    document.getElementById('rolEditar').value = data.usuario.rol;
+                    document.getElementById('estado').value = data.usuario.estado;
+                    document.getElementById('modalEditarUsuario').style.display = 'block';
+                } else {
+                    alert('No se pudo cargar el usuario');
+                }
+            })
+            .catch(error => {
+                alert('Error al cargar el usuario');
+                console.error(error);
+            });
         }
+
+        // Guardar cambios de edición
+
+        document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('accion', 'actualizar');
+            fetch('../servicios/usuarios.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Usuario actualizado exitosamente');
+                    closeModal('modalEditarUsuario');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'No se pudo actualizar el usuario'));
+                }
+            })
+            .catch(error => {
+                alert('Error al actualizar el usuario');
+                console.error(error);
+            });
+        });
 
         function eliminarUsuario(id) {
             if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-                // Aquí implementarías la lógica para eliminar el usuario
-                alert('Función de eliminación en desarrollo');
+                const formData = new FormData();
+                formData.append('accion', 'eliminar');
+                formData.append('id', id);
+                fetch('../servicios/usuarios.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Usuario eliminado exitosamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'No se pudo eliminar el usuario'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error al eliminar el usuario');
+                    console.error(error);
+                });
             }
         }
 
         function toggleEstado(id, estadoActual) {
             const nuevoEstado = estadoActual === 'activo' ? 'inactivo' : 'activo';
             const accion = estadoActual === 'activo' ? 'desactivar' : 'activar';
-            
             if (confirm(`¿Estás seguro de que deseas ${accion} este usuario?`)) {
-                // Aquí implementarías la lógica para cambiar el estado
-                alert(`Función de ${accion} en desarrollo`);
+                const formData = new FormData();
+                formData.append('accion', 'cambiar_estado');
+                formData.append('id', id);
+                formData.append('estado', nuevoEstado);
+                fetch('../servicios/usuarios.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Usuario ${accion}do exitosamente`);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || `No se pudo ${accion} el usuario`));
+                    }
+                })
+                .catch(error => {
+                    alert('Error al cambiar el estado del usuario');
+                    console.error(error);
+                });
             }
         }
     </script>
