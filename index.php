@@ -1,8 +1,10 @@
 <?php
-// Archivo principal de entrada para SM_Domicilios
-// Este archivo maneja el enrutamiento básico de la aplicación
 
-// Incluir configuración
+if (!isset($_GET['page'])) {
+    header("Location: index.php?page=login");
+    exit;
+}
+
 require_once 'config.php';
 
 // Iniciar sesión
@@ -17,35 +19,35 @@ if (!in_array($page, $public_pages) && !isAuthenticated()) {
     redirect('index.php?page=login');
 }
 
-// Definir las páginas disponibles
+// Definir las páginas disponibles CON RUTAS CORRECTAS
 $available_pages = [
     'login' => 'vistas/login.html',
-    'dashboard' => 'dashboard.php',
-    'clientes' => 'clientes.php',
-    'domiciliarios' => 'domiciliarios.php',
-    'pedidos' => 'pedidos.php',
-    'historial_pedidos' => 'historial_pedidos.php',
-    'zonas' => 'zonas.php',
-    'reportes' => 'reportes.php',
-    'tabla_usuarios' => 'tabla_usuarios.php',
-    'registro' => 'registro.php',
-    'recuperar-contra' => 'recuperar-contra.html',
-    'reset-password' => 'reset-password.php'
+    'dashboard' => 'vistas/dashboard.php',              // Está en vistas/
+    'clientes' => 'vistas/clientes.php',                // Está en vistas/
+    'domiciliarios' => 'vistas/domiciliarios.php',      // Está en vistas/
+    'pedidos' => 'vistas/pedidos.php',                  // Está en vistas/
+    'historial_pedidos' => 'vistas/historial_pedidos.php', // Está en vistas/
+    'zonas' => 'vistas/zonas.php',                      // Está en vistas/
+    'reportes' => 'vistas/reportes.php',                // Está en vistas/
+    'tabla_usuarios' => 'vistas/tabla_usuarios.php',    // Está en vistas/
+    'registro' => 'vistas/registro.php',                // Está en vistas/
+    'recuperar-contra' => 'vistas/recuperar-contra.html',
+    'reset-password' => 'vistas/reset-password.php'     // Está en vistas/
 ];
 
 // Verificar si la página existe
 if (!isset($available_pages[$page])) {
-    $page = 'vistas/login.html';
+    $page = 'login';
 }
 
-// Obtener la ruta del archivo
-$file_path = getViewPath($available_pages[$page]);
+// Obtener la ruta del archivo CORRECTA
+$file_path = ROOT_PATH . '/' . $available_pages[$page];
 
 // Verificar si el archivo existe
 if (!file_exists($file_path)) {
-    die('Error: Página no encontrada');
+    die('Error: Página no encontrada - ' . $file_path);
 }
 
 // Incluir la página
 include $file_path;
-?> 
+?>

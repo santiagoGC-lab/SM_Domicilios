@@ -1,0 +1,2 @@
+[2025-07-16 17:11:02] [WARNING] [IP: ::1] [User: 1] MONITORING_ALERT {"category":"security","check":"file_permissions","status":"warning","value":3,"threshold":"N\/A"}
+[2025-07-16 17:11:02] [INFO] [IP: ::1] [User: 1] MONITORING_ALERTS {"alerts_count":1,"alerts":[{"category":"security","check":"file_permissions","status":"warning","value":3,"threshold":"N\/A"}],"overall_status":"warning"}

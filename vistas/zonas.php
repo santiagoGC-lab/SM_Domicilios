@@ -108,6 +108,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     </thead>
                     <tbody id="zonasTableBody"></tbody>
                 </table>
+                <div id="paginationZonas" class="pagination"></div>
             </div>
         </div>
     </div>
@@ -156,9 +157,13 @@ $nombreCompleto = obtenerNombreUsuario();
     </div>
 
     <script>
+        const rowsPerPage = 5;
+        let currentPage = 1;
+        let totalZonas = 0;
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('formZona').addEventListener('submit', guardarZona);
-            cargarZonas();
+            cargarZonas(currentPage);
         });
 
         function closeModal(id) {
@@ -226,7 +231,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     .then(data => {
                         if (data.success) {
                             alert('Zona eliminada exitosamente');
-                            cargarZonas();
+                            cargarZonas(); // Recargar la página actual
                         } else {
                             alert('Error al eliminar la zona: ' + (data.error || 'Desconocido'));
                         }
@@ -285,52 +290,76 @@ $nombreCompleto = obtenerNombreUsuario();
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
 
-        function cargarZonas() {
-            const search = removeAccents(document.getElementById('searchInput').value.toLowerCase());
+        function cargarZonas(page = 1) {
+            const search = document.getElementById('searchInput').value.trim().toLowerCase();
             const estado = document.getElementById('filterStatus').value;
-
             fetch('../servicios/zonas.php', {
                 method: 'POST',
-                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener'); return fd; })()
+                body: (() => {
+                    const fd = new FormData();
+                    fd.append('accion', 'paginar');
+                    fd.append('pagina', page);
+                    fd.append('por_pagina', rowsPerPage);
+                    return fd;
+                })()
             })
-                .then(res => {
-                    if (res.status === 401) {
-                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../vistas/login.html';
-                        return Promise.reject('Sesión expirada');
-                    }
-                    return res.json();
-                })
-                .then(zonas => {
-                    const tbody = document.getElementById('zonasTableBody');
-                    tbody.innerHTML = '';
+            .then(res => res.json())
+            .then(data => {
+                console.log('Respuesta paginación zonas:', data); // DEPURACIÓN
+                totalZonas = data.total;
+                renderZonas(data.zonas, search, estado);
+                renderPaginationZonas(page);
+            })
+            .catch(error => {
+                alert('Error al cargar zonas');
+                console.error(error);
+            });
+        }
 
-                    zonas.forEach(z => {
-                        const nombreZona = removeAccents(z.nombre.toLowerCase());
-                        const ciudadZona = removeAccents(z.ciudad.toLowerCase());
-                        const estadoZona = z.estado;
+        function renderZonas(zonas, search, estado) {
+            const tbody = document.getElementById('zonasTableBody');
+            let html = '';
+            zonas.filter(z => {
+                const matchSearch =
+                    z.nombre.toLowerCase().includes(search) ||
+                    z.ciudad.toLowerCase().includes(search);
+                const matchEstado = !estado || z.estado === estado;
+                return matchSearch && matchEstado;
+            }).forEach(z => {
+                html += `
+                <tr>
+                    <td>${z.id_zona}</td>
+                    <td>${z.nombre}</td>
+                    <td>${z.ciudad}</td>
+                    <td>$${parseFloat(z.tarifa_base).toFixed(2)}</td>
+                    <td><span class="estado-${z.estado}">${z.estado.charAt(0).toUpperCase() + z.estado.slice(1)}</span></td>
+                    <td>
+                        <button class="btn btn-editar" onclick="editarZona(${z.id_zona})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-eliminar" onclick="eliminarZona(${z.id_zona})"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
 
-                        if ((nombreZona.includes(search) || ciudadZona.includes(search) || !search) && (!estado || estado === estadoZona)) {
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = `
-                                <td>${z.id_zona}</td>
-                                <td>${z.nombre}</td>
-                                <td>${z.ciudad}</td>
-                                <td>$${parseInt(z.tarifa_base).toLocaleString()}</td>
-                                <td><span class="estado-${estadoZona}">${estadoZona.charAt(0).toUpperCase() + estadoZona.slice(1)}</span></td>
-                                <td>
-                                    <button class="btn btn-editar" onclick="editarZona(${z.id_zona})"><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-eliminar" onclick="eliminarZona(${z.id_zona})"><i class="fas fa-trash-alt"></i></button>
-                                </td>`;
-                            tbody.appendChild(tr);
-                        }
-                    });
-                })
-                .catch(error => {
-                    if (error !== 'Sesión expirada') {
-                        alert('Error al cargar las zonas: ' + error.message);
+        function renderPaginationZonas(page) {
+            const pagination = document.getElementById('paginationZonas');
+            const totalPages = Math.ceil(totalZonas / rowsPerPage);
+            let html = '';
+            if (totalPages > 1) {
+                html += `<button onclick="cargarZonas(1)" ${page === 1 ? 'disabled' : ''}>Primera</button>`;
+                html += `<button onclick="cargarZonas(${page - 1})" ${page === 1 ? 'disabled' : ''}>Anterior</button>`;
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === page) {
+                        html += `<button class="active">${i}</button>`;
+                    } else {
+                        html += `<button onclick="cargarZonas(${i})">${i}</button>`;
                     }
-                });
+                }
+                html += `<button onclick="cargarZonas(${page + 1})" ${page === totalPages ? 'disabled' : ''}>Siguiente</button>`;
+                html += `<button onclick="cargarZonas(${totalPages})" ${page === totalPages ? 'disabled' : ''}>Última</button>`;
+            }
+            pagination.innerHTML = html;
         }
 
         // Manejo global de errores de sesión para todos los fetch

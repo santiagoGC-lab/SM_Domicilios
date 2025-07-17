@@ -38,6 +38,7 @@
 
             <!-- Formulario de Login -->
             <form id="formlogin" action="../login.php" method="post">
+                <input type="hidden" name="csrf_token" id="csrf_token" value="">
 
 
                 <!-- Campo de número de documento -->
@@ -107,6 +108,18 @@
 
         // Inicialización cuando el DOM está cargado
         document.addEventListener('DOMContentLoaded', function () {
+            // Obtener token CSRF del servidor
+            fetch('../servicios/get_csrf_token.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.token) {
+                        document.getElementById('csrf_token').value = data.token;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al obtener token CSRF:', error);
+                });
+            
             // Validación del formulario de login
             const loginForm = document.getElementById('formlogin');
 

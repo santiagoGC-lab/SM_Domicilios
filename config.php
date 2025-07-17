@@ -19,6 +19,7 @@ define('SERVICES_PATH', ROOT_PATH . '/servicios');
 define('VIEWS_PATH', ROOT_PATH . '/vistas');
 define('COMPONENTS_PATH', ROOT_PATH . '/componentes');
 define('TESTS_PATH', ROOT_PATH . '/tests');
+define('LOGS_PATH', ROOT_PATH . '/logs');
 
 // Configuración de sesión
 define('SESSION_TIMEOUT', 3600); // 1 hora en segundos
@@ -76,7 +77,7 @@ function showSuccess($message) {
 date_default_timezone_set('America/Bogota');
 
 // Configuración de errores (solo para desarrollo)
-define('DEVELOPMENT_MODE', true); // Cambiar a false en producción
+define('DEVELOPMENT_MODE', false); // Cambiar a false en producción
 if (DEVELOPMENT_MODE) {
     error_reporting(E_ALL);
     ini_set('display_errors', 1);

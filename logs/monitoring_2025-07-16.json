@@ -1,0 +1,127 @@
+[
+    {
+        "timestamp": "2025-07-16 17:11:02",
+        "overall_status": "warning",
+        "checks": {
+            "system": {
+                "cpu_usage": {
+                    "value": 29,
+                    "status": "ok",
+                    "threshold": 90
+                },
+                "memory_usage": {
+                    "value": 39,
+                    "status": "ok",
+                    "threshold": 85
+                },
+                "uptime": {
+                    "value": 1752703862,
+                    "status": "ok",
+                    "formatted": "20285d 22h 11m"
+                },
+                "php_version": {
+                    "value": "8.2.14",
+                    "status": "ok"
+                }
+            },
+            "database": {
+                "connection": {
+                    "value": "connected",
+                    "status": "ok"
+                },
+                "database_size": {
+                    "value": "393216",
+                    "status": "ok",
+                    "formatted": "384 KB"
+                },
+                "tables_count": {
+                    "value": 8,
+                    "status": "ok"
+                },
+                "corrupted_tables": {
+                    "value": 0,
+                    "status": "ok",
+                    "details": []
+                },
+                "response_time": {
+                    "value": 1.0500000000000000444089209850062616169452667236328125,
+                    "status": "ok",
+                    "unit": "ms"
+                }
+            },
+            "security": {
+                "failed_logins": {
+                    "value": 0,
+                    "status": "ok",
+                    "threshold": 10
+                },
+                "security_logs": {
+                    "value": 0,
+                    "status": "ok",
+                    "details": []
+                },
+                "file_permissions": {
+                    "value": 3,
+                    "status": "warning",
+                    "details": {
+                        "insecure": [
+                            {
+                                "file": "config.php",
+                                "permissions": "0666"
+                            },
+                            {
+                                "file": "servicios\/security.php",
+                                "permissions": "0666"
+                            },
+                            {
+                                "file": "servicios\/Database.php",
+                                "permissions": "0666"
+                            }
+                        ],
+                        "secure": []
+                    }
+                },
+                "active_sessions": {
+                    "value": 6,
+                    "status": "ok"
+                }
+            },
+            "performance": {
+                "app_response_time": {
+                    "value": 237,
+                    "status": "ok",
+                    "unit": "ms"
+                },
+                "error_logs": {
+                    "value": 0,
+                    "status": "ok",
+                    "details": []
+                },
+                "php_memory": {
+                    "value": 2097152,
+                    "status": "ok",
+                    "formatted": "2 MB",
+                    "limit": "128M"
+                }
+            },
+            "storage": {
+                "disk_usage": {
+                    "value": 39.68999999999999772626324556767940521240234375,
+                    "status": "ok",
+                    "threshold": 80
+                },
+                "free_space": {
+                    "value": 308029304832,
+                    "status": "ok",
+                    "formatted": "286.87 GB",
+                    "percentage": 60.31000000000000227373675443232059478759765625
+                },
+                "logs_size": {
+                    "value": 0,
+                    "status": "ok",
+                    "formatted": "0 B"
+                }
+            }
+        }
+    }
+]

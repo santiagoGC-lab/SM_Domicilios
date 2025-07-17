@@ -121,6 +121,25 @@ function obtenerZonaPorId($id) {
     }
 }
 
+function obtenerZonasPaginadas($pagina, $por_pagina) {
+    try {
+        $db = ConectarDB();
+        $offset = ($pagina - 1) * $por_pagina;
+        $sql = "SELECT * FROM zonas ORDER BY id_zona DESC LIMIT ? OFFSET ?";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("ii", $por_pagina, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $zonas = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $total = $db->query("SELECT COUNT(*) as total FROM zonas")->fetch_assoc()['total'];
+        $db->close();
+        return ['zonas' => $zonas, 'total' => $total];
+    } catch (Exception $e) {
+        return ['error' => 'Error al obtener zonas: ' . $e->getMessage()];
+    }
+}
+
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -155,6 +174,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($resultado['error'])) {
                 http_response_code(400);
             }
+            echo json_encode($resultado);
+            break;
+            
+        case 'paginar':
+            $pagina = isset($_POST['pagina']) ? intval($_POST['pagina']) : 1;
+            $por_pagina = isset($_POST['por_pagina']) ? intval($_POST['por_pagina']) : 10;
+            $resultado = obtenerZonasPaginadas($pagina, $por_pagina);
             echo json_encode($resultado);
             break;
             

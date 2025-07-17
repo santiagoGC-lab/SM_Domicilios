@@ -15,43 +15,24 @@ $totalArchived = $pdo->query("SELECT COUNT(*) FROM historico_pedidos")->fetchCol
 $archivedToday = $pdo->query("SELECT COUNT(*) FROM historico_pedidos WHERE DATE(fecha_completado) = CURDATE()")->fetchColumn();
 $revenueArchived = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado'")->fetchColumn() ?? 0.00;
 
-// Calcular ingresos del día sumando pedidos entregados activos y archivados
-$ingresosHoyPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
-$ingresosHoyArchivados = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
-$ingresosHoy = $ingresosHoyPedidos + $ingresosHoyArchivados;
+// Calcular ingresos del mes sumando pedidos entregados activos y archivados
+$ingresosMesPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND YEAR(fecha_pedido) = YEAR(CURDATE()) AND MONTH(fecha_pedido) = MONTH(CURDATE())")->fetchColumn() ?? 0.00;
+$ingresosMesArchivados = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado' AND YEAR(fecha_pedido) = YEAR(CURDATE()) AND MONTH(fecha_pedido) = MONTH(CURDATE())")->fetchColumn() ?? 0.00;
+$ingresosMes = $ingresosMesPedidos + $ingresosMesArchivados;
 
-// Obtener zonas activas para el filtro
-$zonasFiltro = $pdo->query("SELECT id_zona, nombre FROM zonas WHERE estado = 'activo' ORDER BY nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+// Procesar filtros - por defecto mostrar el mes actual
+$filtroEstado = isset($_GET['estado']) ? $_GET['estado'] : '';
+$filtroFechaInicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : date('Y-m-01'); // Primer día del mes actual
+$filtroFechaFin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : date('Y-m-t'); // Último día del mes actual
 
-// Procesar filtros
-$filtroZona = isset($_GET['zona']) ? intval($_GET['zona']) : '';
-$filtroFechaInicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : '';
-$filtroFechaFin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : '';
+// Variables para paginación (se usarán en JavaScript)
+$pagina = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
+$porPagina = 10;
 
-// Construir consulta dinámica para el historial
-$where = [];
-$params = [];
-if ($filtroZona) {
-    $where[] = 'hp.zona_nombre = (SELECT nombre FROM zonas WHERE id_zona = ?)';
-    $params[] = $filtroZona;
-}
-if ($filtroFechaInicio) {
-    $where[] = 'DATE(hp.fecha_pedido) >= ?';
-    $params[] = $filtroFechaInicio;
-}
-if ($filtroFechaFin) {
-    $where[] = 'DATE(hp.fecha_pedido) <= ?';
-    $params[] = $filtroFechaFin;
-}
-$whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-$sqlHistorial = "SELECT hp.id_historico, hp.id_pedido_original, hp.cliente_nombre, hp.domiciliario_nombre, hp.estado, hp.fecha_pedido, hp.fecha_completado, hp.cantidad_paquetes, hp.total, hp.tiempo_estimado, hp.zona_nombre FROM historico_pedidos hp $whereSQL ORDER BY hp.fecha_completado DESC LIMIT 100";
+// Obtener datos iniciales (sin paginación para mostrar estadísticas)
+$sqlHistorial = "SELECT hp.id_historico, hp.id_pedido_original, hp.cliente_nombre, hp.domiciliario_nombre, hp.estado, hp.fecha_pedido, hp.fecha_completado, hp.cantidad_paquetes, hp.total, hp.tiempo_estimado, hp.zona_nombre FROM historico_pedidos hp ORDER BY hp.fecha_completado DESC LIMIT 10";
 $stmt = $pdo->prepare($sqlHistorial);
-if ($params) {
-    $types = str_repeat('s', count($params));
-    $stmt->execute($params);
-} else {
-    $stmt->execute();
-}
+$stmt->execute();
 $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -64,6 +45,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="shortcut icon" href="../componentes/img/logo2.png" />
     <link rel="stylesheet" href="../componentes/dashboard.css">
     <link rel="stylesheet" href="../componentes/pedidos.css">
+    <link rel="stylesheet" href="../componentes/cliente.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -153,6 +135,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="header">
             <div class="header-left">
                 <h2>Historial de Pedidos</h2>
+                <p style="margin: 0; color: #666; font-size: 14px;">Manejo por meses - Los registros del mes anterior se mueven a Reportes</p>
             </div>
             <div class="search-bar" style="margin-top:10px;">
                 <i class="fas fa-search"></i>
@@ -171,9 +154,9 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
-                    <h3 class="card-title">Ingresos del Día</h3>
+                    <h3 class="card-title">Ingresos del Mes</h3>
                 </div>
-                <div class="card-value">$<?php echo number_format($ingresosHoy, 2); ?></div>
+                <div class="card-value">$<?php echo number_format($ingresosMes, 2); ?></div>
             </div>
         </div>
 
@@ -183,12 +166,11 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <input type="date" name="fecha_inicio" id="fecha_inicio" value="<?php echo htmlspecialchars($filtroFechaInicio); ?>" class="input-form" style="min-width:130px;">
             <label for="fecha_fin">Hasta:</label>
             <input type="date" name="fecha_fin" id="fecha_fin" value="<?php echo htmlspecialchars($filtroFechaFin); ?>" class="input-form" style="min-width:130px;">
-            <label for="zona">Zona:</label>
-            <select name="zona" id="zona" class="input-form" style="min-width:150px;">
-                <option value="">Todas</option>
-                <?php foreach ($zonasFiltro as $zona): ?>
-                    <option value="<?php echo $zona['id_zona']; ?>" <?php if($filtroZona == $zona['id_zona']) echo 'selected'; ?>><?php echo htmlspecialchars($zona['nombre']); ?></option>
-                <?php endforeach; ?>
+            <label for="estado">Estado:</label>
+            <select name="estado" id="estado" class="input-form" style="min-width:150px;">
+                <option value="">Todos</option>
+                <option value="entregado" <?php if($filtroEstado == 'entregado') echo 'selected'; ?>>Entregado</option>
+                <option value="cancelado" <?php if($filtroEstado == 'cancelado') echo 'selected'; ?>>Cancelado</option>
             </select>
             <button type="submit" class="btn-login"><i class="fas fa-filter"></i> Filtrar</button>
         </form>
@@ -240,14 +222,26 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <script>
-        function buscarHistorial() {
-            const searchInput = document.getElementById('searchInput').value;
-            fetch('../servicios/buscar_historial_pedidos.php', {
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentFilters = {};
+
+        let allPedidos = []; // Almacenar todos los pedidos
+        let filteredPedidos = []; // Pedidos filtrados
+        const itemsPerPage = 5; // Items por página
+
+        // Función para cargar historial completo
+        function cargarHistorial(filtros = {}) {
+            const formData = new FormData();
+            formData.append('accion', 'obtener');
+            
+            if (filtros.fecha_inicio) formData.append('fecha_inicio', filtros.fecha_inicio);
+            if (filtros.fecha_fin) formData.append('fecha_fin', filtros.fecha_fin);
+            if (filtros.estado) formData.append('estado', filtros.estado);
+
+            fetch('../servicios/historial_pedidos.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'query=' + encodeURIComponent(searchInput)
+                body: formData
             })
             .then(response => {
                 if (!response.ok) {
@@ -259,31 +253,113 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 if (data.error) {
                     throw new Error(data.error);
                 }
-                const tbody = document.querySelector('.orders-table tbody');
-                tbody.innerHTML = '';
-                data.forEach(order => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>#${order.id_pedido_original}</td>
-                        <td>${order.cliente_nombre}</td>
-                        <td>${order.domiciliario_nombre || 'No asignado'}</td>
-                        <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
-                        <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                        <td>${new Date(order.fecha_completado).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                        <td>$${parseFloat(order.total).toFixed(2)}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                
+                allPedidos = data;
+                filteredPedidos = data;
+                currentPage = 1;
+                mostrarPagina(1);
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al buscar historial: ' + error.message);
+                alert('Error al cargar historial: ' + error.message);
             });
         }
 
-        // Agregar evento de búsqueda en tiempo real
+        // Función para mostrar una página específica
+        function mostrarPagina(pagina) {
+            const inicio = (pagina - 1) * itemsPerPage;
+            const fin = inicio + itemsPerPage;
+            const pedidosPagina = filteredPedidos.slice(inicio, fin);
+            
+            // Actualizar tabla
+            const tbody = document.getElementById('historialTableBody');
+            tbody.innerHTML = '';
+            
+            pedidosPagina.forEach(pedido => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${pedido.id_pedido_original}</td>
+                    <td>${pedido.cliente_nombre}</td>
+                    <td>${pedido.domiciliario_nombre || 'No asignado'}</td>
+                    <td>${pedido.zona_nombre || ''}</td>
+                    <td><span class="estado-${pedido.estado.toLowerCase()} estado">${pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1)}</span></td>
+                    <td>${new Date(pedido.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                    <td>$${parseFloat(pedido.total).toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-info" onclick="verDetalleHistorial(${pedido.id_historico})"><i class="fas fa-eye"></i> Ver</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Actualizar paginación
+            currentPage = pagina;
+            totalPages = Math.ceil(filteredPedidos.length / itemsPerPage);
+            renderPagination();
+        }
+
+        // Función para renderizar paginación
+        function renderPagination() {
+            const pagination = document.getElementById('paginationHistorial');
+            let html = '';
+            
+            if (totalPages > 1) {
+                html += `<button onclick="cambiarPagina(1)" ${currentPage === 1 ? 'disabled' : ''}>Primera</button>`;
+                html += `<button onclick="cambiarPagina(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Anterior</button>`;
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `<button onclick="cambiarPagina(${i})" ${currentPage === i ? 'class="active"' : ''}>${i}</button>`;
+                }
+                
+                html += `<button onclick="cambiarPagina(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Siguiente</button>`;
+                html += `<button onclick="cambiarPagina(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>Última</button>`;
+            }
+            
+            pagination.innerHTML = html;
+        }
+
+        // Función para cambiar página
+        function cambiarPagina(pagina) {
+            if (pagina < 1 || pagina > totalPages) return;
+            mostrarPagina(pagina);
+        }
+
+        // Función para buscar historial
+        function buscarHistorial() {
+            const searchInput = document.getElementById('searchInput').value;
+            if (searchInput.trim() === '') {
+                filteredPedidos = allPedidos;
+                mostrarPagina(1);
+                return;
+            }
+
+            // Filtrar localmente
+            filteredPedidos = allPedidos.filter(pedido => 
+                pedido.cliente_nombre.toLowerCase().includes(searchInput.toLowerCase()) ||
+                (pedido.domiciliario_nombre && pedido.domiciliario_nombre.toLowerCase().includes(searchInput.toLowerCase())) ||
+                (pedido.zona_nombre && pedido.zona_nombre.toLowerCase().includes(searchInput.toLowerCase())) ||
+                pedido.estado.toLowerCase().includes(searchInput.toLowerCase()) ||
+                pedido.id_pedido_original.toString().includes(searchInput)
+            );
+            
+            mostrarPagina(1);
+        }
+
+        // Evento de búsqueda en tiempo real
         document.getElementById('searchInput').addEventListener('input', function() {
             buscarHistorial();
+        });
+
+        // Evento para filtros
+        document.querySelector('.filtros-historial').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            currentFilters = {
+                fecha_inicio: formData.get('fecha_inicio'),
+                fecha_fin: formData.get('fecha_fin'),
+                estado: formData.get('estado')
+            };
+            cargarHistorial(currentFilters);
         });
 
         // Manejo global de errores de sesión
@@ -300,77 +376,68 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 });
             };
         })();
-    </script>
-    <script>
-// Paginación de historial de pedidos (frontend)
-(function() {
-    const rowsPerPage = 10;
-    const table = document.getElementById('historialTable');
-    const tbody = document.getElementById('historialTableBody');
-    const pagination = document.getElementById('paginationHistorial');
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    let currentPage = 1;
-    const totalPages = Math.ceil(rows.length / rowsPerPage);
 
-    function showPageHistorial(page) {
-        currentPage = page;
-        rows.forEach((row, i) => {
-            row.style.display = (i >= (page-1)*rowsPerPage && i < page*rowsPerPage) ? '' : 'none';
+        // Cargar historial inicial
+        document.addEventListener('DOMContentLoaded', function() {
+            // Por defecto cargar el mes actual
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            cargarHistorial({
+                fecha_inicio: fechaInicio,
+                fecha_fin: fechaFin
+            });
         });
-        renderPaginationHistorial();
-    }
-
-    function renderPaginationHistorial() {
-        let html = '';
-        if (totalPages > 1) {
-            html += `<button onclick=\"showPageHistorial(1)\" ${currentPage===1?'disabled':''}>Primera</button>`;
-            html += `<button onclick=\"showPageHistorial(${currentPage-1})\" ${currentPage===1?'disabled':''}>Anterior</button>`;
-            for (let i = 1; i <= totalPages; i++) {
-                html += `<button onclick=\"showPageHistorial(${i})\" ${currentPage===i?'class=active':''}>${i}</button>`;
-            }
-            html += `<button onclick=\"showPageHistorial(${currentPage+1})\" ${currentPage===totalPages?'disabled':''}>Siguiente</button>`;
-            html += `<button onclick=\"showPageHistorial(${totalPages})\" ${currentPage===totalPages?'disabled':''}>Última</button>`;
-        }
-        pagination.innerHTML = html;
-    }
-
-    window.showPageHistorial = showPageHistorial;
-    showPageHistorial(1);
-})();
-</script>
+    </script>
 <script>
 function verDetalleHistorial(id) {
-    fetch('../servicios/buscar_historial_pedidos.php', {
+    console.log('Ver detalles del pedido:', id); // Debug
+    
+    const formData = new FormData();
+    formData.append('accion', 'detalle');
+    formData.append('id_historico', id);
+    
+    fetch('../servicios/historial_pedidos.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'id_historico=' + encodeURIComponent(id)
+        body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status); // Debug
+        if (!response.ok) {
+            throw new Error('Error en la solicitud: ' + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Data recibida:', data); // Debug
+        
         if (data.error) {
             alert('Error: ' + data.error);
             return;
         }
+        
         // Construir el HTML con los datos usando estilos del sistema
-        let html = `<table class='data-table' style='width:100%;margin-bottom:0;'>`;
-        html += `<tr><th>ID Pedido</th><td>#${data.id_pedido_original}</td></tr>`;
-        html += `<tr><th>Cliente</th><td>${data.cliente_nombre} (${data.cliente_documento})</td></tr>`;
-        html += `<tr><th>Teléfono</th><td>${data.cliente_telefono || ''}</td></tr>`;
-        html += `<tr><th>Dirección</th><td>${data.cliente_direccion || ''}</td></tr>`;
-        html += `<tr><th>Domiciliario</th><td>${data.domiciliario_nombre || 'No asignado'}</td></tr>`;
-        html += `<tr><th>Zona</th><td>${data.zona_nombre || ''}</td></tr>`;
-        html += `<tr><th>Estado</th><td><span class='estado-${data.estado.toLowerCase()} estado'>${data.estado.charAt(0).toUpperCase() + data.estado.slice(1)}</span></td></tr>`;
-        html += `<tr><th>Fecha Pedido</th><td>${data.fecha_pedido}</td></tr>`;
-        html += `<tr><th>Fecha Archivado</th><td>${data.fecha_completado}</td></tr>`;
-        html += `<tr><th>Cantidad Paquetes</th><td>${data.cantidad_paquetes}</td></tr>`;
-        html += `<tr><th>Total</th><td>$${parseFloat(data.total).toFixed(2)}</td></tr>`;
-        html += `<tr><th>Tiempo Estimado</th><td>${data.tiempo_estimado} min</td></tr>`;
+        let html = `<table class='data-table' style='width:100%;margin-bottom:0;border-collapse:collapse;'>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>ID Pedido</th><td style='padding:8px;'>#${data.id_pedido_original}</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Cliente</th><td style='padding:8px;'>${data.cliente_nombre} (${data.cliente_documento})</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Teléfono</th><td style='padding:8px;'>${data.cliente_telefono || 'No disponible'}</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Dirección</th><td style='padding:8px;'>${data.cliente_direccion || 'No disponible'}</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Domiciliario</th><td style='padding:8px;'>${data.domiciliario_nombre || 'No asignado'}</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Zona</th><td style='padding:8px;'>${data.zona_nombre || ''}</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Estado</th><td style='padding:8px;'><span class='estado-${data.estado.toLowerCase()} estado'>${data.estado.charAt(0).toUpperCase() + data.estado.slice(1)}</span></td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Fecha Pedido</th><td style='padding:8px;'>${new Date(data.fecha_pedido).toLocaleString('es-ES')}</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Fecha Archivado</th><td style='padding:8px;'>${new Date(data.fecha_completado).toLocaleString('es-ES')}</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Cantidad Paquetes</th><td style='padding:8px;'>${data.cantidad_paquetes}</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Total</th><td style='padding:8px;'>$${parseFloat(data.total).toFixed(2)}</td></tr>`;
+        html += `<tr style='border-bottom:1px solid #ddd;'><th style='padding:8px;text-align:left;background:#f5f5f5;'>Tiempo Estimado</th><td style='padding:8px;'>${data.tiempo_estimado} min</td></tr>`;
         html += `</table>`;
+        
         document.getElementById('detalleHistorialContent').innerHTML = html;
         document.getElementById('modalDetalleHistorial').classList.add('active');
+        console.log('Modal abierto'); // Debug
     })
     .catch(error => {
-        alert('Error al cargar detalles: ' + error);
+        console.error('Error completo:', error); // Debug
+        alert('Error al cargar detalles: ' + error.message);
     });
 }
 function cerrarModalDetalleHistorial() {

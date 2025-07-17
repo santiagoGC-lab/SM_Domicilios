@@ -121,6 +121,7 @@
 .menu-text {
     display: block;
 }
+
 .main-content {
     margin-left: 250px;
     padding: 20px;
@@ -131,7 +132,7 @@
     display: none;
 }
 
-.sidebar.collapsed + .main-content {
+.sidebar.collapsed+.main-content {
     margin-left: 60px;
 }
 
@@ -359,49 +360,32 @@
 }
 
 /* Estilos para los estados */
-.estado-vip {
+.estado-vip,
+.estado-regular,
+.estado-corporativo {
+    display: inline-block;
     padding: 5px 10px;
     border-radius: 15px;
-    font-size: 0.9em;
+    font-size: 0.85em;
     font-weight: 500;
-    background-color: var(--vip-color);
     color: white;
-    text-transform: capitalize;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 80%;
-    height: 100%;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1;
+    vertical-align: middle;
+    min-width: 80px;
+}
+
+.estado-vip {
+    background-color: var(--vip-color);
 }
 
 .estado-regular {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.9em;
-    font-weight: 500;
     background-color: var(--regular-color);
-    color: white;
-    text-transform: capitalize;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 80%;
-    height: 100%;
 }
 
 .estado-corporativo {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.9em;
-    font-weight: 500;
     background-color: var(--corporativo-color);
-    color: white;
-    text-transform: capitalize;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 80%;
-    height: 100%;
 }
 
 .estado-activo {
@@ -818,6 +802,7 @@
     margin-top: 16px;
     margin-bottom: 8px;
 }
+
 .pagination button {
     background: #fff;
     border: 1px solid var(--primary-color);
@@ -828,6 +813,7 @@
     cursor: pointer;
     transition: background 0.2s, color 0.2s, border 0.2s;
 }
+
 .pagination button.active,
 .pagination button:focus {
     background: var(--primary-color);
@@ -835,6 +821,7 @@
     border: 1.5px solid var(--primary-color);
     outline: none;
 }
+
 .pagination button[disabled] {
     background: #eee;
     color: #aaa;
