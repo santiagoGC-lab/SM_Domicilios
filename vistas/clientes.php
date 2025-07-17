@@ -1,4 +1,5 @@
 <?php
+// --- Verificación de permisos y obtención de nombre de usuario ---
 require_once '../servicios/verificar_permisos.php';
 verificarAcceso('clientes');
 $nombreCompleto = obtenerNombreUsuario();
@@ -26,6 +27,7 @@ $nombreCompleto = obtenerNombreUsuario();
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
+            <?php // Menú lateral, muestra opciones según permisos del usuario ?>
             <?php if (tienePermiso('dashboard')): ?>
                 <a href="dashboard.php" class="menu-item">
                     <i class="fas fa-tachometer-alt"></i>
@@ -104,7 +106,7 @@ $nombreCompleto = obtenerNombreUsuario();
                         </tr>
                     </thead>
                     <tbody id="clientsTableBody">
-                        <!-- Cargado dinámicamente -->
+                        <!-- Cargado dinámicamente por JavaScript -->
                     </tbody>
                 </table>
                 <div id="pagination" class="pagination"></div>
@@ -112,7 +114,7 @@ $nombreCompleto = obtenerNombreUsuario();
         </div>
     </div>
 
-    <!-- Modal Nuevo Cliente Simplificado -->
+    <!-- Modal para crear o editar un cliente -->
     <div id="modalClient" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -159,15 +161,17 @@ $nombreCompleto = obtenerNombreUsuario();
     </div>
 
     <script>
+        // --- Al cargar la página, se listan los clientes ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Cargar clientes al iniciar
             loadClients();
         });
 
+        // Cierra el modal especificado por id
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
         }
 
+        // Abre el modal para crear un nuevo cliente
         function openNewClientModal() {
             document.getElementById('formClient').reset();
             document.getElementById('clientId').value = '';
@@ -175,6 +179,7 @@ $nombreCompleto = obtenerNombreUsuario();
             document.getElementById('modalClient').style.display = 'block';
         }
 
+        // Maneja el envío del formulario para crear/editar cliente
         document.getElementById('formClient').addEventListener('submit', function(e) {
             e.preventDefault();
             const submitButton = document.getElementById('submitButton');
@@ -192,6 +197,7 @@ $nombreCompleto = obtenerNombreUsuario();
             }
             const formData = new FormData(this);
             formData.append('accion', 'guardar');
+            // Envío de datos al backend para guardar cliente
             fetch('../servicios/clientes.php', {
                     method: 'POST',
                     body: formData
@@ -224,6 +230,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 });
         });
 
+        // Elimina un cliente por su id
         function eliminarCliente(id) {
             if (confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
                 const formData = new FormData();
@@ -250,10 +257,12 @@ $nombreCompleto = obtenerNombreUsuario();
             }
         }
 
+        // Quita acentos para mejorar la búsqueda
         function removeAccents(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
 
+        // Carga y muestra los clientes, aplica filtro y paginación
         function loadClients() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
             const searchTerm = removeAccents(searchInput);
@@ -271,6 +280,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     const tbody = document.getElementById('clientsTableBody');
                     tbody.innerHTML = '';
 
+                    // Filtra los clientes según el término de búsqueda
                     const filtrados = clientes.filter(cliente => {
                         return (
                             removeAccents(cliente.nombre.toLowerCase()).includes(searchTerm) ||
@@ -282,11 +292,12 @@ $nombreCompleto = obtenerNombreUsuario();
                         );
                     });
 
-                    // PAGINACIÓN
+                    // --- Paginación ---
                     const rowsPerPage = 5;
                     let currentPage = 1;
                     const pagination = document.getElementById('pagination');
 
+                    // Renderiza la tabla de clientes para la página actual
                     function renderTable(page) {
                         tbody.innerHTML = '';
                         const start = (page - 1) * rowsPerPage;
@@ -313,6 +324,7 @@ $nombreCompleto = obtenerNombreUsuario();
                         });
                     }
 
+                    // Renderiza los controles de paginación
                     function renderPagination(page) {
                         const totalPages = Math.ceil(filtrados.length / rowsPerPage) || 1;
                         let html = '';
@@ -328,6 +340,7 @@ $nombreCompleto = obtenerNombreUsuario();
                         pagination.innerHTML = html;
                     }
 
+                    // Cambia de página en la paginación
                     window.changePage = function(page) {
                         const totalPages = Math.ceil(filtrados.length / rowsPerPage) || 1;
                         if (page < 1) page = 1;
@@ -337,13 +350,14 @@ $nombreCompleto = obtenerNombreUsuario();
                         renderPagination(currentPage);
                     }
 
-                    // Inicializar
+                    // Inicializa la tabla y la paginación
                     renderTable(currentPage);
                     renderPagination(currentPage);
                 })
                 .catch(err => console.error('Error al cargar clientes:', err));
         }
 
+        // Carga los datos de un cliente y abre el modal para editar
         function editarCliente(id) {
             const formData = new FormData();
             formData.append('accion', 'obtener_por_id');

@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <!-- Sección de formulario -->
+        <!-- Sección de formulario de login -->
         <div class="form-auten">
             <!-- Contenedor para mensajes de alerta -->
             <div id="alertContainer"></div>
@@ -39,7 +39,6 @@
             <!-- Formulario de Login -->
             <form id="formlogin" action="../login.php" method="post">
                 <input type="hidden" name="csrf_token" id="csrf_token" value="">
-
 
                 <!-- Campo de número de documento -->
                 <div class="inputs-login">
@@ -88,7 +87,7 @@
             }
         }
 
-        // Función para mostrar mensajes de alerta
+        // Función para mostrar mensajes de alerta en la interfaz
         function showAlert(message, type = 'danger') {
             const alertContainer = document.getElementById('alertContainer');
             const alert = document.createElement('div');
@@ -108,7 +107,7 @@
 
         // Inicialización cuando el DOM está cargado
         document.addEventListener('DOMContentLoaded', function () {
-            // Obtener token CSRF del servidor
+            // Obtener token CSRF del servidor para seguridad
             fetch('../servicios/get_csrf_token.php')
                 .then(response => response.json())
                 .then(data => {
@@ -120,7 +119,7 @@
                     console.error('Error al obtener token CSRF:', error);
                 });
             
-            // Validación del formulario de login
+            // Validación del formulario de login antes de enviar
             const loginForm = document.getElementById('formlogin');
 
             if (loginForm) {
@@ -143,7 +142,7 @@
                 });
             }
 
-            // Verificar si hay mensajes de error o éxito en la URL
+            // Verificar si hay mensajes de error o éxito en la URL y mostrarlos
             const urlParams = new URLSearchParams(window.location.search);
             const errorMsg = urlParams.get('error');
             const successMsg = urlParams.get('success');

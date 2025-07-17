@@ -1,4 +1,5 @@
 <?php
+// --- Verificación de permisos y conexión a la base de datos ---
 require_once '../servicios/verificar_permisos.php';
 verificarAcceso('pedidos');
 
@@ -10,15 +11,15 @@ try {
     die("Error de conexión: " . $e->getMessage());
 }
 
-// Obtener datos para las tarjetas del tablero
+// --- Estadísticas para las tarjetas del tablero ---
 $pendingOrders = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente' AND movido_historico = 0")->fetchColumn();
 $completedToday = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE() AND movido_historico = 0")->fetchColumn();
 // Calcular ingresos del día sumando pedidos entregados activos y archivados
-$revenueTodayPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
-$revenueTodayArchivados = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
+$revenueTodayPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()") ->fetchColumn() ?? 0.00;
+$revenueTodayArchivados = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()") ->fetchColumn() ?? 0.00;
 $revenueToday = $revenueTodayPedidos + $revenueTodayArchivados;
 
-// Obtener pedidos recientes
+// --- Obtener pedidos recientes para mostrar en la tabla ---
 $stmt = $pdo->query("
     SELECT p.id_pedido, c.nombre AS cliente, c.documento, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.id_cliente, p.id_domiciliario, p.id_zona, p.cantidad_paquetes, p.total, p.tiempo_estimado
     FROM pedidos p
@@ -30,7 +31,7 @@ $stmt = $pdo->query("
 ");
 $recentOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Obtener clientes, zonas y domiciliarios para el formulario
+// --- Obtener clientes, zonas y domiciliarios para el formulario de pedidos ---
 $clients = $pdo->query("SELECT id_cliente, nombre, documento FROM clientes WHERE estado = 'activo'")->fetchAll(PDO::FETCH_ASSOC);
 $zones = $pdo->query("SELECT id_zona, nombre, tarifa_base FROM zonas WHERE estado = 'activo'")->fetchAll(PDO::FETCH_ASSOC);
 $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios WHERE estado = 'disponible'")->fetchAll(PDO::FETCH_ASSOC);
@@ -56,6 +57,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
+            <?php // Menú lateral, muestra opciones según permisos del usuario ?>
             <?php if (tienePermiso('dashboard')): ?>
             <a href="dashboard.php" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Inicio</span></a>
             <?php endif; ?>
@@ -100,6 +102,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         </div>
 
         <div class="dashboard-cards">
+            <!-- Tarjetas de resumen: pendientes, completados hoy e ingresos del día -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon"><i class="fas fa-clock"></i></div>
@@ -203,6 +206,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
     </div>
 
     <script>
+        // --- Función para abrir el modal de nuevo pedido ---
         function abrirModalNuevoPedido() {
             const modal = document.getElementById('modalNuevoPedido');
             const modalTitle = document.getElementById('modalTitle');
@@ -216,6 +220,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             setupFormListeners();
         }
 
+        // --- Función para editar un pedido existente ---
         function editarPedido(id) {
             const formData = new FormData();
             formData.append('accion', 'obtener');
@@ -262,6 +267,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 });
         }
 
+        // --- Sincroniza los campos del formulario de pedido (cliente, zona, total) ---
         function setupFormListeners() {
             const numeroDocumento = document.getElementById('numeroDocumento');
             const idCliente = document.getElementById('id_cliente');
@@ -281,6 +287,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             });
         }
 
+        // --- Cierra el modal especificado por id ---
         function cerrarModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
         }
@@ -296,6 +303,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             }
         };
 
+        // --- Buscar pedidos por texto en tiempo real ---
         function buscarPedido() {
             const searchInput = document.getElementById('searchInput').value;
             const formData = new FormData();
@@ -364,6 +372,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             buscarPedido();
         });
 
+        // --- Elimina un pedido por su id ---
         function eliminarPedido(id) {
             if (confirm('¿Está seguro de que desea eliminar este pedido?')) {
                 const formData = new FormData();
@@ -394,6 +403,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             }
         }
 
+        // --- Cambia el estado de un pedido (entregado/cancelado) ---
         function cambiarEstado(id, nuevoEstado) {
             const estados = {
                 'entregado': 'marcar como entregado',
@@ -429,6 +439,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             }
         }
 
+        // --- Archiva un pedido (lo mueve al historial) ---
         function archivarPedido(id) {
             if (confirm('¿Está seguro de que desea archivar este pedido?')) {
                 const formData = new FormData();
@@ -474,6 +485,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             };
         })();
 
+        // --- Envío del formulario de nuevo/editar pedido ---
         document.getElementById('formNuevoPedido').onsubmit = function(e) {
             e.preventDefault();
             const idCliente = document.getElementById('id_cliente').value;
@@ -528,7 +540,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 });
         };
 
-        // PAGINACIÓN PROFESIONAL
+        // --- Paginación profesional para la tabla de pedidos ---
         const rowsPerPage = 5;
         let currentPage = 1;
         let totalPedidos = 0;
@@ -556,6 +568,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             });
         }
 
+        // Renderiza la tabla de pedidos paginados
         function renderPedidos(pedidos) {
             const tbody = document.getElementById('ordersTableBody');
             tbody.innerHTML = '';
@@ -595,6 +608,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             });
         }
 
+        // Renderiza los controles de paginación
         function renderPagination(page) {
             const pagination = document.getElementById('paginationPedidos');
             const totalPages = Math.ceil(totalPedidos / rowsPerPage) || 1;

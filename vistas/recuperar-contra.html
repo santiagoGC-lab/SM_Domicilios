@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <!-- Sección de formulario -->
+        <!-- Sección de formulario de recuperación -->
         <div class="form-auten">
             <!-- Contenedor para mensajes de alerta -->
             <div id="alertContainer"></div>
@@ -64,7 +64,7 @@
                 </div>
             </form>
 
-            <!-- Mensaje informativo -->
+            <!-- Mensaje informativo adicional -->
             <div class="alert alert-info mt-4">
                 <i class="fas fa-info-circle me-2"></i> Si no recibes el correo, verifica tu bandeja de spam o contacta
                 al administrador del sistema.
@@ -74,7 +74,7 @@
 
     <!-- Scripts -->
     <script>
-        // Función para mostrar mensajes de alerta
+        // Función para mostrar mensajes de alerta en la interfaz
         function showAlert(message, type = 'danger') {
             const alertContainer = document.getElementById('alertContainer');
             const alert = document.createElement('div');
@@ -109,7 +109,7 @@
                 }
             });
 
-            // Verificar si hay mensajes de error o éxito en la URL
+            // Verificar si hay mensajes de error o éxito en la URL y mostrarlos
             const urlParams = new URLSearchParams(window.location.search);
             const errorMsg = urlParams.get('error');
             const successMsg = urlParams.get('success');

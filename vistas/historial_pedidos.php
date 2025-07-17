@@ -1,4 +1,5 @@
 <?php
+// --- Verificación de permisos y conexión a la base de datos ---
 require_once '../servicios/verificar_permisos.php';
 verificarAcceso('pedidos');
 
@@ -10,7 +11,7 @@ try {
     die("Error de conexión: " . $e->getMessage());
 }
 
-// Obtener datos para las tarjetas del tablero
+// --- Estadísticas para las tarjetas del tablero ---
 $totalArchived = $pdo->query("SELECT COUNT(*) FROM historico_pedidos")->fetchColumn();
 $archivedToday = $pdo->query("SELECT COUNT(*) FROM historico_pedidos WHERE DATE(fecha_completado) = CURDATE()")->fetchColumn();
 $revenueArchived = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado'")->fetchColumn() ?? 0.00;
@@ -20,16 +21,16 @@ $ingresosMesPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado =
 $ingresosMesArchivados = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado' AND YEAR(fecha_pedido) = YEAR(CURDATE()) AND MONTH(fecha_pedido) = MONTH(CURDATE())")->fetchColumn() ?? 0.00;
 $ingresosMes = $ingresosMesPedidos + $ingresosMesArchivados;
 
-// Procesar filtros - por defecto mostrar el mes actual
+// --- Procesar filtros para la búsqueda ---
 $filtroEstado = isset($_GET['estado']) ? $_GET['estado'] : '';
 $filtroFechaInicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : date('Y-m-01'); // Primer día del mes actual
 $filtroFechaFin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : date('Y-m-t'); // Último día del mes actual
 
-// Variables para paginación (se usarán en JavaScript)
+// --- Variables para paginación (se usan en JS) ---
 $pagina = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
 $porPagina = 10;
 
-// Obtener datos iniciales (sin paginación para mostrar estadísticas)
+// --- Obtener datos iniciales para la tabla (primeros 10 registros) ---
 $sqlHistorial = "SELECT hp.id_historico, hp.id_pedido_original, hp.cliente_nombre, hp.domiciliario_nombre, hp.estado, hp.fecha_pedido, hp.fecha_completado, hp.cantidad_paquetes, hp.total, hp.tiempo_estimado, hp.zona_nombre FROM historico_pedidos hp ORDER BY hp.fecha_completado DESC LIMIT 10";
 $stmt = $pdo->prepare($sqlHistorial);
 $stmt->execute();
@@ -111,6 +112,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
+            <?php // Menú lateral, muestra opciones según permisos del usuario ?>
             <?php if (tienePermiso('dashboard')): ?>
             <a href="dashboard.php" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Inicio</span></a>
             <?php endif; ?>
@@ -144,6 +146,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <div class="dashboard-cards">
+            <!-- Tarjetas de resumen: total archivados e ingresos del mes -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon"><i class="fas fa-archive"></i></div>
@@ -161,6 +164,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <!-- Filtros arriba de la tabla -->
+        <!-- Formulario de filtros por fecha y estado -->
         <form method="GET" class="filtros-historial">
             <label for="fecha_inicio">Desde:</label>
             <input type="date" name="fecha_inicio" id="fecha_inicio" value="<?php echo htmlspecialchars($filtroFechaInicio); ?>" class="input-form" style="min-width:130px;">
@@ -212,7 +216,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-    <!-- Modal para detalles del historial -->
+    <!-- Modal para mostrar detalles de un pedido archivado -->
     <div id="modalDetalleHistorial" class="modal">
         <div class="modal-content">
             <span class="close" onclick="cerrarModalDetalleHistorial()">&times;</span>
@@ -222,6 +226,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <script>
+        // --- Variables y estado para paginación y filtros ---
         let currentPage = 1;
         let totalPages = 1;
         let currentFilters = {};
@@ -230,7 +235,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         let filteredPedidos = []; // Pedidos filtrados
         const itemsPerPage = 5; // Items por página
 
-        // Función para cargar historial completo
+        // Función para cargar historial completo desde el backend
         function cargarHistorial(filtros = {}) {
             const formData = new FormData();
             formData.append('accion', 'obtener');
@@ -265,7 +270,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         }
 
-        // Función para mostrar una página específica
+        // Función para mostrar una página específica de la tabla
         function mostrarPagina(pagina) {
             const inicio = (pagina - 1) * itemsPerPage;
             const fin = inicio + itemsPerPage;
@@ -298,7 +303,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             renderPagination();
         }
 
-        // Función para renderizar paginación
+        // Renderiza los controles de paginación
         function renderPagination() {
             const pagination = document.getElementById('paginationHistorial');
             let html = '';
@@ -318,13 +323,13 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             pagination.innerHTML = html;
         }
 
-        // Función para cambiar página
+        // Cambia de página en la paginación
         function cambiarPagina(pagina) {
             if (pagina < 1 || pagina > totalPages) return;
             mostrarPagina(pagina);
         }
 
-        // Función para buscar historial
+        // Filtra el historial según el texto de búsqueda
         function buscarHistorial() {
             const searchInput = document.getElementById('searchInput').value;
             if (searchInput.trim() === '') {
@@ -350,7 +355,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             buscarHistorial();
         });
 
-        // Evento para filtros
+        // Evento para filtros (envío del formulario)
         document.querySelector('.filtros-historial').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -377,7 +382,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             };
         })();
 
-        // Cargar historial inicial
+        // Cargar historial inicial al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             // Por defecto cargar el mes actual
             const fechaInicio = document.getElementById('fecha_inicio').value;
@@ -389,6 +394,7 @@ $archivedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         });
     </script>
 <script>
+// Muestra el detalle de un pedido archivado en un modal
 function verDetalleHistorial(id) {
     console.log('Ver detalles del pedido:', id); // Debug
     
@@ -440,9 +446,11 @@ function verDetalleHistorial(id) {
         alert('Error al cargar detalles: ' + error.message);
     });
 }
+// Cierra el modal de detalle de historial
 function cerrarModalDetalleHistorial() {
     document.getElementById('modalDetalleHistorial').classList.remove('active');
 }
+// Cierra el modal si se hace clic fuera de él
 window.onclick = function(event) {
     const modal = document.getElementById('modalDetalleHistorial');
     if (event.target === modal) {

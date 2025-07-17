@@ -1,10 +1,11 @@
 <?php
+// --- Verificación de permisos y conexión a la base de datos ---
 require_once '../servicios/verificar_permisos.php';
 verificarAcceso('dashboard');
 
 require_once '../servicios/conexion.php';
 
-// Obtener estadísticas en tiempo real
+// --- Obtener estadísticas en tiempo real para el dashboard ---
 try {
     // Estadísticas principales
     $pedidosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
@@ -86,6 +87,7 @@ try {
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
+            <?php // Menú lateral, muestra opciones según permisos del usuario ?>
             <?php if (tienePermiso('dashboard')): ?>
             <a href="dashboard.php" class="menu-item active">
                 <i class="fas fa-tachometer-alt"></i>
@@ -146,6 +148,7 @@ try {
 
         <!-- Tarjetas principales -->
         <div class="dashboard-cards">
+            <!-- Tarjeta: Pedidos de hoy -->
             <div class="card" onclick="navigateTo('pedidos.php')">
                 <div class="card-header">
                     <h3 class="card-title">Pedidos Hoy</h3>
@@ -157,6 +160,7 @@ try {
                 <div class="card-footer"><?php echo $pedidosEntregadosHoy; ?> entregados</div>
             </div>
 
+            <!-- Tarjeta: Domiciliarios activos -->
             <div class="card" onclick="navigateTo('domiciliarios.php')">
                 <div class="card-header">
                     <h3 class="card-title">Domiciliarios Activos</h3>
@@ -168,6 +172,7 @@ try {
                 <div class="card-footer"><?php echo $domiciliariosDisponibles; ?> disponibles</div>
             </div>
 
+            <!-- Tarjeta: Pedidos pendientes -->
             <div class="card" onclick="navigateTo('pedidos.php?estado=pendiente')">
                 <div class="card-header">
                     <h3 class="card-title">Pedidos Pendientes</h3>
@@ -179,6 +184,7 @@ try {
                 <div class="card-footer">Requieren atención</div>
             </div>
 
+            <!-- Tarjeta: Ingresos de hoy -->
             <div class="card" onclick="navigateTo('reportes.php')">
                 <div class="card-header">
                     <h3 class="card-title">Ingresos Hoy</h3>
@@ -205,7 +211,7 @@ try {
                     </div>
                 </div>
 
-                <!-- Top domiciliarios -->
+                <!-- Top domiciliarios del día -->
                 <div class="stats-card">
                     <div class="stats-header">
                         <h3>Top Domiciliarios del Día</h3>
@@ -279,7 +285,7 @@ try {
                     </div>
                 </div>
 
-                <!-- Resumen rápido -->
+                <!-- Resumen rápido de clientes y zonas activas -->
                 <div class="quick-stats">
                     <div class="quick-stat">
                         <div class="quick-stat-icon">
@@ -305,10 +311,10 @@ try {
     </div>
 
     <script>
-        // Datos para el gráfico
+        // --- Datos para el gráfico de pedidos por estado ---
         const estadosData = <?php echo json_encode($pedidosPorEstado); ?>;
         
-        // Gráfico de pedidos por estado
+        // Gráfico de pedidos por estado usando Chart.js
         const ctx = document.getElementById('estadosChart').getContext('2d');
         new Chart(ctx, {
             type: 'doughnut',
@@ -336,7 +342,7 @@ try {
             }
         });
 
-        // Funciones de navegación
+        // Funciones de navegación y actualización
         function navigateTo(url) {
             window.location.href = url;
         }
@@ -354,7 +360,7 @@ try {
             location.reload();
         }
 
-        // Actualizar automáticamente cada 5 minutos
+        // Actualizar automáticamente la hora de última actualización cada 5 minutos
         setInterval(() => {
             const lastUpdate = document.querySelector('.last-update');
             if (lastUpdate) {

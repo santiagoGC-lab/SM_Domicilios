@@ -1,4 +1,5 @@
 <?php
+// --- Verificación de permisos y obtención de nombre de usuario ---
 require_once '../servicios/verificar_permisos.php';
 verificarAcceso('domiciliarios');
 $nombreCompleto = obtenerNombreUsuario();
@@ -25,6 +26,7 @@ $nombreCompleto = obtenerNombreUsuario();
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
+            <?php // Menú lateral, muestra opciones según permisos del usuario ?>
             <?php if (tienePermiso('dashboard')): ?>
                 <a href="dashboard.php" class="menu-item">
                     <i class="fas fa-tachometer-alt"></i>
@@ -110,7 +112,7 @@ $nombreCompleto = obtenerNombreUsuario();
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal para crear o editar un domiciliario -->
     <div id="modalEditar" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -165,15 +167,18 @@ $nombreCompleto = obtenerNombreUsuario();
     </div>
 
     <script>
+        // --- Variables de paginación y estado global ---
         const rowsPerPage = 5;
         let currentPage = 1;
         let totalDomiciliarios = 0;
 
+        // --- Inicialización de eventos y carga de domiciliarios al cargar la página ---
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             loadDomiciliarios(currentPage);
         });
 
+        // Configura los listeners de eventos principales
         function setupEventListeners() {
             document.getElementById('sidebarToggle').addEventListener('click', () => {
                 document.getElementById('sidebar').classList.toggle('collapsed');
@@ -181,6 +186,7 @@ $nombreCompleto = obtenerNombreUsuario();
             document.getElementById('formEditar').addEventListener('submit', handleDomiciliarioSubmit);
         }
 
+        // Abre el modal para crear un nuevo domiciliario
         function openNewDomiciliarioModal() {
             document.getElementById('modalTitle').textContent = 'Nuevo Domiciliario';
             document.getElementById('formEditar').reset();
@@ -190,6 +196,7 @@ $nombreCompleto = obtenerNombreUsuario();
             document.getElementById('modalEditar').style.display = 'block';
         }
 
+        // Carga los datos de un domiciliario y abre el modal para editar
         function editarDomiciliario(id) {
             fetch(`../servicios/domiciliarios.php`, {
                     method: 'POST',
@@ -229,6 +236,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 });
         }
 
+        // Elimina un domiciliario por su id
         function eliminarDomiciliario(id) {
             if (confirm('¿Deseas eliminar este domiciliario?')) {
                 const formData = new FormData();
@@ -256,10 +264,12 @@ $nombreCompleto = obtenerNombreUsuario();
             }
         }
 
+        // Cierra el modal especificado por id
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
         }
 
+        // Maneja el envío del formulario para crear/editar domiciliario
         function handleDomiciliarioSubmit(e) {
             e.preventDefault();
 
@@ -307,14 +317,17 @@ $nombreCompleto = obtenerNombreUsuario();
                 });
         }
 
+        // Redirige al menú de usuario (en este caso, al login)
         function showUserMenu() {
             window.location.href = '../vistas/login.html';
         }
 
+        // Quita tildes para mejorar la búsqueda
         function quitarTildes(texto) {
             return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
 
+        // Filtra los domiciliarios en la tabla según búsqueda y estado
         function filterDomiciliarios() {
             const searchInput = document.getElementById('searchInput').value.trim();
             const search = quitarTildes(searchInput.toLowerCase());
@@ -340,6 +353,7 @@ $nombreCompleto = obtenerNombreUsuario();
             });
         }
 
+        // Carga y muestra los domiciliarios, aplica paginación
         function loadDomiciliarios(page = 1) {
             fetch('../servicios/domiciliarios.php', {
                 method: 'POST',
@@ -363,6 +377,7 @@ $nombreCompleto = obtenerNombreUsuario();
             });
         }
 
+        // Renderiza la tabla de domiciliarios
         function renderDomiciliarios(domiciliarios) {
             const tbody = document.getElementById('domiciliariosTableBody');
             let html = '';
@@ -386,6 +401,7 @@ $nombreCompleto = obtenerNombreUsuario();
             filterDomiciliarios();
         }
 
+        // Renderiza los controles de paginación
         function renderPaginationDomiciliarios(page) {
             const pagination = document.getElementById('paginationDomiciliarios');
             const totalPages = Math.ceil(totalDomiciliarios / rowsPerPage);
@@ -406,6 +422,7 @@ $nombreCompleto = obtenerNombreUsuario();
             pagination.innerHTML = html;
         }
 
+        // Cierra el modal si se hace clic fuera de él
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
