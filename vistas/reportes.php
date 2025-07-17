@@ -1,10 +1,11 @@
 <?php
+// --- Verificación de permisos y conexión a la base de datos ---
 require_once '../servicios/verificar_permisos.php';
 verificarAcceso('reportes');
 
 require_once '../servicios/conexion.php';
 
-// Obtener estadísticas para los reportes
+// --- Obtener estadísticas para los reportes ---
 try {
     // Estadísticas generales
     $totalPedidos = $pdo->query("SELECT COUNT(*) FROM pedidos")->fetchColumn();
@@ -90,6 +91,7 @@ try {
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
+            <?php // Menú lateral, muestra opciones según permisos del usuario ?>
             <?php if (tienePermiso('dashboard')): ?>
             <a href="dashboard.php" class="menu-item">
                 <i class="fas fa-tachometer-alt"></i>
@@ -148,6 +150,7 @@ try {
         </div>
 
         <!-- Estadísticas principales -->
+        <!-- Tarjetas de resumen de estadísticas principales -->
         <div class="stats-cards">
             <div class="stat-card">
                 <div class="stat-icon">
@@ -320,6 +323,7 @@ try {
         </div>
 
         <!-- Pedidos Mensuales Archivados (ahora ocupa todo el ancho, debajo de los reportes) -->
+        <!-- Tabla de pedidos mensuales archivados por mes y año -->
         <?php
         $meses_es = [
             1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
@@ -400,12 +404,12 @@ try {
     </div>
 
     <script>
-        // Datos para los gráficos
+        // --- Datos para los gráficos de reportes ---
         const estadosData = <?php echo json_encode($pedidosPorEstado); ?>;
         const zonasData = <?php echo json_encode($pedidosPorZona); ?>;
         const ingresosData = <?php echo json_encode($pedidosUltimos7Dias); ?>;
 
-        // Gráfico de pedidos por estado
+        // Gráfico de pedidos por estado usando Chart.js
         const estadosCtx = document.getElementById('estadosChart').getContext('2d');
         new Chart(estadosCtx, {
             type: 'doughnut',
@@ -429,7 +433,7 @@ try {
             }
         });
 
-        // Gráfico de pedidos por zona
+        // Gráfico de pedidos por zona usando Chart.js
         const zonasCtx = document.getElementById('zonasChart').getContext('2d');
         new Chart(zonasCtx, {
             type: 'bar',
@@ -454,7 +458,7 @@ try {
             }
         });
 
-        // Gráfico de ingresos últimos 7 días
+        // Gráfico de ingresos últimos 7 días usando Chart.js
         const ingresosCtx = document.getElementById('ingresosChart').getContext('2d');
         new Chart(ingresosCtx, {
             type: 'line',
@@ -481,7 +485,7 @@ try {
             }
         });
 
-        // Función para exportar reportes
+        // Función para exportar reportes en PDF o descargar tablas
         function exportarReporte(tipo) {
             const formData = new FormData();
             formData.append('accion', 'exportar');
