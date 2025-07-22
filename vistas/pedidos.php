@@ -70,7 +70,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <a href="zonas.php" class="menu-item"><i class="fas fa-map-marked-alt"></i><span class="menu-text">Zonas de Entrega</span></a>
             <?php endif; ?>
             <a href="reportes.php" class="menu-item"><i class="fas fa-chart-bar"></i><span class="menu-text">Reportes</span></a>
-            <a href="historial_pedidos.php" class="menu-item"><i class="fas fa-history"></i><span class="menu-text">Historial Pedidos</span></a>
             <?php if (esAdmin()): ?>
             <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
             <?php endif; ?>

@@ -118,10 +118,6 @@ try {
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
-            <a href="historial_pedidos.php" class="menu-item">
-                <i class="fas fa-history"></i>
-                <span class="menu-text">Historial Pedidos</span>
-            </a>
             <?php if (esAdmin()): ?>
             <a href="tabla_usuarios.php" class="menu-item">
                 <i class="fas fa-users-cog"></i>

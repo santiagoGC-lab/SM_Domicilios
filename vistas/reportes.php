@@ -122,10 +122,6 @@ try {
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
-            <a href="historial_pedidos.php" class="menu-item">
-                <i class="fas fa-history"></i>
-                <span class="menu-text">Historial Pedidos</span>
-            </a>
             <?php if (esAdmin()): ?>
             <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
             <?php endif; ?>
@@ -358,12 +354,37 @@ try {
             if (isset($_GET['mes']) && isset($_GET['anio'])) {
                 $mes = intval($_GET['mes']);
                 $anio = intval($_GET['anio']);
+                $mesActual = intval(date('n'));
+                $anioActual = intval(date('Y'));
                 $db = new mysqli('localhost', 'root', 'root', 'sm_domicilios');
                 $db->set_charset('utf8mb4');
-                $sql = "SELECT * FROM pedidos_mensuales WHERE mes = $mes AND anio = $anio ORDER BY fecha_pedido DESC";
-                $result = $db->query($sql);
-                while ($row = $result->fetch_assoc()) {
-                    $pedidosMensuales[] = $row;
+                // Si es el mes y año actual, consultar ambos: activos y archivados
+                if ($mes === $mesActual && $anio === $anioActual) {
+                    // Pedidos activos de este mes
+                    $sqlActivos = "SELECT p.id_pedido AS id_pedido_original, c.nombre AS cliente_nombre, d.nombre AS domiciliario_nombre, z.nombre AS zona_nombre, p.estado, p.fecha_pedido, p.total
+                    FROM pedidos p
+                    LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+                    LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+                    LEFT JOIN zonas z ON p.id_zona = z.id_zona
+                    WHERE YEAR(p.fecha_pedido) = $anio AND MONTH(p.fecha_pedido) = $mes
+                    ORDER BY p.fecha_pedido DESC";
+                    $resultActivos = $db->query($sqlActivos);
+                    while ($row = $resultActivos->fetch_assoc()) {
+                        $pedidosMensuales[] = $row;
+                    }
+                    // Pedidos archivados de este mes
+                    $sqlArchivados = "SELECT * FROM pedidos_mensuales WHERE mes = $mes AND anio = $anio ORDER BY fecha_pedido DESC";
+                    $resultArchivados = $db->query($sqlArchivados);
+                    while ($row = $resultArchivados->fetch_assoc()) {
+                        $pedidosMensuales[] = $row;
+                    }
+                } else {
+                    // Solo pedidos archivados
+                    $sql = "SELECT * FROM pedidos_mensuales WHERE mes = $mes AND anio = $anio ORDER BY fecha_pedido DESC";
+                    $result = $db->query($sql);
+                    while ($row = $result->fetch_assoc()) {
+                        $pedidosMensuales[] = $row;
+                    }
                 }
                 $db->close();
             }
