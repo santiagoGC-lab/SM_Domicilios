@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 23-07-2025 a las 16:37:47
+-- Tiempo de generación: 23-07-2025 a las 15:14:28
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -93,8 +93,6 @@ CREATE TABLE `domiciliarios` (
   `id_domiciliario` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `telefono` varchar(20) NOT NULL,
-  `vehiculo` varchar(50) NOT NULL,
-  `placa` varchar(20) NOT NULL,
   `id_zona` int(11) DEFAULT NULL,
   `estado` enum('disponible','ocupado','inactivo') NOT NULL DEFAULT 'disponible',
   `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP
@@ -104,14 +102,14 @@ CREATE TABLE `domiciliarios` (
 -- Volcado de datos para la tabla `domiciliarios`
 --
 
-INSERT INTO `domiciliarios` (`id_domiciliario`, `nombre`, `telefono`, `vehiculo`, `placa`, `id_zona`, `estado`, `fecha_creacion`) VALUES
-(1, 'Juan Pérez', '3001234567', 'Moto', 'ABC123', 3, 'disponible', '2025-07-12 08:44:28'),
-(2, 'Carlos López', '3002345678', 'Moto', 'DEF456', 3, 'disponible', '2025-07-12 08:44:28'),
-(3, 'Ana García', '3003456789', 'Bicicleta', 'GHI789', NULL, 'disponible', '2025-07-12 08:44:28'),
-(4, 'Luis Rodríguez', '3004567890', 'Moto', 'JKL012', 3, 'disponible', '2025-07-12 08:44:28'),
-(6, 'Diego Ramírez', '3005678901', 'Moto', 'MNO345', 1, 'disponible', '2025-07-15 15:50:00'),
-(7, 'Valeria Castro', '3006789012', 'Bicicleta', 'PQR678', 2, 'disponible', '2025-07-15 16:00:00'),
-(8, 'Felipe Gómez', '3007890123', 'Moto', 'STU901', 3, 'disponible', '2025-07-15 16:10:00');
+INSERT INTO `domiciliarios` (`id_domiciliario`, `nombre`, `telefono`, `id_zona`, `estado`, `fecha_creacion`) VALUES
+(1, 'Juan Pérez', '3001234567', 3, 'disponible', '2025-07-12 08:44:28'),
+(2, 'Carlos López', '3002345678', 3, 'disponible', '2025-07-12 08:44:28'),
+(3, 'Ana García', '3003456789', NULL, 'disponible', '2025-07-12 08:44:28'),
+(4, 'Luis Rodríguez', '3004567890', 3, 'disponible', '2025-07-12 08:44:28'),
+(6, 'Diego Ramírez', '3005678901', 1, 'disponible', '2025-07-15 15:50:00'),
+(7, 'Valeria Castro', '3006789012', 2, 'disponible', '2025-07-15 16:00:00'),
+(8, 'Felipe Gómez', '3007890123', 3, 'disponible', '2025-07-15 16:10:00');
 
 -- --------------------------------------------------------
 
@@ -170,26 +168,28 @@ CREATE TABLE `pedidos` (
   `id_pedido` int(11) NOT NULL,
   `id_cliente` int(11) NOT NULL,
   `id_domiciliario` int(11) DEFAULT NULL,
-  `id_vehiculo` int(11) DEFAULT NULL,
   `id_zona` int(11) NOT NULL,
   `estado` enum('pendiente','en_camino','entregado','cancelado') NOT NULL DEFAULT 'pendiente',
-  `hora_salida` datetime DEFAULT NULL,
   `fecha_pedido` datetime DEFAULT CURRENT_TIMESTAMP,
   `cantidad_paquetes` int(11) NOT NULL,
   `total` decimal(10,2) NOT NULL,
   `tiempo_estimado` int(11) DEFAULT NULL,
-  `movido_historico` tinyint(1) DEFAULT '0'
+  `movido_historico` tinyint(1) DEFAULT '0',
+  `id_vehiculo` int(11) DEFAULT NULL,
+  `hora_salida` datetime DEFAULT NULL,
+  `hora_llegada` datetime DEFAULT NULL,
+  `domicilio_compartido` enum('SI','NO') DEFAULT 'NO'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Volcado de datos para la tabla `pedidos`
 --
 
-INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_vehiculo`, `id_zona`, `estado`, `hora_salida`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `movido_historico`) VALUES
-(1, 1, 1, NULL, 1, 'entregado', NULL, '2025-07-12 11:44:28', 2, '10000.00', 30, 1),
-(2, 2, 2, NULL, 2, 'entregado', NULL, '2025-07-12 12:44:28', 1, '12000.00', 30, 1),
-(4, 4, 1, NULL, 3, 'entregado', NULL, '2025-07-12 13:29:28', 1, '7000.00', 30, 1),
-(5, 1, 1, 1, 4, 'en_camino', '2025-07-23 11:29:35', '2025-07-23 10:01:57', 5, '8000.00', 30, 0);
+INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_zona`, `estado`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `movido_historico`) VALUES
+(1, 1, 1, 1, 'entregado', '2025-07-12 11:44:28', 2, '10000.00', 30, 1),
+(2, 2, 2, 2, 'entregado', '2025-07-12 12:44:28', 1, '12000.00', 30, 1),
+(4, 4, 1, 3, 'entregado', '2025-07-12 13:29:28', 1, '7000.00', 30, 1),
+(5, 1, NULL, 4, 'pendiente', '2025-07-23 10:01:57', 5, '8000.00', 30, 0);
 
 -- --------------------------------------------------------
 
@@ -251,27 +251,6 @@ INSERT INTO `usuarios` (`id_usuario`, `nombre`, `apellido`, `numero_documento`, 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `vehiculos`
---
-
-CREATE TABLE `vehiculos` (
-  `id_vehiculo` int(11) NOT NULL,
-  `tipo` varchar(50) NOT NULL,
-  `placa` varchar(20) NOT NULL,
-  `estado` enum('disponible','en_ruta','mantenimiento','inactivo') NOT NULL DEFAULT 'disponible',
-  `descripcion` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Volcado de datos para la tabla `vehiculos`
---
-
-INSERT INTO `vehiculos` (`id_vehiculo`, `tipo`, `placa`, `estado`, `descripcion`) VALUES
-(1, 'Carro', 'ADS552', 'disponible', 'CARRO');
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `zonas`
 --
 
@@ -319,7 +298,6 @@ ALTER TABLE `clientes`
 --
 ALTER TABLE `domiciliarios`
   ADD PRIMARY KEY (`id_domiciliario`),
-  ADD UNIQUE KEY `placa` (`placa`),
   ADD KEY `id_zona` (`id_zona`);
 
 --
@@ -340,7 +318,8 @@ ALTER TABLE `pedidos`
   ADD PRIMARY KEY (`id_pedido`),
   ADD KEY `id_cliente` (`id_cliente`),
   ADD KEY `id_domiciliario` (`id_domiciliario`),
-  ADD KEY `id_zona` (`id_zona`);
+  ADD KEY `id_zona` (`id_zona`),
+  ADD KEY `id_vehiculo` (`id_vehiculo`);
 
 --
 -- Indices de la tabla `pedidos_mensuales`
@@ -356,13 +335,6 @@ ALTER TABLE `pedidos_mensuales`
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id_usuario`),
   ADD UNIQUE KEY `numero_documento` (`numero_documento`);
-
---
--- Indices de la tabla `vehiculos`
---
-ALTER TABLE `vehiculos`
-  ADD PRIMARY KEY (`id_vehiculo`),
-  ADD UNIQUE KEY `placa` (`placa`);
 
 --
 -- Indices de la tabla `zonas`
@@ -417,12 +389,6 @@ ALTER TABLE `usuarios`
   MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT de la tabla `vehiculos`
---
-ALTER TABLE `vehiculos`
-  MODIFY `id_vehiculo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
 -- AUTO_INCREMENT de la tabla `zonas`
 --
 ALTER TABLE `zonas`
@@ -451,8 +417,51 @@ ALTER TABLE `domiciliarios`
 ALTER TABLE `pedidos`
   ADD CONSTRAINT `pedidos_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`),
   ADD CONSTRAINT `pedidos_ibfk_2` FOREIGN KEY (`id_domiciliario`) REFERENCES `domiciliarios` (`id_domiciliario`),
-  ADD CONSTRAINT `pedidos_ibfk_3` FOREIGN KEY (`id_zona`) REFERENCES `zonas` (`id_zona`);
+  ADD CONSTRAINT `pedidos_ibfk_3` FOREIGN KEY (`id_zona`) REFERENCES `zonas` (`id_zona`),
+  ADD CONSTRAINT `fk_pedidos_vehiculo` FOREIGN KEY (`id_vehiculo`) REFERENCES `vehiculos` (`id_vehiculo`);
 COMMIT;
+
+-- === CORRECCIONES PARA FLUJO COORDINADOR/VEHICULOS ===
+
+-- 1. Crear tabla vehiculos
+CREATE TABLE IF NOT EXISTS `vehiculos` (
+  `id_vehiculo` INT(11) NOT NULL AUTO_INCREMENT,
+  `tipo` VARCHAR(50) NOT NULL,
+  `placa` VARCHAR(20) NOT NULL UNIQUE,
+  `estado` ENUM('disponible','en_ruta','mantenimiento','inactivo') NOT NULL DEFAULT 'disponible',
+  `descripcion` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`id_vehiculo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 2. Quitar vehiculo y placa de domiciliarios
+ALTER TABLE `domiciliarios` DROP COLUMN `vehiculo`;
+ALTER TABLE `domiciliarios` DROP COLUMN `placa`;
+
+-- 3. Agregar campos a pedidos
+ALTER TABLE `pedidos` ADD COLUMN `id_vehiculo` INT(11) DEFAULT NULL AFTER `id_domiciliario`;
+ALTER TABLE `pedidos` ADD COLUMN `hora_salida` DATETIME DEFAULT NULL AFTER `estado`;
+ALTER TABLE `pedidos` ADD COLUMN `hora_llegada` DATETIME DEFAULT NULL AFTER `hora_salida`;
+ALTER TABLE `pedidos` ADD COLUMN `domicilio_compartido` ENUM('SI','NO') DEFAULT 'NO' AFTER `hora_llegada`;
+
+-- 4. Relación pedidos-vehiculos
+ALTER TABLE `pedidos` ADD CONSTRAINT `fk_pedidos_vehiculo` FOREIGN KEY (`id_vehiculo`) REFERENCES `vehiculos` (`id_vehiculo`);
+
+-- === FIN DE CORRECCIONES ===
+
+-- === REPARAR CLAVES FORÁNEAS DE PEDIDOS ===
+
+-- Eliminar claves foráneas si existen
+ALTER TABLE pedidos DROP FOREIGN KEY IF EXISTS pedidos_ibfk_1;
+ALTER TABLE pedidos DROP FOREIGN KEY IF EXISTS pedidos_ibfk_2;
+ALTER TABLE pedidos DROP FOREIGN KEY IF EXISTS fk_pedidos_vehiculo;
+
+-- Agregar claves foráneas correctamente
+ALTER TABLE pedidos
+  ADD CONSTRAINT pedidos_ibfk_1 FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+  ADD CONSTRAINT pedidos_ibfk_2 FOREIGN KEY (id_domiciliario) REFERENCES domiciliarios(id_domiciliario),
+  ADD CONSTRAINT fk_pedidos_vehiculo FOREIGN KEY (id_vehiculo) REFERENCES vehiculos(id_vehiculo);
+
+-- === FIN REPARACIÓN CLAVES FORÁNEAS ===
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

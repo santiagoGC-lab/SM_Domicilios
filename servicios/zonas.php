@@ -140,6 +140,27 @@ function obtenerZonasPaginadas($pagina, $por_pagina) {
     }
 }
 
+// Buscar zona por barrio (insensible a mayúsculas y tildes, compatible con cualquier collation)
+function buscarZonaPorBarrio($barrio) {
+    try {
+        $db = ConectarDB();
+        $stmt = $db->prepare("SELECT id_zona, nombre, tarifa_base FROM zonas WHERE LOWER(CONVERT(barrio USING utf8)) = LOWER(CONVERT(? USING utf8)) AND estado = 'activo' LIMIT 1");
+        $stmt->bind_param("s", $barrio);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $zona = $result->fetch_assoc();
+        $stmt->close();
+        $db->close();
+        if ($zona) {
+            return $zona;
+        } else {
+            return ['error' => 'Zona no encontrada para ese barrio'];
+        }
+    } catch (Exception $e) {
+        return ['error' => 'Error al buscar zona: ' . $e->getMessage()];
+    }
+}
+
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -181,6 +202,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pagina = isset($_POST['pagina']) ? intval($_POST['pagina']) : 1;
             $por_pagina = isset($_POST['por_pagina']) ? intval($_POST['por_pagina']) : 10;
             $resultado = obtenerZonasPaginadas($pagina, $por_pagina);
+            echo json_encode($resultado);
+            break;
+            
+        case 'buscar_por_barrio':
+            $resultado = buscarZonaPorBarrio($_POST['barrio'] ?? '');
+            if (isset($resultado['error'])) {
+                http_response_code(404);
+            }
             echo json_encode($resultado);
             break;
             

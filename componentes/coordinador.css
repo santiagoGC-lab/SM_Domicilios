@@ -1,0 +1,149 @@
+/* Botón de despachar y .btn-login con verde institucional */
+.btn-despachar, .btn-login {
+    background: #0d5c2c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    margin: 2px 0;
+    transition: background 0.2s;
+}
+.btn-despachar:hover, .btn-login:hover {
+    background:#178a50 ;
+}
+
+/* Botón de acción superior (Ver domiciliarios en ruta) */
+#btnVerEnRuta {
+    background:#0d5c2c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    margin: 2px 0;
+    transition: background 0.2s;
+}
+#btnVerEnRuta:hover {
+    background:#178a50;
+}
+
+/* Modal igual a pedidos.css */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(0,0,0,0.4);
+    align-items: center;
+    justify-content: center;
+}
+.modal.active {
+    display: flex;
+}
+.modal-content {
+    background: #fff;
+    margin: auto;
+    padding: 30px 30px 20px 30px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+    position: relative;
+}
+.modal-content h2 {
+    margin-top: 0;
+    font-size: 1.3rem;
+    color: #0d5c2c;
+    text-align: center;
+}
+.modal-content .close {
+    position: absolute;
+    right: 18px;
+    top: 12px;
+    font-size: 1.5rem;
+    color: #0d5c2c;
+    cursor: pointer;
+}
+.form-group {
+    margin-bottom: 16px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #333;
+    font-weight: 500;
+}
+.form-group select, .form-group input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+} 
+
+/* Panel flotante pequeño en esquina inferior derecha para domiciliarios en ruta */
+#panelEnRuta {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 320px;
+    max-height: 340px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(13,92,44,0.13);
+    z-index: 1200;
+    padding: 16px 12px 10px 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border: 1.5px solid #178a50;
+}
+#panelEnRuta h3 {
+    color: #0d5c2c;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.05rem;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+#tablaEnRuta {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.93rem;
+}
+#tablaEnRuta th, #tablaEnRuta td {
+    padding: 4px 2px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
+}
+#tablaEnRuta th {
+    background: #178a50;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.97rem;
+}
+.btn-llego {
+    background: linear-gradient(90deg, #178a50 0%, #0d5c2c 100%);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 0.93rem;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin: 0;
+}
+.btn-llego:hover {
+    background: linear-gradient(90deg, #0d5c2c 0%, #178a50 100%);
+} 

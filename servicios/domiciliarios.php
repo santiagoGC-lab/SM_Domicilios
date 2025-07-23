@@ -139,6 +139,19 @@ function obtenerDomiciliariosPaginados($pagina, $por_pagina) {
     }
 }
 
+// Función para obtener domiciliarios disponibles
+function obtenerDomiciliariosDisponibles() {
+    try {
+        $db = ConectarDB();
+        $result = $db->query("SELECT id_domiciliario, nombre FROM domiciliarios WHERE estado = 'disponible'");
+        $domiciliarios = $result->fetch_all(MYSQLI_ASSOC);
+        $db->close();
+        return $domiciliarios;
+    } catch (Exception $e) {
+        return ['error' => 'Error al obtener domiciliarios disponibles: ' . $e->getMessage()];
+    }
+}
+
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -174,6 +187,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pagina = isset($_POST['pagina']) ? intval($_POST['pagina']) : 1;
             $por_pagina = isset($_POST['por_pagina']) ? intval($_POST['por_pagina']) : 5;
             $resultado = obtenerDomiciliariosPaginados($pagina, $por_pagina);
+            echo json_encode($resultado);
+            break;
+            
+        case 'disponibles':
+            $resultado = obtenerDomiciliariosDisponibles();
+            if (isset($resultado['error'])) {
+                http_response_code(500);
+            }
             echo json_encode($resultado);
             break;
             

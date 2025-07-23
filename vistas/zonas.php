@@ -37,6 +37,10 @@ $nombreCompleto = obtenerNombreUsuario();
                 <i class="fas fa-shopping-bag"></i>
                 <span class="menu-text">Pedidos</span>
             </a>
+            <a href="coordinador.php" class="menu-item">
+                <i class="fas fa-truck"></i>
+                <span class="menu-text">Coordinador</span>
+            </a>
             <a href="clientes.php" class="menu-item">
                 <i class="fas fa-users"></i>
                 <span class="menu-text">Clientes</span>

@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 require_once '../config.php';
 require_once 'conexion.php';
 session_start();
@@ -16,7 +19,7 @@ function procesarPedido($datos) {
         $db = ConectarDB();
         
         // Validar datos requeridos
-        $required_fields = ['id_cliente', 'id_zona', 'id_domiciliario', 'estado', 'bolsas', 'total'];
+        $required_fields = ['id_cliente', 'id_zona', 'estado', 'bolsas', 'total'];
         foreach ($required_fields as $field) {
             if (!isset($datos[$field]) || empty($datos[$field])) {
                 return ['error' => "Campo requerido: $field"];
@@ -25,7 +28,7 @@ function procesarPedido($datos) {
         
         $id_cliente = intval($datos['id_cliente']);
         $id_zona = intval($datos['id_zona']);
-        $id_domiciliario = intval($datos['id_domiciliario']);
+        $id_domiciliario = isset($datos['id_domiciliario']) && $datos['id_domiciliario'] !== '' ? intval($datos['id_domiciliario']) : null;
         $estado = $datos['estado'];
         $cantidad_paquetes = intval($datos['bolsas']);
         $total = floatval($datos['total']);
@@ -54,15 +57,17 @@ function procesarPedido($datos) {
         $stmt->close();
         
         // Validar que el domiciliario existe y está disponible
-        $stmt = $db->prepare("SELECT id_domiciliario FROM domiciliarios WHERE id_domiciliario = ? AND estado = 'disponible'");
-        $stmt->bind_param("i", $id_domiciliario);
-        $stmt->execute();
-        if (!$stmt->get_result()->fetch_assoc()) {
+        if ($id_domiciliario !== null) {
+            $stmt = $db->prepare("SELECT id_domiciliario FROM domiciliarios WHERE id_domiciliario = ? AND estado = 'disponible'");
+            $stmt->bind_param("i", $id_domiciliario);
+            $stmt->execute();
+            if (!$stmt->get_result()->fetch_assoc()) {
+                $stmt->close();
+                $db->close();
+                return ['error' => 'Domiciliario no disponible'];
+            }
             $stmt->close();
-            $db->close();
-            return ['error' => 'Domiciliario no disponible'];
         }
-        $stmt->close();
         
         // Insertar el pedido
         $stmt = $db->prepare("
@@ -391,6 +396,91 @@ function archivarPedidosAutomatico() {
     }
 }
 
+// Obtener pedidos pendientes de despacho
+function obtenerPedidosPendientesDespacho() {
+    try {
+        $db = ConectarDB();
+        $query = "SELECT p.id_pedido, c.nombre as cliente, c.barrio, z.nombre as zona
+                  FROM pedidos p
+                  LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+                  LEFT JOIN zonas z ON p.id_zona = z.id_zona
+                  WHERE p.estado = 'pendiente' AND (p.id_domiciliario IS NULL OR p.id_domiciliario = 0)
+                        AND (p.id_vehiculo IS NULL OR p.id_vehiculo = '')
+                        AND (p.hora_salida IS NULL OR p.hora_salida = '')
+                  ORDER BY p.fecha_pedido ASC";
+        $result = $db->query($query);
+        $pedidos = [];
+        while ($row = $result->fetch_assoc()) {
+            $pedidos[] = $row;
+        }
+        $db->close();
+        return $pedidos;
+    } catch (Exception $e) {
+        return ['error' => 'Error al obtener pedidos pendientes: ' . $e->getMessage()];
+    }
+}
+
+function despacharPedido($id_pedido, $id_domiciliario, $id_vehiculo) {
+    try {
+        $db = ConectarDB();
+        // Actualizar pedido
+        $stmt = $db->prepare("UPDATE pedidos SET id_domiciliario = ?, id_vehiculo = ?, hora_salida = NOW(), estado = 'en_camino' WHERE id_pedido = ?");
+        $stmt->bind_param("iii", $id_domiciliario, $id_vehiculo, $id_pedido);
+        $stmt->execute();
+        $stmt->close();
+        // Marcar domiciliario como ocupado
+        $stmt2 = $db->prepare("UPDATE domiciliarios SET estado = 'ocupado' WHERE id_domiciliario = ?");
+        $stmt2->bind_param("i", $id_domiciliario);
+        $stmt2->execute();
+        $stmt2->close();
+        // Marcar vehículo como en_ruta
+        $stmt3 = $db->prepare("UPDATE vehiculos SET estado = 'en_ruta' WHERE id_vehiculo = ?");
+        $stmt3->bind_param("i", $id_vehiculo);
+        $stmt3->execute();
+        $stmt3->close();
+        $db->close();
+        return ['success' => true];
+    } catch (Exception $e) {
+        return ['error' => 'Error al despachar pedido: ' . $e->getMessage()];
+    }
+}
+
+function marcarLlegadaPedido($id_pedido) {
+    try {
+        $db = ConectarDB();
+        // Obtener domiciliario y vehículo del pedido
+        $stmt = $db->prepare("SELECT id_domiciliario, id_vehiculo FROM pedidos WHERE id_pedido = ?");
+        $stmt->bind_param("i", $id_pedido);
+        $stmt->execute();
+        $stmt->bind_result($id_domiciliario, $id_vehiculo);
+        $stmt->fetch();
+        $stmt->close();
+        // Actualizar pedido
+        $stmt2 = $db->prepare("UPDATE pedidos SET hora_llegada = NOW(), estado = 'entregado' WHERE id_pedido = ?");
+        $stmt2->bind_param("i", $id_pedido);
+        $stmt2->execute();
+        $stmt2->close();
+        // Marcar domiciliario como disponible
+        if ($id_domiciliario) {
+            $stmt3 = $db->prepare("UPDATE domiciliarios SET estado = 'disponible' WHERE id_domiciliario = ?");
+            $stmt3->bind_param("i", $id_domiciliario);
+            $stmt3->execute();
+            $stmt3->close();
+        }
+        // Marcar vehículo como disponible
+        if ($id_vehiculo) {
+            $stmt4 = $db->prepare("UPDATE vehiculos SET estado = 'disponible' WHERE id_vehiculo = ?");
+            $stmt4->bind_param("i", $id_vehiculo);
+            $stmt4->execute();
+            $stmt4->close();
+        }
+        $db->close();
+        return ['success' => true];
+    } catch (Exception $e) {
+        return ['error' => 'Error al marcar llegada: ' . $e->getMessage()];
+    }
+}
+
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -466,6 +556,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 http_response_code(500);
             }
             echo json_encode($resultado);
+            break;
+            
+        case 'pendientes_despacho':
+            $resultado = obtenerPedidosPendientesDespacho();
+            if (isset($resultado['error'])) {
+                http_response_code(500);
+            }
+            echo json_encode($resultado);
+            break;
+            
+        case 'despachar':
+            $id_pedido = intval($_POST['id_pedido']);
+            $id_domiciliario = intval($_POST['id_domiciliario']);
+            $id_vehiculo = intval($_POST['id_vehiculo']);
+            $resultado = despacharPedido($id_pedido, $id_domiciliario, $id_vehiculo);
+            if (isset($resultado['error'])) {
+                http_response_code(400);
+            }
+            echo json_encode($resultado);
+            break;
+            
+        case 'marcar_llegada':
+            $id_pedido = intval($_POST['id_pedido']);
+            $resultado = marcarLlegadaPedido($id_pedido);
+            if (isset($resultado['error'])) {
+                http_response_code(400);
+            }
+            echo json_encode($resultado);
+            break;
+        case 'en_ruta':
+            $db = ConectarDB();
+            $result = $db->query("SELECT p.id_pedido, d.nombre AS domiciliario, p.hora_salida, p.hora_llegada FROM pedidos p LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario WHERE p.estado = 'en_camino'");
+            $pedidos = $result->fetch_all(MYSQLI_ASSOC);
+            $db->close();
+            echo json_encode($pedidos);
             break;
             
         case 'paginar':

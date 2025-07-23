@@ -140,6 +140,31 @@ function obtenerClientePorId($id) {
     }
 }
 
+// Función para obtener un cliente por documento
+function obtenerClientePorDocumento($documento) {
+    try {
+        $db = ConectarDB();
+        if (!$documento) {
+            return ['error' => 'Documento no proporcionado'];
+        }
+        $stmt = $db->prepare("SELECT id_cliente, nombre, documento, telefono, direccion, barrio, tipo_cliente FROM clientes WHERE documento = ? AND estado = 'activo'");
+        $stmt->bind_param("s", $documento);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($cliente = $result->fetch_assoc()) {
+            $stmt->close();
+            $db->close();
+            return $cliente;
+        } else {
+            $stmt->close();
+            $db->close();
+            return ['error' => 'Cliente no encontrado'];
+        }
+    } catch (Exception $e) {
+        return ['error' => 'Error al obtener cliente: ' . $e->getMessage()];
+    }
+}
+
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -173,6 +198,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $resultado = obtenerClientePorId($_POST['id']);
             if (isset($resultado['error'])) {
                 http_response_code(400);
+            }
+            echo json_encode($resultado);
+            break;
+            
+        case 'obtener_por_documento':
+            $resultado = obtenerClientePorDocumento($_POST['documento']);
+            if (isset($resultado['error'])) {
+                http_response_code(404);
             }
             echo json_encode($resultado);
             break;

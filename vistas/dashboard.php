@@ -11,23 +11,23 @@ try {
     $pedidosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
     $pedidosEntregadosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn();
     $pedidosPendientes = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente'")->fetchColumn();
-    
+
     // Ingresos de hoy: sumar pedidos entregados en ambas tablas
     $ingresosHoyPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
     $ingresosHoyHistorico = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE DATE(fecha_completado) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
     $ingresosHoy = $ingresosHoyPedidos + $ingresosHoyHistorico;
-    
+
     // Domiciliarios
     $domiciliariosActivos = $pdo->query("SELECT COUNT(*) FROM domiciliarios WHERE estado IN ('disponible', 'ocupado')")->fetchColumn();
     $domiciliariosDisponibles = $pdo->query("SELECT COUNT(*) FROM domiciliarios WHERE estado = 'disponible'")->fetchColumn();
     $domiciliariosOcupados = $pdo->query("SELECT COUNT(*) FROM domiciliarios WHERE estado = 'ocupado'")->fetchColumn();
-    
+
     // Clientes activos
     $clientesActivos = $pdo->query("SELECT COUNT(*) FROM clientes WHERE estado = 'activo'")->fetchColumn();
-    
+
     // Zonas activas
     $zonasActivas = $pdo->query("SELECT COUNT(*) FROM zonas WHERE estado = 'activo'")->fetchColumn();
-    
+
     // Actividad reciente (últimos 10 pedidos)
     $actividadReciente = $pdo->query("
         SELECT p.id_pedido, c.nombre as cliente, d.nombre as domiciliario, p.estado, p.fecha_pedido, p.total
@@ -37,7 +37,7 @@ try {
         ORDER BY p.fecha_pedido DESC
         LIMIT 10
     ")->fetchAll();
-    
+
     // Top domiciliarios del día
     $topDomiciliarios = $pdo->query("
         SELECT d.nombre, COUNT(p.id_pedido) as entregas
@@ -50,7 +50,7 @@ try {
         ORDER BY entregas DESC
         LIMIT 5
     ")->fetchAll();
-    
+
     // Pedidos por estado (para gráfico)
     $pedidosPorEstado = $pdo->query("
         SELECT estado, COUNT(*) as total
@@ -59,7 +59,6 @@ try {
         GROUP BY estado
         ORDER BY total DESC
     ")->fetchAll();
-    
 } catch (Exception $e) {
     $error = $e->getMessage();
 }
@@ -87,42 +86,47 @@ try {
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
-            <?php // Menú lateral, muestra opciones según permisos del usuario ?>
+            <?php // Menú lateral, muestra opciones según permisos del usuario 
+            ?>
             <?php if (tienePermiso('dashboard')): ?>
-            <a href="dashboard.php" class="menu-item active">
-                <i class="fas fa-tachometer-alt"></i>
-                <span class="menu-text">Inicio</span>
-            </a>
+                <a href="dashboard.php" class="menu-item active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-text">Inicio</span>
+                </a>
             <?php endif; ?>
             <a href="pedidos.php" class="menu-item">
                 <i class="fas fa-shopping-bag"></i>
                 <span class="menu-text">Pedidos</span>
+            </a>
+            <a href="coordinador.php" class="menu-item">
+                <i class="fas fa-truck"></i>
+                <span class="menu-text">Coordinador</span>
             </a>
             <a href="clientes.php" class="menu-item">
                 <i class="fas fa-users"></i>
                 <span class="menu-text">Clientes</span>
             </a>
             <?php if (tienePermiso('domiciliarios')): ?>
-            <a href="domiciliarios.php" class="menu-item">
-                <i class="fas fa-motorcycle"></i>
-                <span class="menu-text">Domiciliarios</span>
-            </a>
+                <a href="domiciliarios.php" class="menu-item">
+                    <i class="fas fa-motorcycle"></i>
+                    <span class="menu-text">Domiciliarios</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
-            <a href="zonas.php" class="menu-item">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="menu-text">Zonas de Entrega</span>
-            </a>
+                <a href="zonas.php" class="menu-item">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span class="menu-text">Zonas de Entrega</span>
+                </a>
             <?php endif; ?>
             <a href="reportes.php" class="menu-item">
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
             <?php if (esAdmin()): ?>
-            <a href="tabla_usuarios.php" class="menu-item">
-                <i class="fas fa-users-cog"></i>
-                <span class="menu-text">Gestionar Usuarios</span>
-            </a>
+                <a href="tabla_usuarios.php" class="menu-item">
+                    <i class="fas fa-users-cog"></i>
+                    <span class="menu-text">Gestionar Usuarios</span>
+                </a>
             <?php endif; ?>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
                 <i class="fas fa-sign-out-alt"></i>
@@ -246,7 +250,7 @@ try {
                             <?php foreach ($actividadReciente as $actividad): ?>
                                 <div class="activity-item" onclick="verPedido(<?php echo $actividad['id_pedido']; ?>)">
                                     <div class="activity-icon">
-                                        <?php 
+                                        <?php
                                         switch ($actividad['estado']) {
                                             case 'entregado':
                                                 echo '<i class="fas fa-check-circle" style="color: #2ed573;"></i>';
@@ -264,11 +268,11 @@ try {
                                     </div>
                                     <div class="activity-details">
                                         <div class="activity-title">
-                                            Pedido #<?php echo $actividad['id_pedido']; ?> - 
+                                            Pedido #<?php echo $actividad['id_pedido']; ?> -
                                             <?php echo htmlspecialchars($actividad['cliente']); ?>
                                         </div>
                                         <div class="activity-subtitle">
-                                            <?php echo ucfirst($actividad['estado']); ?> - 
+                                            <?php echo ucfirst($actividad['estado']); ?> -
                                             $<?php echo number_format($actividad['total'], 2); ?>
                                         </div>
                                         <div class="activity-time">
@@ -309,7 +313,7 @@ try {
     <script>
         // --- Datos para el gráfico de pedidos por estado ---
         const estadosData = <?php echo json_encode($pedidosPorEstado); ?>;
-        
+
         // Gráfico de pedidos por estado usando Chart.js
         const ctx = document.getElementById('estadosChart').getContext('2d');
         new Chart(ctx, {

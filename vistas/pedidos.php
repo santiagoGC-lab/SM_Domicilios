@@ -15,8 +15,8 @@ try {
 $pendingOrders = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente' AND movido_historico = 0")->fetchColumn();
 $completedToday = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE() AND movido_historico = 0")->fetchColumn();
 // Calcular ingresos del día sumando pedidos entregados activos y archivados
-$revenueTodayPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()") ->fetchColumn() ?? 0.00;
-$revenueTodayArchivados = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()") ->fetchColumn() ?? 0.00;
+$revenueTodayPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
+$revenueTodayArchivados = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
 $revenueToday = $revenueTodayPedidos + $revenueTodayArchivados;
 
 // --- Obtener pedidos recientes para mostrar en la tabla ---
@@ -39,6 +39,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,27 +52,36 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
-            <?php // Menú lateral, muestra opciones según permisos del usuario ?>
+            <?php // Menú lateral, muestra opciones según permisos del usuario 
+            ?>
             <?php if (tienePermiso('dashboard')): ?>
-            <a href="dashboard.php" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Inicio</span></a>
+                <a href="dashboard.php" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Inicio</span></a>
             <?php endif; ?>
-            <a href="pedidos.php" class="menu-item active"><i class="fas fa-shopping-bag"></i><span class="menu-text">Pedidos</span></a>
+            <a href="pedidos.php" class="menu-item active">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="menu-text">Pedidos</span>
+            </a>
+            <a href="coordinador.php" class="menu-item">
+                <i class="fas fa-truck"></i>
+                <span class="menu-text">Coordinador</span>
+            </a>
             <a href="clientes.php" class="menu-item"><i class="fas fa-users"></i><span class="menu-text">Clientes</span></a>
             <?php if (tienePermiso('domiciliarios')): ?>
-            <a href="domiciliarios.php" class="menu-item"><i class="fas fa-motorcycle"></i><span class="menu-text">Domiciliarios</span></a>
+                <a href="domiciliarios.php" class="menu-item"><i class="fas fa-motorcycle"></i><span class="menu-text">Domiciliarios</span></a>
             <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
-            <a href="zonas.php" class="menu-item"><i class="fas fa-map-marked-alt"></i><span class="menu-text">Zonas de Entrega</span></a>
+                <a href="zonas.php" class="menu-item"><i class="fas fa-map-marked-alt"></i><span class="menu-text">Zonas de Entrega</span></a>
             <?php endif; ?>
             <a href="reportes.php" class="menu-item"><i class="fas fa-chart-bar"></i><span class="menu-text">Reportes</span></a>
             <?php if (esAdmin()): ?>
-            <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
+                <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
             <?php endif; ?>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar"><i class="fas fa-sign-out-alt"></i><span class="menu-text">Cerrar Sesión</span></a>
         </div>
@@ -81,13 +91,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         <div class="header">
             <div class="header-left">
                 <h2>Gestión de Pedidos</h2>
-                <?php if ($pendingOrders > 0): ?>
-                    <div class="notification-badge">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge-count"><?php echo $pendingOrders; ?></span>
-                        <span class="badge-text">Pedidos pendientes</span>
-                    </div>
-                <?php endif; ?>
             </div>
             <div class="search-bar">
                 <i class="fas fa-search"></i>
@@ -155,36 +158,31 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <h2 id="modalTitle">Nuevo Pedido</h2>
             <form id="formNuevoPedido">
                 <input type="hidden" id="id_pedido" name="id_pedido">
+                <input type="hidden" id="id_cliente" name="id_cliente">
                 <div class="form-group">
                     <label for="numeroDocumento">Cédula:</label>
                     <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="id_cliente">Cliente:</label>
-                    <select id="id_cliente" name="id_cliente" class="form-control" required>
-                        <option value="">Seleccione un cliente</option>
-                        <?php foreach ($clients as $client): ?>
-                            <option value="<?php echo $client['id_cliente']; ?>" data-documento="<?php echo $client['documento']; ?>"><?php echo htmlspecialchars($client['nombre']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label for="nombreCliente">Nombre:</label>
+                    <input type="text" id="nombreCliente" name="nombreCliente" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="id_zona">Zona:</label>
-                    <select id="id_zona" name="id_zona" class="form-control" required>
-                        <option value="">Seleccione una zona</option>
-                        <?php foreach ($zones as $zone): ?>
-                            <option value="<?php echo $zone['id_zona']; ?>" data-tarifa="<?php echo $zone['tarifa_base']; ?>"><?php echo htmlspecialchars($zone['nombre']); ?> ($<?php echo number_format($zone['tarifa_base'], 2); ?>)</option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label for="telefonoCliente">Teléfono:</label>
+                    <input type="text" id="telefonoCliente" name="telefonoCliente" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="id_domiciliario">Repartidor:</label>
-                    <select id="id_domiciliario" name="id_domiciliario" class="form-control" required>
-                        <option value="">Seleccione un repartidor</option>
-                        <?php foreach ($domiciliarios as $domiciliario): ?>
-                            <option value="<?php echo $domiciliario['id_domiciliario']; ?>"><?php echo htmlspecialchars($domiciliario['nombre']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label for="direccionCliente">Dirección:</label>
+                    <input type="text" id="direccionCliente" name="direccionCliente" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="barrioCliente">Barrio:</label>
+                    <input type="text" id="barrioCliente" name="barrioCliente" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="zonaAuto">Zona:</label>
+                    <input type="text" id="zonaAuto" name="zonaAuto" class="form-control" readonly required>
+                    <input type="hidden" id="id_zona" name="id_zona">
                 </div>
                 <div class="form-group">
                     <label for="bolsas">Cantidad de paquetes:</label>
@@ -194,12 +192,40 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     <label for="total">Total:</label>
                     <input type="number" id="total" name="total" class="form-control" step="0.01" required>
                 </div>
-                <div class="form-group">
-                    <label for="tiempo_estimado">Tiempo estimado (minutos):</label>
-                    <input type="number" id="tiempo_estimado" name="tiempo_estimado" class="form-control" min="15" max="120" value="30" required>
-                </div>
                 <button type="submit" class="btn-login">Guardar</button>
                 <button type="button" class="btn-login" onclick="cerrarModal('modalNuevoPedido')">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para crear cliente -->
+    <div id="modalCrearCliente" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal('modalCrearCliente')">×</span>
+            <h2>Crear Cliente</h2>
+            <form id="formCrearCliente">
+                <div class="form-group">
+                    <label for="crearDocumento">Cédula:</label>
+                    <input type="text" id="crearDocumento" name="crearDocumento" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="crearNombre">Nombre:</label>
+                    <input type="text" id="crearNombre" name="crearNombre" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="crearTelefono">Teléfono:</label>
+                    <input type="text" id="crearTelefono" name="crearTelefono" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="crearDireccion">Dirección:</label>
+                    <input type="text" id="crearDireccion" name="crearDireccion" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="crearBarrio">Barrio:</label>
+                    <input type="text" id="crearBarrio" name="crearBarrio" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-login">Guardar Cliente</button>
+                <button type="button" class="btn-login" onclick="cerrarModal('modalCrearCliente')">Cancelar</button>
             </form>
         </div>
     </div>
@@ -214,8 +240,9 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             form.reset();
             document.getElementById('id_pedido').value = '';
             document.getElementById('total').value = '';
-            document.getElementById('tiempo_estimado').value = '30';
             modal.classList.add('active');
+            autocompletarClientePorCedula();
+            autocompletarZonaPorBarrio();
             setupFormListeners();
         }
 
@@ -225,9 +252,9 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             formData.append('accion', 'obtener');
             formData.append('id', id);
             fetch('../servicios/pedidos.php', {
-                method: 'POST',
-                body: formData
-            })
+                    method: 'POST',
+                    body: formData
+                })
                 .then(response => {
                     if (response.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
@@ -266,24 +293,18 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 });
         }
 
-        // --- Sincroniza los campos del formulario de pedido (cliente, zona, total) ---
+        // --- Sincroniza los campos del formulario de pedido (solo zona y total) ---
         function setupFormListeners() {
-            const numeroDocumento = document.getElementById('numeroDocumento');
-            const idCliente = document.getElementById('id_cliente');
             const idZona = document.getElementById('id_zona');
-            numeroDocumento.addEventListener('input', () => {
-                const selectedOption = Array.from(idCliente.options).find(opt => opt.dataset.documento === numeroDocumento.value);
-                idCliente.value = selectedOption ? selectedOption.value : '';
-            });
-            idCliente.addEventListener('change', () => {
-                const selectedOption = idCliente.options[idCliente.selectedIndex];
-                numeroDocumento.value = selectedOption.dataset.documento || '';
-            });
-            idZona.addEventListener('change', () => {
-                const selectedOption = idZona.options[idZona.selectedIndex];
-                const tarifa = selectedOption.dataset.tarifa || 0;
-                document.getElementById('total').value = parseFloat(tarifa).toFixed(2);
-            });
+            const inputTotal = document.getElementById('total');
+            // Si el campo zona cambia (por autocompletado manual), actualiza el total si hay tarifa
+            if (idZona) {
+                idZona.addEventListener('change', () => {
+                    // Si el campo zona es hidden, normalmente no cambiará manualmente, pero dejamos la lógica por si acaso
+                    // El total ya se autocompleta desde autocompletarZonaPorBarrio
+                });
+            }
+            // No hay más campos a sincronizar
         }
 
         // --- Cierra el modal especificado por id ---
@@ -378,27 +399,27 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 formData.append('accion', 'eliminar');
                 formData.append('id', id);
                 fetch('../servicios/pedidos.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error en la solicitud: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        alert('Pedido eliminado exitosamente');
-                        location.reload();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al eliminar el pedido: ' + error.message);
-                });
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la solicitud: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            alert('Pedido eliminado exitosamente');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al eliminar el pedido: ' + error.message);
+                    });
             }
         }
 
@@ -414,27 +435,27 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 formData.append('id', id);
                 formData.append('estado', nuevoEstado);
                 fetch('../servicios/pedidos.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error en la solicitud: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        alert('Estado actualizado exitosamente');
-                        location.reload();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cambiar el estado: ' + error.message);
-                });
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la solicitud: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            alert('Estado actualizado exitosamente');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al cambiar el estado: ' + error.message);
+                    });
             }
         }
 
@@ -445,27 +466,27 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 formData.append('accion', 'mover_historial');
                 formData.append('id', id);
                 fetch('../servicios/pedidos.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error en la solicitud: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        alert('Pedido archivado exitosamente');
-                        location.reload();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al archivar el pedido: ' + error.message);
-                });
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la solicitud: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            alert('Pedido archivado exitosamente');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al archivar el pedido: ' + error.message);
+                    });
             }
         }
 
@@ -487,12 +508,16 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         // --- Envío del formulario de nuevo/editar pedido ---
         document.getElementById('formNuevoPedido').onsubmit = function(e) {
             e.preventDefault();
-            const idCliente = document.getElementById('id_cliente').value;
+            // Solo valida los campos que existen
+            const numeroDocumento = document.getElementById('numeroDocumento').value;
+            const nombreCliente = document.getElementById('nombreCliente').value;
+            const telefonoCliente = document.getElementById('telefonoCliente').value;
+            const direccionCliente = document.getElementById('direccionCliente').value;
+            const barrioCliente = document.getElementById('barrioCliente').value;
             const idZona = document.getElementById('id_zona').value;
-            const idDomiciliario = document.getElementById('id_domiciliario').value;
             const bolsas = document.getElementById('bolsas').value;
             const total = document.getElementById('total').value;
-            if (!idCliente || !idZona || !idDomiciliario || !bolsas || !total) {
+            if (!numeroDocumento || !nombreCliente || !telefonoCliente || !direccionCliente || !barrioCliente || !idZona || !bolsas || !total) {
                 alert('Por favor, complete todos los campos obligatorios.');
                 return;
             }
@@ -516,9 +541,15 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 })
                 .then(response => {
                     // Mostrar el mensaje real del backend si hay error
-                    return response.json().then(data => ({ status: response.status, body: data }));
+                    return response.json().then(data => ({
+                        status: response.status,
+                        body: data
+                    }));
                 })
-                .then(({ status, body }) => {
+                .then(({
+                    status,
+                    body
+                }) => {
                     if (status !== 200) {
                         alert(body.error || 'Error desconocido al procesar el pedido.');
                         return;
@@ -546,25 +577,25 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
 
         function cargarPedidos(page = 1) {
             fetch('../servicios/pedidos.php', {
-                method: 'POST',
-                body: (() => {
-                    const fd = new FormData();
-                    fd.append('accion', 'paginar');
-                    fd.append('pagina', page);
-                    fd.append('por_pagina', rowsPerPage);
-                    return fd;
-                })()
-            })
-            .then(res => res.json())
-            .then(data => {
-                totalPedidos = data.total;
-                renderPedidos(data.pedidos);
-                renderPagination(page);
-            })
-            .catch(err => {
-                alert('Error al cargar pedidos');
-                console.error(err);
-            });
+                    method: 'POST',
+                    body: (() => {
+                        const fd = new FormData();
+                        fd.append('accion', 'paginar');
+                        fd.append('pagina', page);
+                        fd.append('por_pagina', rowsPerPage);
+                        return fd;
+                    })()
+                })
+                .then(res => res.json())
+                .then(data => {
+                    totalPedidos = data.total;
+                    renderPedidos(data.pedidos);
+                    renderPagination(page);
+                })
+                .catch(err => {
+                    alert('Error al cargar pedidos');
+                    console.error(err);
+                });
         }
 
         // Renderiza la tabla de pedidos paginados
@@ -601,7 +632,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
                     <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
                     <td>${tiempoHtml}</td>
-                    <td>${botonesHtml}</td>
+                    <td></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -628,6 +659,153 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         window.addEventListener('DOMContentLoaded', function() {
             cargarPedidos(1);
         });
+
+        // --- Autocompletar datos del cliente al escribir la cédula ---
+        function autocompletarClientePorCedula() {
+            const inputCedula = document.getElementById('numeroDocumento');
+            const inputNombre = document.getElementById('nombreCliente');
+            const inputTelefono = document.getElementById('telefonoCliente');
+            const inputDireccion = document.getElementById('direccionCliente');
+            const inputBarrio = document.getElementById('barrioCliente');
+            let btnCrearCliente = document.getElementById('btnCrearCliente');
+            if (!btnCrearCliente) {
+                btnCrearCliente = document.createElement('button');
+                btnCrearCliente.type = 'button';
+                btnCrearCliente.id = 'btnCrearCliente';
+                btnCrearCliente.className = 'btn-login';
+                btnCrearCliente.style.marginTop = '10px';
+                btnCrearCliente.textContent = 'Crear cliente';
+                btnCrearCliente.onclick = function() {
+                    abrirModalCrearCliente(inputCedula.value);
+                };
+                inputCedula.parentNode.appendChild(btnCrearCliente);
+            }
+            btnCrearCliente.style.display = 'none';
+
+            inputCedula.addEventListener('blur', function() {
+                const cedula = inputCedula.value.trim();
+                if (cedula.length < 4) return;
+                fetch('/SM_Domicilios/servicios/clientes.php', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        body: new URLSearchParams({
+                            accion: 'obtener_por_documento',
+                            documento: cedula
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && !data.error) {
+                            inputNombre.value = data.nombre || '';
+                            inputTelefono.value = data.telefono || '';
+                            inputDireccion.value = data.direccion || '';
+                            inputBarrio.value = data.barrio || '';
+                            document.getElementById('id_cliente').value = data.id_cliente || '';
+                            btnCrearCliente.style.display = 'none';
+                            // Disparar autocompletado de zona si el barrio se autocompleta
+                            inputBarrio.dispatchEvent(new Event('blur'));
+                        } else {
+                            inputNombre.value = '';
+                            inputTelefono.value = '';
+                            inputDireccion.value = '';
+                            inputBarrio.value = '';
+                            btnCrearCliente.style.display = 'inline-block';
+                        }
+                    })
+                    .catch(() => {
+                        inputNombre.value = '';
+                        inputTelefono.value = '';
+                        inputDireccion.value = '';
+                        inputBarrio.value = '';
+                        btnCrearCliente.style.display = 'inline-block';
+                    });
+            });
+        }
+
+        function abrirModalCrearCliente(cedula) {
+            const modal = document.getElementById('modalCrearCliente');
+            document.getElementById('formCrearCliente').reset();
+            document.getElementById('crearDocumento').value = cedula || '';
+            modal.classList.add('active');
+        }
+        document.getElementById('formCrearCliente').onsubmit = function(e) {
+            e.preventDefault();
+            const datos = {
+                accion: 'guardar',
+                nombre: document.getElementById('crearNombre').value.trim(),
+                documento: document.getElementById('crearDocumento').value.trim(),
+                telefono: document.getElementById('crearTelefono').value.trim(),
+                direccion: document.getElementById('crearDireccion').value.trim(),
+                barrio: document.getElementById('crearBarrio').value.trim()
+            };
+            fetch('/SM_Domicilios/servicios/clientes.php', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    body: new URLSearchParams(datos)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.success) {
+                        // Autocompletar los campos en el formulario de pedido principal
+                        document.getElementById('numeroDocumento').value = datos.documento;
+                        document.getElementById('nombreCliente').value = datos.nombre;
+                        document.getElementById('telefonoCliente').value = datos.telefono;
+                        document.getElementById('direccionCliente').value = datos.direccion;
+                        document.getElementById('barrioCliente').value = datos.barrio;
+                        cerrarModal('modalCrearCliente');
+                        alert('Cliente creado exitosamente');
+                    } else {
+                        alert(data.error || 'No se pudo crear el cliente');
+                    }
+                })
+                .catch(() => {
+                    alert('Error al crear el cliente');
+                });
+        };
+
+        function autocompletarZonaPorBarrio() {
+            const inputBarrio = document.getElementById('barrioCliente');
+            const inputZona = document.getElementById('zonaAuto');
+            const inputIdZona = document.getElementById('id_zona');
+            const inputTotal = document.getElementById('total');
+            inputBarrio.addEventListener('blur', function() {
+                const barrio = inputBarrio.value.trim();
+                if (!barrio) return;
+                fetch('/SM_Domicilios/servicios/zonas.php', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        body: new URLSearchParams({
+                            accion: 'buscar_por_barrio',
+                            barrio: barrio
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('Respuesta zona:', data); // Log para depuración
+                        if (data && !data.error) {
+                            inputZona.value = data.nombre;
+                            inputIdZona.value = data.id_zona;
+                            inputTotal.value = parseFloat(data.tarifa_base).toFixed(2);
+                        } else {
+                            inputZona.value = '';
+                            inputIdZona.value = '';
+                            inputTotal.value = '';
+                        }
+                    })
+                    .catch(() => {
+                        inputZona.value = '';
+                        inputIdZona.value = '';
+                        inputTotal.value = '';
+                    });
+            });
+        }
     </script>
 </body>
+
 </html>

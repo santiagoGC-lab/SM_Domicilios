@@ -8,8 +8,9 @@ function tienePermiso($seccion) {
     }
     $rol = $_SESSION['rol'];
     $permisosPorRol = [
-        'admin' => ['dashboard', 'clientes', 'pedidos', 'domiciliarios', 'zonas', 'reportes', 'tabla_usuarios'],
+        'admin' => ['dashboard', 'clientes', 'pedidos', 'domiciliarios', 'zonas', 'reportes', 'tabla_usuarios', 'coordinador'],
         'cajera' => ['dashboard', 'clientes', 'pedidos', 'reportes'],
+        'coordinador' => ['dashboard', 'coordinador', 'reportes'],
         'org_domicilios' => ['dashboard', 'domiciliarios', 'zonas', 'reportes']
     ];
     return in_array($seccion, $permisosPorRol[$rol] ?? []);
