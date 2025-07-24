@@ -98,18 +98,24 @@ try {
                 <span class="menu-text">Inicio</span>
             </a>
             <?php endif; ?>
+            <?php if (tienePermiso('pedidos')): ?>
             <a href="pedidos.php" class="menu-item">
                 <i class="fas fa-shopping-bag"></i>
                 <span class="menu-text">Pedidos</span>
             </a>
+            <?php endif; ?>
+            <?php if (tienePermiso('coordinador')): ?>
             <a href="coordinador.php" class="menu-item">
                 <i class="fas fa-truck"></i>
                 <span class="menu-text">Coordinador</span>
             </a>
+            <?php endif; ?>
+            <?php if (tienePermiso('clientes')): ?>
             <a href="clientes.php" class="menu-item">
                 <i class="fas fa-users"></i>
                 <span class="menu-text">Clientes</span>
             </a>
+            <?php endif; ?>
             <?php if (tienePermiso('domiciliarios')): ?>
             <a href="domiciliarios.php" class="menu-item">
                 <i class="fas fa-motorcycle"></i>
@@ -122,10 +128,12 @@ try {
                 <span class="menu-text">Zonas de Entrega</span>
             </a>
             <?php endif; ?>
+            <?php if (tienePermiso('reportes')): ?>
             <a href="reportes.php" class="menu-item active">
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
+            <?php endif; ?>
             <?php if (esAdmin()): ?>
             <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
             <?php endif; ?>
@@ -150,42 +158,65 @@ try {
         </div>
 
         <!-- Estadísticas principales -->
-        <!-- Tarjetas de resumen de estadísticas principales -->
+        <!-- Tarjetas de resumen de KPIs solicitados -->
+        <?php
+        // --- Cálculos para los KPIs del reporte ---
+        // Pedidos entregados hoy con zona y tiempos
+        $pedidosEntregadosHoy = $pdo->query("
+            SELECT p.hora_salida, p.hora_llegada, z.tiempo_estimado
+            FROM pedidos p
+            LEFT JOIN zonas z ON p.id_zona = z.id_zona
+            WHERE DATE(p.fecha_pedido) = CURDATE() AND p.estado = 'entregado'
+        ")->fetchAll();
+        $totalPedidosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()") ->fetchColumn();
+        $domiciliosEnviadosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND (estado = 'en_camino' OR estado = 'entregado')")->fetchColumn();
+        $valorDomiciliosHoy = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
+        // Tiempo promedio de entrega y % cumplimiento real
+        $totalTiempo = 0;
+        $numEntregas = 0;
+        $cumplidos = 0;
+        foreach ($pedidosEntregadosHoy as $pedido) {
+            if (!empty($pedido['hora_salida']) && !empty($pedido['hora_llegada']) && !empty($pedido['tiempo_estimado'])) {
+                $salida = strtotime($pedido['hora_salida']);
+                $llegada = strtotime($pedido['hora_llegada']);
+                $tiempoReal = ($llegada - $salida) / 60; // minutos
+                $totalTiempo += $tiempoReal;
+                $numEntregas++;
+                if ($tiempoReal <= $pedido['tiempo_estimado']) {
+                    $cumplidos++;
+                }
+            }
+        }
+        $tiempoPromedio = $numEntregas > 0 ? round($totalTiempo / $numEntregas, 2) : 0;
+        $cumplimiento = $numEntregas > 0 ? round(($cumplidos / $numEntregas) * 100, 2) : 0;
+        ?>
         <div class="stats-cards">
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-shopping-bag"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
                 <div class="stat-content">
-                    <h3><?php echo number_format($totalPedidos); ?></h3>
-                    <p>Total Pedidos</p>
+                    <h3><?php echo $tiempoPromedio; ?> min</h3>
+                    <p>Tiempo Promedio Entregas</p>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-calendar-day"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-percentage"></i></div>
                 <div class="stat-content">
-                    <h3><?php echo number_format($pedidosHoy); ?></h3>
-                    <p>Pedidos Hoy</p>
+                    <h3><?php echo $cumplimiento; ?>%</h3>
+                    <p>% Cumplimiento de Entregas</p>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-dollar-sign"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-truck"></i></div>
                 <div class="stat-content">
-                    <h3>$<?php echo number_format($ingresosHoy, 2); ?></h3>
-                    <p>Ingresos Hoy</p>
+                    <h3><?php echo $domiciliosEnviadosHoy; ?></h3>
+                    <p>Domicilios Enviados Hoy</p>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
                 <div class="stat-content">
-                    <h3><?php echo number_format($pedidosPendientes); ?></h3>
-                    <p>Pendientes</p>
+                    <h3>$<?php echo number_format($valorDomiciliosHoy, 2); ?></h3>
+                    <p>Valor Domicilios Hoy</p>
                 </div>
             </div>
         </div>
@@ -202,32 +233,6 @@ try {
                 </div>
                 <div class="chart-container">
                     <canvas id="estadosChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico de pedidos por zona -->
-            <div class="report-card">
-                <div class="report-header">
-                    <h3>Pedidos por Zona</h3>
-                    <button class="btn-export" onclick="exportarReporte('zonas')">
-                        <i class="fas fa-file-pdf"></i>
-                    </button>
-                </div>
-                <div class="chart-container">
-                    <canvas id="zonasChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico de ingresos últimos 7 días -->
-            <div class="report-card">
-                <div class="report-header">
-                    <h3>Ingresos Últimos 7 Días</h3>
-                    <button class="btn-export" onclick="exportarReporte('ingresos')">
-                        <i class="fas fa-download"></i>
-                    </button>
-                </div>
-                <div class="chart-container">
-                    <canvas id="ingresosChart"></canvas>
                 </div>
             </div>
 
@@ -337,18 +342,23 @@ try {
             </div>
             <form method="GET" style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
                 <label for="mes">Mes:</label>
+                <?php
+                $mesActual = date('n');
+                $anioActual = date('Y');
+                $mesSeleccionado = isset($_GET['mes']) ? intval($_GET['mes']) : $mesActual;
+                $anioSeleccionado = isset($_GET['anio']) ? intval($_GET['anio']) : $anioActual;
+                ?>
                 <select name="mes" id="mes" required class="select-mes">
                     <?php for ($m = 1; $m <= 12; $m++): ?>
-                        <option value="<?php echo $m; ?>" <?php if(isset($_GET['mes']) && $_GET['mes'] == $m) echo 'selected'; ?>>
+                        <option value="<?php echo $m; ?>" <?php if($mesSeleccionado == $m) echo 'selected'; ?>>
                             <?php echo $meses_es[$m]; ?>
                         </option>
                     <?php endfor; ?>
                 </select>
                 <label for="anio">Año:</label>
                 <select name="anio" id="anio" required class="select-anio">
-                    <?php $anioActual = date('Y');
-                    for ($a = $anioActual; $a >= $anioActual-5; $a--): ?>
-                        <option value="<?php echo $a; ?>" <?php if(isset($_GET['anio']) && $_GET['anio'] == $a) echo 'selected'; ?>><?php echo $a; ?></option>
+                    <?php for ($a = $anioActual; $a >= $anioActual-5; $a--): ?>
+                        <option value="<?php echo $a; ?>" <?php if($anioSeleccionado == $a) echo 'selected'; ?>><?php echo $a; ?></option>
                     <?php endfor; ?>
                 </select>
                 <button type="submit" class="btn-login"><i class="fas fa-search"></i> Consultar</button>
@@ -358,37 +368,16 @@ try {
             if (isset($_GET['mes']) && isset($_GET['anio'])) {
                 $mes = intval($_GET['mes']);
                 $anio = intval($_GET['anio']);
-                $mesActual = intval(date('n'));
-                $anioActual = intval(date('Y'));
                 $db = new mysqli('localhost', 'root', 'root', 'sm_domicilios');
                 $db->set_charset('utf8mb4');
-                // Si es el mes y año actual, consultar ambos: activos y archivados
-                if ($mes === $mesActual && $anio === $anioActual) {
-                    // Pedidos activos de este mes
-                    $sqlActivos = "SELECT p.id_pedido AS id_pedido_original, c.nombre AS cliente_nombre, d.nombre AS domiciliario_nombre, z.nombre AS zona_nombre, p.estado, p.fecha_pedido, p.total
-                    FROM pedidos p
-                    LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
-                    LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
-                    LEFT JOIN zonas z ON p.id_zona = z.id_zona
-                    WHERE YEAR(p.fecha_pedido) = $anio AND MONTH(p.fecha_pedido) = $mes
-                    ORDER BY p.fecha_pedido DESC";
-                    $resultActivos = $db->query($sqlActivos);
-                    while ($row = $resultActivos->fetch_assoc()) {
-                        $pedidosMensuales[] = $row;
-                    }
-                    // Pedidos archivados de este mes
-                    $sqlArchivados = "SELECT * FROM pedidos_mensuales WHERE mes = $mes AND anio = $anio ORDER BY fecha_pedido DESC";
-                    $resultArchivados = $db->query($sqlArchivados);
-                    while ($row = $resultArchivados->fetch_assoc()) {
-                        $pedidosMensuales[] = $row;
-                    }
-                } else {
-                    // Solo pedidos archivados
-                    $sql = "SELECT * FROM pedidos_mensuales WHERE mes = $mes AND anio = $anio ORDER BY fecha_pedido DESC";
-                    $result = $db->query($sql);
-                    while ($row = $result->fetch_assoc()) {
-                        $pedidosMensuales[] = $row;
-                    }
+                // Consultar pedidos entregados del mes en historico_pedidos
+                $sqlHistorico = "SELECT id_pedido_original, cliente_nombre, domiciliario_nombre, zona_nombre, estado, fecha_pedido, hora_salida, hora_llegada, total
+                FROM historico_pedidos
+                WHERE YEAR(fecha_pedido) = $anio AND MONTH(fecha_pedido) = $mes
+                ORDER BY fecha_pedido DESC";
+                $resultHistorico = $db->query($sqlHistorico);
+                while ($row = $resultHistorico->fetch_assoc()) {
+                    $pedidosMensuales[] = $row;
                 }
                 $db->close();
             }
@@ -403,6 +392,8 @@ try {
                             <th>Zona</th>
                             <th>Estado</th>
                             <th>Fecha</th>
+                            <th>Hora Salida</th>
+                            <th>Hora Llegada</th>
                             <th>Total</th>
                         </tr>
                     </thead>
@@ -415,7 +406,9 @@ try {
                                     <td><?php echo htmlspecialchars($pedido['domiciliario_nombre'] ?? 'No asignado'); ?></td>
                                     <td><?php echo htmlspecialchars($pedido['zona_nombre'] ?? ''); ?></td>
                                     <td><span class="estado-<?php echo strtolower($pedido['estado']); ?> estado"><?php echo ucfirst($pedido['estado']); ?></span></td>
-                                    <td><?php echo date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])); ?></td>
+                                    <td><?php echo date('d/m/Y', strtotime($pedido['fecha_pedido'])); ?></td>
+                                    <td><?php echo !empty($pedido['hora_salida']) ? date('H:i', strtotime($pedido['hora_salida'])) : '-'; ?></td>
+                                    <td><?php echo !empty($pedido['hora_llegada']) ? date('H:i', strtotime($pedido['hora_llegada'])) : '-'; ?></td>
                                     <td>$<?php echo number_format($pedido['total'], 2); ?></td>
                                 </tr>
                             <?php endforeach; ?>
@@ -458,62 +451,11 @@ try {
             }
         });
 
-        // Gráfico de pedidos por zona usando Chart.js
-        const zonasCtx = document.getElementById('zonasChart').getContext('2d');
-        new Chart(zonasCtx, {
-            type: 'bar',
-            data: {
-                labels: zonasData.map(item => item.nombre),
-                datasets: [{
-                    label: 'Pedidos',
-                    data: zonasData.map(item => item.total),
-                    backgroundColor: '#015938',
-                    borderColor: '#007B55',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Gráfico de ingresos últimos 7 días usando Chart.js
-        const ingresosCtx = document.getElementById('ingresosChart').getContext('2d');
-        new Chart(ingresosCtx, {
-            type: 'line',
-            data: {
-                labels: ingresosData.map(item => new Date(item.fecha).toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit'})),
-                datasets: [{
-                    label: 'Ingresos ($)',
-                    data: ingresosData.map(item => item.ingresos || 0),
-                    borderColor: '#2ed573',
-                    backgroundColor: 'rgba(46, 213, 115, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
         // Función para exportar reportes en PDF o descargar tablas
         function exportarReporte(tipo) {
             const formData = new FormData();
             formData.append('accion', 'exportar');
+            formData.append('tipo', tipo); // Agregar el tipo de reporte
             fetch('../servicios/reportes.php', {
                 method: 'POST',
                 body: formData

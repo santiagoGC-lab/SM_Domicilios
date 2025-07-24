@@ -64,22 +64,30 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <?php if (tienePermiso('dashboard')): ?>
                 <a href="dashboard.php" class="menu-item"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Inicio</span></a>
             <?php endif; ?>
-            <a href="pedidos.php" class="menu-item active">
-                <i class="fas fa-shopping-bag"></i>
-                <span class="menu-text">Pedidos</span>
-            </a>
-            <a href="coordinador.php" class="menu-item">
-                <i class="fas fa-truck"></i>
-                <span class="menu-text">Coordinador</span>
-            </a>
-            <a href="clientes.php" class="menu-item"><i class="fas fa-users"></i><span class="menu-text">Clientes</span></a>
+            <?php if (tienePermiso('pedidos')): ?>
+                <a href="pedidos.php" class="menu-item active">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="menu-text">Pedidos</span>
+                </a>
+            <?php endif; ?>
+            <?php if (tienePermiso('coordinador')): ?>
+                <a href="coordinador.php" class="menu-item">
+                    <i class="fas fa-truck"></i>
+                    <span class="menu-text">Coordinador</span>
+                </a>
+            <?php endif; ?>
+            <?php if (tienePermiso('clientes')): ?>
+                <a href="clientes.php" class="menu-item"><i class="fas fa-users"></i><span class="menu-text">Clientes</span></a>
+            <?php endif; ?>
             <?php if (tienePermiso('domiciliarios')): ?>
                 <a href="domiciliarios.php" class="menu-item"><i class="fas fa-motorcycle"></i><span class="menu-text">Domiciliarios</span></a>
             <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
                 <a href="zonas.php" class="menu-item"><i class="fas fa-map-marked-alt"></i><span class="menu-text">Zonas de Entrega</span></a>
             <?php endif; ?>
-            <a href="reportes.php" class="menu-item"><i class="fas fa-chart-bar"></i><span class="menu-text">Reportes</span></a>
+            <?php if (tienePermiso('reportes')): ?>
+                <a href="reportes.php" class="menu-item"><i class="fas fa-chart-bar"></i><span class="menu-text">Reportes</span></a>
+            <?php endif; ?>
             <?php if (esAdmin()): ?>
                 <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
             <?php endif; ?>
@@ -138,8 +146,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             <th>Domiciliario</th>
                             <th>Estado</th>
                             <th>Fecha</th>
-                            <th>Tiempo</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody">
@@ -347,10 +353,9 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     tbody.innerHTML = '';
                     data.forEach(order => {
                         const tr = document.createElement('tr');
-                        const tiempoEstimado = order.tiempo_estimado || 30;
                         let tiempoHtml = '';
                         if (order.estado === 'pendiente') {
-                            tiempoHtml = `<span class='tiempo-pendiente'>⏳ ${tiempoEstimado} min</span>`;
+                            tiempoHtml = `<span class='tiempo-pendiente'>⏳ ${order.tiempo_estimado || 30} min</span>`;
                         } else if (order.estado === 'entregado') {
                             tiempoHtml = `<span class='tiempo-entregado'>✅ Entregado</span>`;
                         } else {
@@ -375,8 +380,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             <td>${order.domiciliario || 'No asignado'}</td>
                             <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
                             <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                            <td>${tiempoHtml}</td>
-                            <td>${botonesHtml}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -631,8 +634,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     <td>${order.domiciliario || 'No asignado'}</td>
                     <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
                     <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                    <td>${tiempoHtml}</td>
-                    <td></td>
                 `;
                 tbody.appendChild(tr);
             });

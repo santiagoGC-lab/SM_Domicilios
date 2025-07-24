@@ -1,6 +1,7 @@
 <?php
 require_once '../config.php';
 require_once 'conexion.php';
+require_once 'verificar_permisos.php';
 session_start();
 
 // Función para registrar un nuevo usuario
@@ -316,6 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
             
         case 'obtener_por_id':
+            verificarAcceso('tabla_usuarios');
             $resultado = obtenerUsuarioPorId($_POST['id']);
             if (isset($resultado['error'])) {
                 http_response_code(400);
@@ -367,6 +369,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_GET['accion'] ?? '';
     
     if ($accion === 'obtener_por_id') {
+        verificarAcceso('tabla_usuarios');
         $resultado = obtenerUsuarioPorId($_GET['id']);
         if (isset($resultado['error'])) {
             http_response_code(400);
