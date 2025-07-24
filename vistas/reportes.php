@@ -5,6 +5,14 @@ verificarAcceso('reportes');
 
 require_once '../servicios/conexion.php';
 
+// Redirigir automáticamente con mes y año actual si no están en la URL
+if (!isset($_GET['mes']) || !isset($_GET['anio'])) {
+    $mesActual = date('n');
+    $anioActual = date('Y');
+    header("Location: reportes.php?mes=$mesActual&anio=$anioActual");
+    exit;
+}
+
 // --- Obtener estadísticas para los reportes ---
 try {
     // Estadísticas generales
