@@ -109,7 +109,6 @@ $nombreCompleto = obtenerNombreUsuario();
                             <th>Documento</th>
                             <th>Teléfono</th>
                             <th>Dirección y Barrio</th>
-                            <th>Tipo</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -151,14 +150,6 @@ $nombreCompleto = obtenerNombreUsuario();
                 <div class="form-group">
                     <label for="barrio">Barrio *:</label>
                     <input type="text" id="barrio" name="barrio" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="tipoCliente">Tipo de Cliente:</label>
-                    <select id="tipoCliente" name="tipoCliente" class="form-control">
-                        <option value="regular">Regular</option>
-                        <option value="vip">VIP</option>
-                        <option value="corporativo">Corporativo</option>
-                    </select>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="closeModal('modalClient')">Cancelar</button>
@@ -295,8 +286,7 @@ $nombreCompleto = obtenerNombreUsuario();
                             removeAccents(cliente.documento.toLowerCase()).includes(searchTerm) ||
                             removeAccents(cliente.telefono.toLowerCase()).includes(searchTerm) ||
                             removeAccents(cliente.direccion.toLowerCase()).includes(searchTerm) ||
-                            removeAccents(cliente.barrio.toLowerCase()).includes(searchTerm) ||
-                            removeAccents(cliente.tipo_cliente.toLowerCase()).includes(searchTerm)
+                            removeAccents(cliente.barrio.toLowerCase()).includes(searchTerm)
                         );
                     });
 
@@ -318,7 +308,6 @@ $nombreCompleto = obtenerNombreUsuario();
                                 <td>${cliente.documento}</td>
                                 <td>${cliente.telefono}</td>
                                 <td>${cliente.direccion} - ${cliente.barrio}</td>
-                                <td class="estado-${cliente.tipo_cliente.toLowerCase()}">${cliente.tipo_cliente}</td>
                                 <td>
                                     <button class="btn btn-editar" onclick="editarCliente(${cliente.id_cliente})">
                                         <i class="fas fa-edit"></i>
@@ -394,7 +383,6 @@ $nombreCompleto = obtenerNombreUsuario();
                     document.getElementById('telefono').value = cliente.telefono;
                     document.getElementById('direccion').value = cliente.direccion;
                     document.getElementById('barrio').value = cliente.barrio;
-                    document.getElementById('tipoCliente').value = cliente.tipo_cliente.toLowerCase();
                     document.getElementById('modalClient').style.display = 'block';
                 })
                 .catch(err => {

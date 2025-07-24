@@ -14,7 +14,6 @@ function guardarCliente($datos) {
         $telefono = trim($datos['telefono'] ?? '');
         $direccion = trim($datos['direccion'] ?? '');
         $barrio = trim($datos['barrio'] ?? '');
-        $tipoCliente = $datos['tipoCliente'] ?? 'regular';
 
         if (!$nombre || !$documento || !$telefono || !$direccion || !$barrio) {
             return ['error' => 'Faltan campos obligatorios'];
@@ -22,8 +21,8 @@ function guardarCliente($datos) {
 
         if ($id) {
             // Actualizar cliente existente
-            $stmt = $db->prepare("UPDATE clientes SET nombre = ?, documento = ?, telefono = ?, direccion = ?, barrio = ?, tipo_cliente = ? WHERE id_cliente = ?");
-            $stmt->bind_param("ssssssi", $nombre, $documento, $telefono, $direccion, $barrio, $tipoCliente, $id);
+            $stmt = $db->prepare("UPDATE clientes SET nombre = ?, documento = ?, telefono = ?, direccion = ?, barrio = ? WHERE id_cliente = ?");
+            $stmt->bind_param("sssssi", $nombre, $documento, $telefono, $direccion, $barrio, $id);
         } else {
             // Verificar si el documento ya existe antes de insertar
             $checkStmt = $db->prepare("SELECT id_cliente FROM clientes WHERE documento = ?");
@@ -38,8 +37,8 @@ function guardarCliente($datos) {
             $checkStmt->close();
 
             // Insertar nuevo cliente
-            $stmt = $db->prepare("INSERT INTO clientes (nombre, documento, telefono, direccion, barrio, tipo_cliente) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("ssssss", $nombre, $documento, $telefono, $direccion, $barrio, $tipoCliente);
+            $stmt = $db->prepare("INSERT INTO clientes (nombre, documento, telefono, direccion, barrio) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssss", $nombre, $documento, $telefono, $direccion, $barrio);
         }
 
         $stmt->execute();
@@ -95,7 +94,7 @@ function eliminarCliente($id) {
 function obtenerClientes() {
     try {
         $db = ConectarDB();
-        $query = "SELECT id_cliente, nombre, documento, telefono, direccion, barrio, tipo_cliente FROM clientes WHERE estado = 'activo' ORDER BY id_cliente DESC";
+        $query = "SELECT id_cliente, nombre, documento, telefono, direccion, barrio FROM clientes WHERE estado = 'activo' ORDER BY id_cliente DESC";
         $result = $db->query($query);
 
         $clientes = [];
@@ -120,7 +119,7 @@ function obtenerClientePorId($id) {
             return ['error' => 'ID de cliente no proporcionado'];
         }
 
-        $stmt = $db->prepare("SELECT id_cliente, nombre, documento, telefono, direccion, barrio, tipo_cliente FROM clientes WHERE id_cliente = ?");
+        $stmt = $db->prepare("SELECT id_cliente, nombre, documento, telefono, direccion, barrio FROM clientes WHERE id_cliente = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -147,7 +146,7 @@ function obtenerClientePorDocumento($documento) {
         if (!$documento) {
             return ['error' => 'Documento no proporcionado'];
         }
-        $stmt = $db->prepare("SELECT id_cliente, nombre, documento, telefono, direccion, barrio, tipo_cliente FROM clientes WHERE documento = ? AND estado = 'activo'");
+        $stmt = $db->prepare("SELECT id_cliente, nombre, documento, telefono, direccion, barrio FROM clientes WHERE documento = ? AND estado = 'activo'");
         $stmt->bind_param("s", $documento);
         $stmt->execute();
         $result = $stmt->get_result();
