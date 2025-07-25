@@ -48,7 +48,7 @@ mysqli_close($conexion);
                 <i class="fas fa-shopping-bag"></i>
                 <span class="menu-text">Pedidos</span>
             </a>
-            <a href="coordinador.php" class="menu-item active">
+            <a href="coordinador.php" class="menu-item">
                 <i class="fas fa-truck"></i>
                 <span class="menu-text">Coordinador</span>
             </a>
