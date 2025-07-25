@@ -14,7 +14,7 @@ session_start();
 $page = $_GET['page'] ?? 'login';
 
 // Verificar autenticación (excepto para login y registro)
-$public_pages = ['login', 'registro', 'recuperar-contra', 'reset-password'];
+$public_pages = ['login', 'registro'];
 if (!in_array($page, $public_pages) && !isAuthenticated()) {
     redirect('index.php?page=login');
 }
@@ -31,8 +31,6 @@ $available_pages = [
     'reportes' => 'vistas/reportes.php',                // Está en vistas/
     'tabla_usuarios' => 'vistas/tabla_usuarios.php',    // Está en vistas/
     'registro' => 'vistas/registro.php',                // Está en vistas/
-    'recuperar-contra' => 'vistas/recuperar-contra.html',
-    'reset-password' => 'vistas/reset-password.php'     // Está en vistas/
 ];
 
 // Verificar si la página existe
