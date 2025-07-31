@@ -144,7 +144,10 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             <th>Cliente</th>
                             <th>Domiciliario</th>
                             <th>Estado</th>
-                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Direccion</th>
+                            <th>Envio inmediato</th>
+                            <th>Alistamiento</th>
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody">
@@ -164,7 +167,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <form id="formNuevoPedido">
                 <input type="hidden" id="id_pedido" name="id_pedido">
                 <input type="hidden" id="id_cliente" name="id_cliente">
-                
+
                 <div class="form-container">
                     <div class="form-column">
                         <div class="form-group">
@@ -184,7 +187,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             <input type="text" id="direccionCliente" name="direccionCliente" class="form-control" required>
                         </div>
                     </div>
-                    
+
                     <div class="form-column">
                         <div class="form-group">
                             <label for="barrioCliente">Barrio:</label>
@@ -206,7 +209,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="checkbox-container">
                     <div class="checkbox-item">
                         <label class="checkbox-label">
@@ -223,12 +226,12 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="form-group form-full-width">
                     <label for="total">Total:</label>
                     <input type="number" id="total" name="total" class="form-control" step="0.01" required>
                 </div>
-                
+
                 <div class="form-row">
                     <button type="submit" class="btn-login">Guardar</button>
                     <button type="button" class="btn-login" onclick="cerrarModal('modalNuevoPedido')">Cancelar</button>
@@ -321,7 +324,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     document.getElementById('bolsas').value = data.cantidad_paquetes || 1;
                     document.getElementById('total').value = parseFloat(data.total || 0).toFixed(2);
                     document.getElementById('tiempo_estimado').value = data.tiempo_estimado || 30;
-                    
+
                     // Manejar checkboxes
                     document.getElementById('envio_inmediato').checked = data.envio_inmediato == 1;
                     document.getElementById('alistamiento').checked = data.alistamiento == 1;
@@ -357,15 +360,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         document.querySelectorAll('.close').forEach(btn => {
             btn.onclick = () => cerrarModal('modalNuevoPedido');
         });
-
-        // Comentado para evitar cerrar modal al hacer click fuera
-        // window.onclick = function(event) {
-        //     const modal = document.getElementById('modalNuevoPedido');
-        //     if (event.target === modal) {
-        //         cerrarModal('modalNuevoPedido');
-        //     }
-        // };
-
         // --- Buscar pedidos por texto en tiempo real ---
         function buscarPedido() {
             const searchInput = document.getElementById('searchInput').value;
@@ -665,11 +659,10 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 }
                 botonesHtml += '</div>';
                 tr.innerHTML = `
-                    <td>#${order.id_pedido}</td>
                     <td>${order.cliente}</td>
                     <td>${order.domiciliario || 'No asignado'}</td>
                     <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
-                    <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                    <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { timeStyle: 'short' })}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -722,9 +715,9 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             inputCedula.addEventListener('blur', function() {
                 const cedula = inputCedula.value.trim();
                 if (cedula.length < 4) return;
-                
+
                 console.log('Buscando cliente con cédula:', cedula);
-                
+
                 fetch('/SM_Domicilios/servicios/clientes.php', {
                         method: 'POST',
                         headers: {

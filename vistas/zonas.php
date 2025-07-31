@@ -95,7 +95,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 <div class="search-and-filter">
                     <div class="search-bar">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" class="form-control" placeholder="Buscar zona o ciudad..." oninput="cargarZonas()">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Buscar zona o Barrio..." oninput="cargarZonas()">
                     </div>
                     <select id="filterStatus" class="filter-select" onchange="cargarZonas()">
                         <option value="">Todos los estados</option>
@@ -112,7 +112,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     <thead>
                         <tr>
                             <th>Nombre de Zona</th>
-                            <th>Ciudad</th>
+                            <th>Barrio</th>
                             <th>Tarifa Base</th>
                             <th>Estado</th>
                             <th>Acciones</th>
@@ -146,8 +146,8 @@ $nombreCompleto = obtenerNombreUsuario();
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="ciudad">Ciudad:</label>
-                    <input type="text" id="ciudad" name="ciudad" class="form-control" required placeholder="Ej. Bogotá">
+                    <label for="barrio">Barrio:</label>
+                    <input type="text" id="barrio" name="barrio" class="form-control" required placeholder="Ej. La ciudadela">
                 </div>
                 <div class="form-group">
                     <label for="tarifa">Tarifa Base:</label>
@@ -210,7 +210,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     document.getElementById('modalTitle').textContent = 'Editar Zona';
                     document.getElementById('zonaId').value = zona.id_zona;
                     document.getElementById('nuevoNombre').value = zona.nombre;
-                    document.getElementById('ciudad').value = zona.ciudad;
+                    document.getElementById('barrio').value = zona.barrio;
                     document.getElementById('tarifa').value = zona.tarifa_base;
                     document.getElementById('estado').value = zona.estado;
                     document.getElementById('modalZona').style.display = 'block';
@@ -334,14 +334,14 @@ $nombreCompleto = obtenerNombreUsuario();
             zonas.filter(z => {
                 const matchSearch =
                     z.nombre.toLowerCase().includes(search) ||
-                    z.ciudad.toLowerCase().includes(search);
+                    z.barrio.toLowerCase().includes(search);
                 const matchEstado = !estado || z.estado === estado;
                 return matchSearch && matchEstado;
             }).forEach(z => {
                 html += `
                 <tr>
                     <td>${z.nombre}</td>
-                    <td>${z.ciudad}</td>
+                    <td>${z.barrio}</td>
                     <td>$${parseFloat(z.tarifa_base).toFixed(2)}</td>
                     <td><span class="estado-${z.estado}">${z.estado.charAt(0).toUpperCase() + z.estado.slice(1)}</span></td>
                     <td>
