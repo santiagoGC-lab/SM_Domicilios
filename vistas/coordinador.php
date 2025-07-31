@@ -94,8 +94,11 @@ verificarAcceso('coordinador');
                 <table id="tablaDespachos">
                     <thead>
                         <tr>
-                            <th>ID Pedido</th>
                             <th>Cliente</th>
+                            <th>Direccion</th>
+                            <th>Cantidad de paquetes</th>
+                            <th>Hora estimada</th>
+                            <th>Telefono</th>
                             <th>Barrio</th>
                             <th>Zona</th>
                             <th>Acciones</th>
@@ -172,7 +175,6 @@ verificarAcceso('coordinador');
                 data.forEach(pedido => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>#${pedido.id_pedido}</td>
                         <td>${pedido.cliente}</td>
                         <td>${pedido.barrio}</td>
                         <td>${pedido.zona}</td>

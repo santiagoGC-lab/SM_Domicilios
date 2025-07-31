@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 31-07-2025 a las 13:41:36
+-- Tiempo de generación: 31-07-2025 a las 13:31:31
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -92,6 +92,8 @@ CREATE TABLE `domiciliarios` (
   `id_domiciliario` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `telefono` varchar(20) NOT NULL,
+  `vehiculo` varchar(50) NOT NULL,
+  `placa` varchar(20) NOT NULL,
   `id_zona` int(11) DEFAULT NULL,
   `estado` enum('disponible','ocupado','inactivo') NOT NULL DEFAULT 'disponible',
   `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP
@@ -101,14 +103,14 @@ CREATE TABLE `domiciliarios` (
 -- Volcado de datos para la tabla `domiciliarios`
 --
 
-INSERT INTO `domiciliarios` (`id_domiciliario`, `nombre`, `telefono`, `id_zona`, `estado`, `fecha_creacion`) VALUES
-(1, 'Juan Pérez', '3001234567', 3, 'disponible', '2025-07-12 08:44:28'),
-(2, 'Carlos López', '3002345678', 3, 'disponible', '2025-07-12 08:44:28'),
-(3, 'Ana García', '3003456789', NULL, 'disponible', '2025-07-12 08:44:28'),
-(4, 'Luis Rodríguez', '3004567890', 3, 'disponible', '2025-07-12 08:44:28'),
-(6, 'Diego Ramírez', '3005678901', 1, 'disponible', '2025-07-15 15:50:00'),
-(7, 'Valeria Castro', '3006789012', 2, 'disponible', '2025-07-15 16:00:00'),
-(8, 'Felipe Gómez', '3007890123', 3, 'disponible', '2025-07-15 16:10:00');
+INSERT INTO `domiciliarios` (`id_domiciliario`, `nombre`, `telefono`, `vehiculo`, `placa`, `id_zona`, `estado`, `fecha_creacion`) VALUES
+(1, 'Juan Pérez', '3001234567', 'Moto', 'ABC123', 3, 'disponible', '2025-07-12 08:44:28'),
+(2, 'Carlos López', '3002345678', 'Moto', 'DEF456', 3, 'disponible', '2025-07-12 08:44:28'),
+(3, 'Ana García', '3003456789', 'Bicicleta', 'GHI789', NULL, 'disponible', '2025-07-12 08:44:28'),
+(4, 'Luis Rodríguez', '3004567890', 'Moto', 'JKL012', 3, 'disponible', '2025-07-12 08:44:28'),
+(6, 'Diego Ramírez', '3005678901', 'Moto', 'MNO345', 1, 'disponible', '2025-07-15 15:50:00'),
+(7, 'Valeria Castro', '3006789012', 'Bicicleta', 'PQR678', 2, 'disponible', '2025-07-15 16:00:00'),
+(8, 'Felipe Gómez', '3007890123', 'Moto', 'STU901', 3, 'disponible', '2025-07-15 16:10:00');
 
 -- --------------------------------------------------------
 
@@ -122,7 +124,6 @@ CREATE TABLE `historico_pedidos` (
   `id_cliente` int(11) NOT NULL,
   `id_zona` int(11) NOT NULL,
   `id_domiciliario` int(11) DEFAULT NULL,
-  `id_vehiculo` int(11) DEFAULT NULL,
   `estado` enum('entregado','cancelado') COLLATE utf8mb4_unicode_ci NOT NULL,
   `cantidad_paquetes` int(11) NOT NULL DEFAULT '1',
   `total` decimal(10,2) NOT NULL,
@@ -139,8 +140,6 @@ CREATE TABLE `historico_pedidos` (
   `zona_tarifa` decimal(10,2) NOT NULL,
   `domiciliario_nombre` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `domiciliario_telefono` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `vehiculo_tipo` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `vehiculo_placa` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `usuario_proceso` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -181,6 +180,8 @@ CREATE TABLE `pedidos` (
   `cantidad_paquetes` int(11) NOT NULL,
   `total` decimal(10,2) NOT NULL,
   `tiempo_estimado` int(11) DEFAULT NULL,
+  `envio_inmediato` tinyint(1) DEFAULT '0',
+  `alistamiento` tinyint(1) DEFAULT '0',
   `movido_historico` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -188,17 +189,17 @@ CREATE TABLE `pedidos` (
 -- Volcado de datos para la tabla `pedidos`
 --
 
-INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_vehiculo`, `id_zona`, `estado`, `hora_salida`, `hora_llegada`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `movido_historico`) VALUES
-(1, 1, 1, NULL, 1, 'entregado', NULL, NULL, '2025-07-12 11:44:28', 2, '10000.00', 30, 1),
-(2, 2, 2, NULL, 2, 'entregado', NULL, NULL, '2025-07-12 12:44:28', 1, '12000.00', 30, 1),
-(4, 4, 1, NULL, 3, 'entregado', NULL, NULL, '2025-07-12 13:29:28', 1, '7000.00', 30, 1),
-(6, 1, 1, 1, 4, 'entregado', '2025-07-24 09:11:58', '2025-07-24 09:12:36', '2025-07-24 09:05:05', 7, '8000.00', 30, 0),
-(7, 1, 6, 1, 4, 'entregado', '2025-07-24 15:07:59', '2025-07-30 17:05:04', '2025-07-24 15:07:38', 5, '8000.00', 30, 0),
-(8, 1, 1, 1, 4, 'entregado', '2025-07-30 17:05:28', '2025-07-30 17:06:53', '2025-07-30 16:59:43', 5, '8000.00', 30, 0),
-(9, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-07-30 17:01:45', 5, '8000.00', 30, 0),
-(10, 1, 3, 1, 4, 'entregado', '2025-07-30 17:28:44', '2025-07-30 17:29:54', '2025-07-30 17:26:15', 8, '8000.00', 30, 0),
-(11, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-07-30 17:28:23', 9, '8000.00', 30, 0),
-(12, 14, NULL, NULL, 1, 'pendiente', NULL, NULL, '2025-07-30 17:37:08', 5, '5000.00', 30, 0);
+INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_vehiculo`, `id_zona`, `estado`, `hora_salida`, `hora_llegada`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `envio_inmediato`, `alistamiento`, `movido_historico`) VALUES
+(1, 1, 1, NULL, 1, 'entregado', NULL, NULL, '2025-07-12 11:44:28', 2, '10000.00', 30, 0, 0, 1),
+(2, 2, 2, NULL, 2, 'entregado', NULL, NULL, '2025-07-12 12:44:28', 1, '12000.00', 30, 0, 0, 1),
+(4, 4, 1, NULL, 3, 'entregado', NULL, NULL, '2025-07-12 13:29:28', 1, '7000.00', 30, 0, 0, 1),
+(6, 1, 1, 1, 4, 'entregado', '2025-07-24 09:11:58', '2025-07-24 09:12:36', '2025-07-24 09:05:05', 7, '8000.00', 30, 0, 0, 0),
+(7, 1, 6, 1, 4, 'entregado', '2025-07-24 15:07:59', '2025-07-30 17:05:04', '2025-07-24 15:07:38', 5, '8000.00', 30, 0, 0, 0),
+(8, 1, 1, 1, 4, 'entregado', '2025-07-30 17:05:28', '2025-07-30 17:06:53', '2025-07-30 16:59:43', 5, '8000.00', 30, 0, 0, 0),
+(9, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-07-30 17:01:45', 5, '8000.00', 30, 0, 0, 0),
+(10, 1, 3, 1, 4, 'entregado', '2025-07-30 17:28:44', '2025-07-30 17:29:54', '2025-07-30 17:26:15', 8, '8000.00', 30, 0, 0, 0),
+(11, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-07-30 17:28:23', 9, '8000.00', 30, 0, 0, 0),
+(12, 14, NULL, NULL, 1, 'pendiente', NULL, NULL, '2025-07-30 17:37:08', 5, '5000.00', 30, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -276,11 +277,7 @@ CREATE TABLE `vehiculos` (
 --
 
 INSERT INTO `vehiculos` (`id_vehiculo`, `tipo`, `placa`, `estado`, `descripcion`) VALUES
-(1, 'Moto', 'ABC123', 'disponible', 'Moto Honda CG 150'),
-(2, 'Moto', 'DEF456', 'disponible', 'Moto Yamaha YBR 125'),
-(3, 'Moto', 'GHI789', 'disponible', 'Moto Suzuki GN 125'),
-(4, 'Bicicleta', 'BIC001', 'disponible', 'Bicicleta de reparto'),
-(5, 'Bicicleta', 'BIC002', 'disponible', 'Bicicleta de reparto');
+(1, 'Carro', 'ADS552', 'disponible', 'CARRO');
 
 -- --------------------------------------------------------
 

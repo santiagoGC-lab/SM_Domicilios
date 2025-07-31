@@ -11,32 +11,27 @@ function guardarDomiciliario($datos) {
         $id = $datos['id'] ?? null;
         $nombre = trim($datos['nombre'] ?? '');
         $telefono = trim($datos['telefono'] ?? '');
-        $vehiculo = trim($datos['tipoVehiculo'] ?? '');
-        $placa = trim($datos['placa'] ?? '');
-        $zona = trim($datos['zona'] ?? '');
+        $id_zona = trim($datos['zona'] ?? '');
         $estado = trim($datos['estado'] ?? 'disponible');
 
         // Validación básica
-        if (!$nombre || !$telefono || !$vehiculo || !$placa || !$estado) {
-            return ['success' => false, 'error' => 'Todos los campos son obligatorios'];
+        if (!$nombre || !$telefono || !$estado) {
+            return ['success' => false, 'error' => 'Nombre, teléfono y estado son obligatorios'];
         }
 
-        // Obtener id_zona
-        $stmtZona = $db->prepare("SELECT id_zona FROM zonas WHERE nombre = ?");
-        $stmtZona->bind_param("s", $zona);
-        $stmtZona->execute();
-        $resultZona = $stmtZona->get_result();
-        $id_zona = $resultZona->fetch_assoc()['id_zona'] ?? null;
-        $stmtZona->close();
+        // Convertir zona vacía a NULL
+        if (empty($id_zona)) {
+            $id_zona = null;
+        }
 
         if ($id) {
             // Actualizar
-            $stmt = $db->prepare("UPDATE domiciliarios SET nombre=?, telefono=?, vehiculo=?, placa=?, id_zona=?, estado=? WHERE id_domiciliario=?");
-            $stmt->bind_param("ssssisi", $nombre, $telefono, $vehiculo, $placa, $id_zona, $estado, $id);
+            $stmt = $db->prepare("UPDATE domiciliarios SET nombre=?, telefono=?, id_zona=?, estado=? WHERE id_domiciliario=?");
+            $stmt->bind_param("ssisi", $nombre, $telefono, $id_zona, $estado, $id);
         } else {
             // Crear
-            $stmt = $db->prepare("INSERT INTO domiciliarios (nombre, telefono, vehiculo, placa, id_zona, estado) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("ssssis", $nombre, $telefono, $vehiculo, $placa, $id_zona, $estado);
+            $stmt = $db->prepare("INSERT INTO domiciliarios (nombre, telefono, id_zona, estado) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssis", $nombre, $telefono, $id_zona, $estado);
         }
 
         $success = $stmt->execute();
@@ -76,7 +71,7 @@ function eliminarDomiciliario($id) {
 function obtenerDomiciliarios() {
     try {
         $db = ConectarDB();
-        $result = $db->query("SELECT d.id_domiciliario, d.nombre, d.telefono, d.vehiculo, d.placa, z.nombre AS zona, d.estado 
+        $result = $db->query("SELECT d.id_domiciliario, d.nombre, d.telefono, z.nombre AS zona, d.estado, d.id_zona 
                               FROM domiciliarios d 
                               LEFT JOIN zonas z ON d.id_zona = z.id_zona");
         $domiciliarios = $result->fetch_all(MYSQLI_ASSOC);
@@ -97,7 +92,7 @@ function obtenerDomiciliarioPorId($id) {
             return [];
         }
 
-        $stmt = $db->prepare("SELECT d.id_domiciliario, d.nombre, d.telefono, d.vehiculo, d.placa, z.nombre AS zona, d.estado 
+        $stmt = $db->prepare("SELECT d.id_domiciliario, d.nombre, d.telefono, z.nombre AS zona, d.estado, d.id_zona 
                               FROM domiciliarios d 
                               LEFT JOIN zonas z ON d.id_zona = z.id_zona 
                               WHERE d.id_domiciliario = ?");
@@ -120,7 +115,7 @@ function obtenerDomiciliariosPaginados($pagina, $por_pagina) {
     try {
         $db = ConectarDB();
         $offset = ($pagina - 1) * $por_pagina;
-        $sql = "SELECT d.id_domiciliario, d.nombre, d.telefono, d.vehiculo, d.placa, z.nombre AS zona, d.estado
+        $sql = "SELECT d.id_domiciliario, d.nombre, d.telefono, z.nombre AS zona, d.estado, d.id_zona
                 FROM domiciliarios d
                 LEFT JOIN zonas z ON d.id_zona = z.id_zona
                 LIMIT ? OFFSET ?";

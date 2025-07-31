@@ -111,7 +111,6 @@ $nombreCompleto = obtenerNombreUsuario();
                 <table class="users-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Nombre de Zona</th>
                             <th>Ciudad</th>
                             <th>Tarifa Base</th>
@@ -341,7 +340,6 @@ $nombreCompleto = obtenerNombreUsuario();
             }).forEach(z => {
                 html += `
                 <tr>
-                    <td>${z.id_zona}</td>
                     <td>${z.nombre}</td>
                     <td>${z.ciudad}</td>
                     <td>$${parseFloat(z.tarifa_base).toFixed(2)}</td>

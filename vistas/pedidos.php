@@ -141,7 +141,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 <table id="ordersTable">
                     <thead>
                         <tr>
-                            <th>ID Pedido</th>
                             <th>Cliente</th>
                             <th>Domiciliario</th>
                             <th>Estado</th>
@@ -165,41 +164,75 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <form id="formNuevoPedido">
                 <input type="hidden" id="id_pedido" name="id_pedido">
                 <input type="hidden" id="id_cliente" name="id_cliente">
-                <div class="form-group">
-                    <label for="numeroDocumento">Cédula:</label>
-                    <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-control" required>
+                
+                <div class="form-container">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="numeroDocumento">Cédula:</label>
+                            <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nombreCliente">Nombre:</label>
+                            <input type="text" id="nombreCliente" name="nombreCliente" class="form-control" required readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefonoCliente">Teléfono:</label>
+                            <input type="number" id="telefonoCliente" name="telefonoCliente" class="form-control" required min="0" step="1" pattern="[0-9]+">
+                        </div>
+                        <div class="form-group">
+                            <label for="direccionCliente">Dirección:</label>
+                            <input type="text" id="direccionCliente" name="direccionCliente" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="barrioCliente">Barrio:</label>
+                            <input type="text" id="barrioCliente" name="barrioCliente" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="zonaAuto">Zona:</label>
+                            <input type="text" id="zonaAuto" name="zonaAuto" class="form-control" readonly required>
+                            <input type="hidden" id="id_zona" name="id_zona">
+                        </div>
+                        <div class="form-group">
+                            <label for="bolsas">Cantidad de paquetes:</label>
+                            <input type="number" id="bolsas" name="bolsas" class="form-control" min="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hora">Hora estimada:</label>
+                            <input type="time" id="hora" name="hora" class="form-control" required>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="nombreCliente">Nombre:</label>
-                    <input type="text" id="nombreCliente" name="nombreCliente" class="form-control" required>
+                
+                <div class="checkbox-container">
+                    <div class="checkbox-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="envio_inmediato" id="envio_inmediato" value="1">
+                            <span class="checkmark"></span>
+                            Envío inmediato
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="alistamiento" id="alistamiento" value="1">
+                            <span class="checkmark"></span>
+                            Alistamiento
+                        </label>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="telefonoCliente">Teléfono:</label>
-                    <input type="text" id="telefonoCliente" name="telefonoCliente" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="direccionCliente">Dirección:</label>
-                    <input type="text" id="direccionCliente" name="direccionCliente" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="barrioCliente">Barrio:</label>
-                    <input type="text" id="barrioCliente" name="barrioCliente" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="zonaAuto">Zona:</label>
-                    <input type="text" id="zonaAuto" name="zonaAuto" class="form-control" readonly required>
-                    <input type="hidden" id="id_zona" name="id_zona">
-                </div>
-                <div class="form-group">
-                    <label for="bolsas">Cantidad de paquetes:</label>
-                    <input type="number" id="bolsas" name="bolsas" class="form-control" min="1" required>
-                </div>
-                <div class="form-group">
+                
+                <div class="form-group form-full-width">
                     <label for="total">Total:</label>
                     <input type="number" id="total" name="total" class="form-control" step="0.01" required>
                 </div>
-                <button type="submit" class="btn-login">Guardar</button>
-                <button type="button" class="btn-login" onclick="cerrarModal('modalNuevoPedido')">Cancelar</button>
+                
+                <div class="form-row">
+                    <button type="submit" class="btn-login">Guardar</button>
+                    <button type="button" class="btn-login" onclick="cerrarModal('modalNuevoPedido')">Cancelar</button>
+                </div>
             </form>
         </div>
     </div>
@@ -283,12 +316,15 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     document.getElementById('numeroDocumento').value = data.documento || '';
                     document.getElementById('id_cliente').value = data.id_cliente || '';
                     document.getElementById('id_zona').value = data.id_zona || '';
-                    document.getElementById('id_domiciliario').value = data.id_domiciliario || '';
                     // Guardar el estado actual del pedido para enviarlo al actualizar
                     window.estadoPedidoActual = data.estado || 'pendiente';
                     document.getElementById('bolsas').value = data.cantidad_paquetes || 1;
                     document.getElementById('total').value = parseFloat(data.total || 0).toFixed(2);
                     document.getElementById('tiempo_estimado').value = data.tiempo_estimado || 30;
+                    
+                    // Manejar checkboxes
+                    document.getElementById('envio_inmediato').checked = data.envio_inmediato == 1;
+                    document.getElementById('alistamiento').checked = data.alistamiento == 1;
                     modal.classList.add('active');
                     setupFormListeners();
                 })
@@ -322,12 +358,13 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             btn.onclick = () => cerrarModal('modalNuevoPedido');
         });
 
-        window.onclick = function(event) {
-            const modal = document.getElementById('modalNuevoPedido');
-            if (event.target === modal) {
-                cerrarModal('modalNuevoPedido');
-            }
-        };
+        // Comentado para evitar cerrar modal al hacer click fuera
+        // window.onclick = function(event) {
+        //     const modal = document.getElementById('modalNuevoPedido');
+        //     if (event.target === modal) {
+        //         cerrarModal('modalNuevoPedido');
+        //     }
+        // };
 
         // --- Buscar pedidos por texto en tiempo real ---
         function buscarPedido() {
@@ -375,7 +412,6 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                         }
                         botonesHtml += '</div>';
                         tr.innerHTML = `
-                            <td>#${order.id_pedido}</td>
                             <td>${order.cliente}</td>
                             <td>${order.domiciliario || 'No asignado'}</td>
                             <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
@@ -686,6 +722,9 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             inputCedula.addEventListener('blur', function() {
                 const cedula = inputCedula.value.trim();
                 if (cedula.length < 4) return;
+                
+                console.log('Buscando cliente con cédula:', cedula);
+                
                 fetch('/SM_Domicilios/servicios/clientes.php', {
                         method: 'POST',
                         headers: {
@@ -696,8 +735,12 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             documento: cedula
                         })
                     })
-                    .then(res => res.json())
+                    .then(res => {
+                        console.log('Respuesta del servidor:', res.status);
+                        return res.json();
+                    })
                     .then(data => {
+                        console.log('Datos recibidos:', data);
                         if (data && !data.error) {
                             inputNombre.value = data.nombre || '';
                             inputTelefono.value = data.telefono || '';
@@ -705,6 +748,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             inputBarrio.value = data.barrio || '';
                             document.getElementById('id_cliente').value = data.id_cliente || '';
                             btnCrearCliente.style.display = 'none';
+                            console.log('Cliente encontrado y autocompletado');
                             // Disparar autocompletado de zona si el barrio se autocompleta
                             inputBarrio.dispatchEvent(new Event('blur'));
                         } else {
@@ -713,9 +757,11 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             inputDireccion.value = '';
                             inputBarrio.value = '';
                             btnCrearCliente.style.display = 'inline-block';
+                            console.log('Cliente no encontrado');
                         }
                     })
-                    .catch(() => {
+                    .catch(error => {
+                        console.error('Error en autocompletado:', error);
                         inputNombre.value = '';
                         inputTelefono.value = '';
                         inputDireccion.value = '';

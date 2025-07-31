@@ -104,7 +104,6 @@ $nombreCompleto = obtenerNombreUsuario();
                 <table class="clients-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Documento</th>
                             <th>Teléfono</th>
@@ -303,7 +302,6 @@ $nombreCompleto = obtenerNombreUsuario();
                         filtrados.slice(start, end).forEach(cliente => {
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
-                                <td>${cliente.id_cliente}</td>
                                 <td>${cliente.nombre}</td>
                                 <td>${cliente.documento}</td>
                                 <td>${cliente.telefono}</td>

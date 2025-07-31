@@ -107,11 +107,8 @@ $nombreCompleto = obtenerNombreUsuario();
                 <table class="users-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Teléfono</th>
-                            <th>Vehículo</th>
-                            <th>Placa</th>
                             <th>Zona Asignada</th>
                             <th>Estado</th>
                             <th>Acciones</th>
@@ -141,25 +138,15 @@ $nombreCompleto = obtenerNombreUsuario();
                     <label for="telefono">Teléfono:</label>
                     <input type="tel" id="telefono" name="telefono" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label for="tipoVehiculo">Tipo de vehículo:</label>
-                    <select name="tipoVehiculo" id="tipoVehiculo">
-                        <option value="Moto">Moto</option>
-                        <option value="Carguero">Carguero</option>
-                        <option value="Camioneta">Camioneta</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="placa">Placa:</label>
-                    <input type="text" id="placa" name="placa" class="form-control" required>
-                </div>
                 <div class="form-group" id="zonaGroup" style="display: none;">
                     <label for="zona">Zona Asignada:</label>
                     <select id="zona" name="zona" class="form-control">
-                        <option value="norte">Norte</option>
-                        <option value="sur">Sur</option>
-                        <option value="este">Este</option>
-                        <option value="oeste">Oeste</option>
+                        <option value="">Sin zona asignada</option>
+                        <option value="1">Occidente</option>
+                        <option value="2">Centro</option>
+                        <option value="3">Sur</option>
+                        <option value="4">Norte</option>
+                        <option value="6">Oriente</option>
                     </select>
                 </div>
                 <div class="form-group" id="estadoGroup" style="display: none;">
@@ -232,9 +219,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     document.getElementById('domiciliarioId').value = id;
                     document.getElementById('nombre').value = data.nombre || '';
                     document.getElementById('telefono').value = data.telefono || '';
-                    document.getElementById('tipoVehiculo').value = data.vehiculo || 'Moto';
-                    document.getElementById('placa').value = data.placa || '';
-                    document.getElementById('zona').value = data.zona || 'norte';
+                    document.getElementById('zona').value = data.id_zona || '';
                     document.getElementById('estado').value = data.estado || 'disponible';
                     document.getElementById('zonaGroup').style.display = 'block';
                     document.getElementById('estadoGroup').style.display = 'block';
@@ -286,15 +271,9 @@ $nombreCompleto = obtenerNombreUsuario();
             e.preventDefault();
 
             const telefono = document.getElementById('telefono').value;
-            const placa = document.getElementById('placa').value;
 
             if (telefono.length !== 10 || isNaN(telefono)) {
                 alert('Teléfono debe tener 10 dígitos.');
-                return;
-            }
-
-            if (!/^[A-Z]{3}\d{3}$/.test(placa)) {
-                alert('Placa inválida. Formato: ABC123');
                 return;
             }
 
@@ -347,16 +326,14 @@ $nombreCompleto = obtenerNombreUsuario();
             const rows = document.querySelectorAll('#domiciliariosTableBody tr');
 
             rows.forEach(row => {
-                const nombre = quitarTildes(row.children[1].textContent);
-                const telefono = row.children[2].textContent.toLowerCase();
-                const vehiculo = quitarTildes(row.children[3].textContent);
-                const zona = quitarTildes((row.children[5].textContent || ''));
-                const estado = quitarTildes(row.children[6].textContent);
+                const nombre = quitarTildes(row.children[0].textContent);
+                const telefono = row.children[1].textContent.toLowerCase();
+                const zona = quitarTildes((row.children[2].textContent || ''));
+                const estado = quitarTildes(row.children[3].textContent);
 
                 const coincideTexto =
                     nombre.includes(search) ||
                     telefono.includes(search) ||
-                    vehiculo.includes(search) ||
                     zona.includes(search);
 
                 const coincideEstado = status === '' || estado === status;
@@ -396,11 +373,8 @@ $nombreCompleto = obtenerNombreUsuario();
             domiciliarios.forEach(d => {
                 html += `
                 <tr>
-                    <td>${d.id_domiciliario}</td>
                     <td>${d.nombre}</td>
                     <td>${d.telefono}</td>
-                    <td>${d.vehiculo}</td>
-                    <td>${d.placa}</td>
                     <td>${d.zona || 'Sin asignar'}</td>
                     <td><span class="estado-${d.estado.replace(/\s/g, '')}">${d.estado}</span></td>
                     <td>

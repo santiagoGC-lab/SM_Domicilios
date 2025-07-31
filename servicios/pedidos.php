@@ -69,12 +69,16 @@ function procesarPedido($datos) {
             $stmt->close();
         }
         
+        // Procesar checkboxes
+        $envio_inmediato = isset($datos['envio_inmediato']) && $datos['envio_inmediato'] == '1' ? 1 : 0;
+        $alistamiento = isset($datos['alistamiento']) && $datos['alistamiento'] == '1' ? 1 : 0;
+        
         // Insertar el pedido
         $stmt = $db->prepare("
-            INSERT INTO pedidos (id_cliente, id_zona, id_domiciliario, estado, cantidad_paquetes, total, tiempo_estimado, fecha_pedido)
-            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO pedidos (id_cliente, id_zona, id_domiciliario, estado, cantidad_paquetes, total, tiempo_estimado, envio_inmediato, alistamiento, fecha_pedido)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         ");
-        $stmt->bind_param("iiissdi", $id_cliente, $id_zona, $id_domiciliario, $estado, $cantidad_paquetes, $total, $tiempo_estimado);
+        $stmt->bind_param("iiissdiis", $id_cliente, $id_zona, $id_domiciliario, $estado, $cantidad_paquetes, $total, $tiempo_estimado, $envio_inmediato, $alistamiento);
         $stmt->execute();
         
         // Actualizar estado del domiciliario según el estado del pedido
@@ -104,9 +108,13 @@ function actualizarPedido($datos) {
         $estado = $datos['estado'];
         $id_domiciliario = intval($datos['id_domiciliario'] ?? 0);
         
+        // Procesar checkboxes
+        $envio_inmediato = isset($datos['envio_inmediato']) && $datos['envio_inmediato'] == '1' ? 1 : 0;
+        $alistamiento = isset($datos['alistamiento']) && $datos['alistamiento'] == '1' ? 1 : 0;
+        
         // Actualizar el pedido
-        $stmt = $db->prepare("UPDATE pedidos SET estado = ?, id_domiciliario = ? WHERE id_pedido = ?");
-        $stmt->bind_param("sii", $estado, $id_domiciliario, $id_pedido);
+        $stmt = $db->prepare("UPDATE pedidos SET estado = ?, id_domiciliario = ?, envio_inmediato = ?, alistamiento = ? WHERE id_pedido = ?");
+        $stmt->bind_param("siiis", $estado, $id_domiciliario, $envio_inmediato, $alistamiento, $id_pedido);
         $stmt->execute();
         
         // Actualizar estado del domiciliario
@@ -132,6 +140,16 @@ function cambiarEstadoPedido($id, $estado) {
     try {
         $db = ConectarDB();
         
+        // Si el estado es 'entregado', mover al histórico automáticamente
+        if ($estado === 'entregado') {
+            $resultado = moverPedidoHistorial($id);
+            if (isset($resultado['error'])) {
+                return $resultado;
+            }
+            return ['success' => true, 'message' => 'Pedido entregado y movido al histórico'];
+        }
+        
+        // Para otros estados, solo actualizar
         $stmt = $db->prepare("UPDATE pedidos SET estado = ? WHERE id_pedido = ?");
         $stmt->bind_param("si", $estado, $id);
         $stmt->execute();
@@ -313,11 +331,13 @@ function moverPedidoHistorial($id) {
         $stmt = $db->prepare("
             SELECT p.*, c.nombre AS cliente_nombre, c.documento AS cliente_documento, c.telefono AS cliente_telefono, c.direccion AS cliente_direccion,
                    z.nombre AS zona_nombre, z.tarifa_base AS zona_tarifa,
-                   d.nombre AS domiciliario_nombre, d.telefono AS domiciliario_telefono
+                   d.nombre AS domiciliario_nombre, d.telefono AS domiciliario_telefono,
+                   v.tipo AS vehiculo_tipo, v.placa AS vehiculo_placa
             FROM pedidos p
             LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
             LEFT JOIN zonas z ON p.id_zona = z.id_zona
             LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+            LEFT JOIN vehiculos v ON p.id_vehiculo = v.id_vehiculo
             WHERE p.id_pedido = ?
         ");
         $stmt->bind_param("i", $id);
@@ -332,17 +352,18 @@ function moverPedidoHistorial($id) {
         // 2. Insertar en historico_pedidos
         $stmt = $db->prepare("
             INSERT INTO historico_pedidos (
-                id_pedido_original, id_cliente, id_zona, id_domiciliario, estado, cantidad_paquetes, total, tiempo_estimado, fecha_pedido, fecha_completado,
-                cliente_nombre, cliente_documento, cliente_telefono, cliente_direccion, zona_nombre, zona_tarifa, domiciliario_nombre, domiciliario_telefono, usuario_proceso
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                id_pedido_original, id_cliente, id_zona, id_domiciliario, id_vehiculo, estado, cantidad_paquetes, total, tiempo_estimado, fecha_pedido, fecha_completado,
+                cliente_nombre, cliente_documento, cliente_telefono, cliente_direccion, zona_nombre, zona_tarifa, domiciliario_nombre, domiciliario_telefono, vehiculo_tipo, vehiculo_placa, usuario_proceso
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $usuario_proceso = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : null;
         $stmt->bind_param(
-            "iiiisidssssssssssi",
+            "iiiisidssssssssssssi",
             $pedido['id_pedido'],
             $pedido['id_cliente'],
             $pedido['id_zona'],
             $pedido['id_domiciliario'],
+            $pedido['id_vehiculo'],
             $pedido['estado'],
             $pedido['cantidad_paquetes'],
             $pedido['total'],
@@ -356,6 +377,8 @@ function moverPedidoHistorial($id) {
             $pedido['zona_tarifa'],
             $pedido['domiciliario_nombre'],
             $pedido['domiciliario_telefono'],
+            $pedido['vehiculo_tipo'],
+            $pedido['vehiculo_placa'],
             $usuario_proceso
         );
         $stmt->execute();
@@ -455,11 +478,7 @@ function marcarLlegadaPedido($id_pedido) {
         $stmt->bind_result($id_domiciliario, $id_vehiculo);
         $stmt->fetch();
         $stmt->close();
-        // Actualizar pedido
-        $stmt2 = $db->prepare("UPDATE pedidos SET hora_llegada = NOW(), estado = 'entregado' WHERE id_pedido = ?");
-        $stmt2->bind_param("i", $id_pedido);
-        $stmt2->execute();
-        $stmt2->close();
+        
         // Marcar domiciliario como disponible
         if ($id_domiciliario) {
             $stmt3 = $db->prepare("UPDATE domiciliarios SET estado = 'disponible' WHERE id_domiciliario = ?");
@@ -474,8 +493,16 @@ function marcarLlegadaPedido($id_pedido) {
             $stmt4->execute();
             $stmt4->close();
         }
+        
         $db->close();
-        return ['success' => true];
+        
+        // Mover al histórico automáticamente
+        $resultado = moverPedidoHistorial($id_pedido);
+        if (isset($resultado['error'])) {
+            return $resultado;
+        }
+        
+        return ['success' => true, 'message' => 'Pedido entregado y movido al histórico'];
     } catch (Exception $e) {
         return ['error' => 'Error al marcar llegada: ' . $e->getMessage()];
     }
