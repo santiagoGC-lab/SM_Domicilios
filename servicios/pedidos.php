@@ -440,7 +440,8 @@ function archivarPedidosAutomatico() {
 function obtenerPedidosPendientesDespacho() {
     try {
         $db = ConectarDB();
-        $query = "SELECT p.id_pedido, c.nombre as cliente, c.barrio, z.nombre as zona
+        $query = "SELECT p.id_pedido, c.nombre as cliente, c.direccion, c.telefono, c.barrio, 
+                         z.nombre as zona, p.cantidad_paquetes, p.tiempo_estimado
                   FROM pedidos p
                   LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
                   LEFT JOIN zonas z ON p.id_zona = z.id_zona
@@ -649,9 +650,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
+        // En el case 'en_ruta':
         case 'en_ruta':
             $db = ConectarDB();
-            $result = $db->query("SELECT p.id_pedido, d.nombre AS domiciliario, p.hora_salida, p.hora_llegada FROM pedidos p LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario WHERE p.estado = 'en_camino'");
+            $result = $db->query("SELECT p.id_pedido, d.nombre AS domiciliario, p.hora_salida, p.hora_llegada, 
+                                     c.nombre AS cliente, c.direccion, c.telefono
+                                  FROM pedidos p 
+                                  LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario 
+                                  LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+                                  WHERE p.estado = 'en_camino'");
             $pedidos = $result->fetch_all(MYSQLI_ASSOC);
             $db->close();
             echo json_encode($pedidos);

@@ -171,13 +171,17 @@ verificarAcceso('coordinador');
                     alert('Error: ' + data.error);
                     return;
                 }
-                // Por cada pedido pendiente, crea una fila
+                // Por cada pedido pendiente, crea una fila con todas las columnas
                 data.forEach(pedido => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${pedido.cliente}</td>
-                        <td>${pedido.barrio}</td>
-                        <td>${pedido.zona}</td>
+                        <td>${pedido.cliente || 'N/A'}</td>
+                        <td>${pedido.direccion || 'N/A'}</td>
+                        <td>${pedido.cantidad_paquetes || 'N/A'}</td>
+                        <td>${pedido.tiempo_estimado || 'N/A'} min</td>
+                        <td>${pedido.telefono || 'N/A'}</td>
+                        <td>${pedido.barrio || 'N/A'}</td>
+                        <td>${pedido.zona || 'N/A'}</td>
                         <td>
                             <button class="btn-despachar" onclick="abrirModalDespacho(${pedido.id_pedido})" title="Despachar">
                                 <i class="fas fa-truck"></i> Despachar
