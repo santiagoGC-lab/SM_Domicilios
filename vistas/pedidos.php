@@ -724,7 +724,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
 
                 console.log('Buscando cliente con cédula:', cedula);
 
-                fetch('/SM_Domicilios/servicios/clientes.php', {
+                fetch('../servicios/clientes.php', {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json'

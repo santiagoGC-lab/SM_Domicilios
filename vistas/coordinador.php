@@ -338,6 +338,11 @@ verificarAcceso('coordinador');
         // Marca la llegada de un pedido (cambia estado y hora de llegada)
         function marcarLlegada(id_pedido) {
             if (confirm('¿Confirmar que el pedido ha llegado?')) {
+                // Deshabilitar el botón para evitar múltiples clics
+                const button = event.target.closest('button');
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+                
                 const formData = new FormData();
                 formData.append('accion', 'marcar_llegada');
                 formData.append('id_pedido', id_pedido);
@@ -348,15 +353,20 @@ verificarAcceso('coordinador');
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Llegada marcada exitosamente');
-                        cargarDomiciliariosEnRuta();
-                        cargarPedidosPendientes();
+                        alert('Pedido marcado como entregado');
+                        cargarDomiciliariosEnRuta(); // Recargar la tabla
                     } else {
-                        alert('Error: ' + (data.message || data.error));
+                        alert('Error: ' + (data.error || 'Error desconocido'));
+                        // Rehabilitar el botón si hay error
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-check"></i> Llegó';
                     }
                 })
                 .catch(error => {
-                    alert('Error al marcar llegada: ' + error.message);
+                    alert('Error: ' + error.message);
+                    // Rehabilitar el botón si hay error
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-check"></i> Llegó';
                 });
             }
         }

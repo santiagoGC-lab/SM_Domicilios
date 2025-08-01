@@ -327,6 +327,7 @@ function buscarHistorialPedidos($filtros) {
 function moverPedidoHistorial($id) {
     try {
         $db = ConectarDB();
+        
         // 1. Obtener todos los datos del pedido y sus relaciones
         $stmt = $db->prepare("
             SELECT p.*, c.nombre AS cliente_nombre, c.documento AS cliente_documento, c.telefono AS cliente_telefono, c.direccion AS cliente_direccion,
@@ -345,51 +346,67 @@ function moverPedidoHistorial($id) {
         $result = $stmt->get_result();
         $pedido = $result->fetch_assoc();
         $stmt->close();
+        
         if (!$pedido) {
             $db->close();
             return ['error' => 'Pedido no encontrado'];
         }
-        // 2. Insertar en historico_pedidos
-        $stmt = $db->prepare("
-            INSERT INTO historico_pedidos (
-                id_pedido_original, id_cliente, id_zona, id_domiciliario, id_vehiculo, estado, cantidad_paquetes, total, tiempo_estimado, fecha_pedido, fecha_completado,
-                cliente_nombre, cliente_documento, cliente_telefono, cliente_direccion, zona_nombre, zona_tarifa, domiciliario_nombre, domiciliario_telefono, vehiculo_tipo, vehiculo_placa, usuario_proceso
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        $usuario_proceso = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : null;
-        $stmt->bind_param(
-            "iiiisidssssssssssssi",
-            $pedido['id_pedido'],
-            $pedido['id_cliente'],
-            $pedido['id_zona'],
-            $pedido['id_domiciliario'],
-            $pedido['id_vehiculo'],
-            $pedido['estado'],
-            $pedido['cantidad_paquetes'],
-            $pedido['total'],
-            $pedido['tiempo_estimado'],
-            $pedido['fecha_pedido'],
-            $pedido['cliente_nombre'],
-            $pedido['cliente_documento'],
-            $pedido['cliente_telefono'],
-            $pedido['cliente_direccion'],
-            $pedido['zona_nombre'],
-            $pedido['zona_tarifa'],
-            $pedido['domiciliario_nombre'],
-            $pedido['domiciliario_telefono'],
-            $pedido['vehiculo_tipo'],
-            $pedido['vehiculo_placa'],
-            $usuario_proceso
-        );
-        $stmt->execute();
-        $stmt->close();
-        // 3. Eliminar el pedido de la tabla principal
-        $stmt = $db->prepare("DELETE FROM pedidos WHERE id_pedido = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $stmt->close();
+        
+        // 2. Escapar valores para evitar inyección SQL
+        $id_pedido_original = intval($pedido['id_pedido']);
+        $id_cliente = intval($pedido['id_cliente']);
+        $id_zona = intval($pedido['id_zona']);
+        $id_domiciliario = $pedido['id_domiciliario'] ? intval($pedido['id_domiciliario']) : 'NULL';
+        $id_vehiculo = $pedido['id_vehiculo'] ? intval($pedido['id_vehiculo']) : 'NULL';
+        $estado = $db->real_escape_string('entregado'); // Forzar a entregado
+        $cantidad_paquetes = intval($pedido['cantidad_paquetes']);
+        $total = floatval($pedido['total']);
+        $tiempo_estimado = intval($pedido['tiempo_estimado']);
+        $fecha_pedido = "'" . $db->real_escape_string($pedido['fecha_pedido']) . "'";
+        $hora_salida = $pedido['hora_salida'] ? "'" . $db->real_escape_string($pedido['hora_salida']) . "'" : 'NULL';
+        $hora_llegada = $pedido['hora_llegada'] ? "'" . $db->real_escape_string($pedido['hora_llegada']) . "'" : 'NOW()';
+        $cliente_nombre = "'" . $db->real_escape_string($pedido['cliente_nombre']) . "'";
+        $cliente_documento = "'" . $db->real_escape_string($pedido['cliente_documento']) . "'";
+        $cliente_telefono = $pedido['cliente_telefono'] ? "'" . $db->real_escape_string($pedido['cliente_telefono']) . "'" : 'NULL';
+        $cliente_direccion = $pedido['cliente_direccion'] ? "'" . $db->real_escape_string($pedido['cliente_direccion']) . "'" : 'NULL';
+        $zona_nombre = "'" . $db->real_escape_string($pedido['zona_nombre']) . "'";
+        $zona_tarifa = floatval($pedido['zona_tarifa']);
+        $domiciliario_nombre = $pedido['domiciliario_nombre'] ? "'" . $db->real_escape_string($pedido['domiciliario_nombre']) . "'" : 'NULL';
+        $domiciliario_telefono = $pedido['domiciliario_telefono'] ? "'" . $db->real_escape_string($pedido['domiciliario_telefono']) . "'" : 'NULL';
+        $vehiculo_tipo = $pedido['vehiculo_tipo'] ? "'" . $db->real_escape_string($pedido['vehiculo_tipo']) . "'" : 'NULL';
+        $vehiculo_placa = $pedido['vehiculo_placa'] ? "'" . $db->real_escape_string($pedido['vehiculo_placa']) . "'" : 'NULL';
+        $usuario_proceso = isset($_SESSION['id_usuario']) ? intval($_SESSION['id_usuario']) : 'NULL';
+        
+        // 3. Insertar con consulta SQL directa
+        $sql = "INSERT INTO historico_pedidos (
+            id_pedido_original, id_cliente, id_zona, id_domiciliario, id_vehiculo, estado, 
+            cantidad_paquetes, total, tiempo_estimado, fecha_pedido, hora_salida, hora_llegada, 
+            fecha_completado, cliente_nombre, cliente_documento, cliente_telefono, cliente_direccion, 
+            zona_nombre, zona_tarifa, domiciliario_nombre, domiciliario_telefono, vehiculo_tipo, 
+            vehiculo_placa, usuario_proceso
+        ) VALUES (
+            $id_pedido_original, $id_cliente, $id_zona, $id_domiciliario, $id_vehiculo, '$estado',
+            $cantidad_paquetes, $total, $tiempo_estimado, $fecha_pedido, $hora_salida, $hora_llegada,
+            NOW(), $cliente_nombre, $cliente_documento, $cliente_telefono, $cliente_direccion,
+            $zona_nombre, $zona_tarifa, $domiciliario_nombre, $domiciliario_telefono, $vehiculo_tipo,
+            $vehiculo_placa, $usuario_proceso
+        )";
+        
+        if (!$db->query($sql)) {
+            $db->close();
+            return ['error' => 'Error al insertar en histórico: ' . $db->error];
+        }
+        
+        // 4. Eliminar el pedido de la tabla principal
+        $sql_delete = "DELETE FROM pedidos WHERE id_pedido = $id_pedido_original";
+        if (!$db->query($sql_delete)) {
+            $db->close();
+            return ['error' => 'Error al eliminar pedido: ' . $db->error];
+        }
+        
         $db->close();
         return ['success' => true, 'message' => 'Pedido archivado correctamente'];
+        
     } catch (Exception $e) {
         return ['error' => 'Error al mover pedido: ' . $e->getMessage()];
     }
@@ -471,6 +488,26 @@ function despacharPedido($id_pedido, $id_domiciliario, $id_vehiculo) {
 function marcarLlegadaPedido($id_pedido) {
     try {
         $db = ConectarDB();
+        
+        // Verificar si el pedido existe antes de proceder
+        $stmt_check = $db->prepare("SELECT id_pedido FROM pedidos WHERE id_pedido = ?");
+        $stmt_check->bind_param("i", $id_pedido);
+        $stmt_check->execute();
+        $result_check = $stmt_check->get_result();
+        
+        if (!$result_check->fetch_assoc()) {
+            $stmt_check->close();
+            $db->close();
+            return ['error' => 'El pedido ya fue procesado o no existe'];
+        }
+        $stmt_check->close();
+        
+        // Actualizar el estado del pedido a 'entregado' y marcar hora de llegada
+        $stmt = $db->prepare("UPDATE pedidos SET estado = 'entregado', hora_llegada = NOW() WHERE id_pedido = ?");
+        $stmt->bind_param("i", $id_pedido);
+        $stmt->execute();
+        $stmt->close();
+        
         // Obtener domiciliario y vehículo del pedido
         $stmt = $db->prepare("SELECT id_domiciliario, id_vehiculo FROM pedidos WHERE id_pedido = ?");
         $stmt->bind_param("i", $id_pedido);
@@ -496,7 +533,7 @@ function marcarLlegadaPedido($id_pedido) {
         
         $db->close();
         
-        // Mover al histórico automáticamente
+        // Mover al histórico automáticamente (ahora con estado 'entregado')
         $resultado = moverPedidoHistorial($id_pedido);
         if (isset($resultado['error'])) {
             return $resultado;
@@ -681,4 +718,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Método no permitido']);
 }
-?> 
+?>
