@@ -632,42 +632,48 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         }
 
         // Renderiza la tabla de pedidos paginados
+        // Función corregida para renderizar todos los campos de la tabla de pedidos
         function renderPedidos(pedidos) {
             const tbody = document.getElementById('ordersTableBody');
             tbody.innerHTML = '';
+
             pedidos.forEach(order => {
                 const tr = document.createElement('tr');
-                let tiempoHtml = '';
-                if (order.estado === 'pendiente') {
-                    tiempoHtml = `<span class='tiempo-pendiente'>⏳ ${order.tiempo_estimado || 30} min</span>`;
-                } else if (order.estado === 'entregado') {
-                    tiempoHtml = `<span class='tiempo-entregado'>✅ Entregado</span>`;
-                } else {
-                    tiempoHtml = `<span class='tiempo-cancelado'>❌ Cancelado</span>`;
-                }
-                let botonesHtml = '<div class="action-buttons">';
-                if (order.estado === 'pendiente') {
-                    botonesHtml += `<button class="btn btn-entregar" onclick="cambiarEstado(${order.id_pedido}, 'entregado')" title="Marcar como entregado"><i class="fas fa-check"></i></button>`;
-                }
-                if (['pendiente'].includes(order.estado)) {
-                    botonesHtml += `<button class="btn btn-cancelar" onclick="cambiarEstado(${order.id_pedido}, 'cancelado')" title="Cancelar pedido"><i class="fas fa-times"></i></button>`;
-                }
-                botonesHtml += `<button class="btn btn-editar" onclick="editarPedido(${order.id_pedido})" title="Editar"><i class="fas fa-edit"></i></button>`;
-                botonesHtml += `<button class="btn btn-eliminar" onclick="eliminarPedido(${order.id_pedido})" title="Eliminar"><i class="fas fa-trash"></i></button>`;
-                if (['entregado', 'cancelado'].includes(order.estado)) {
-                    botonesHtml += `<button class="btn btn-archivar" onclick="archivarPedido(${order.id_pedido})" title="Archivar"><i class="fas fa-archive"></i></button>`;
-                }
-                botonesHtml += '</div>';
+
+                // Formatear la hora del pedido
+                const fechaPedido = new Date(order.fecha_pedido);
+                const horaFormateada = fechaPedido.toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // Obtener dirección del cliente (necesitarás incluir esto en la consulta SQL)
+                const direccion = order.direccion || 'No especificada';
+
+                // Determinar el estado de envío inmediato
+                const envioInmediato = order.envio_inmediato == 1 ?
+                    '<span class="badge-si">Sí</span>' :
+                    '<span class="badge-no">No</span>';
+
+                // Determinar el estado de alistamiento
+                const alistamiento = order.alistamiento == 1 ?
+                    '<span class="badge-si">Sí</span>' :
+                    '<span class="badge-no">No</span>';
+
+                // Llenar todas las columnas de la tabla
                 tr.innerHTML = `
-                    <td>${order.cliente}</td>
-                    <td>${order.domiciliario || 'No asignado'}</td>
-                    <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
-                    <td>${new Date(order.fecha_pedido).toLocaleString('es-ES', { timeStyle: 'short' })}</td>
-                `;
+            <td>${order.cliente}</td>
+            <td>${order.domiciliario || 'No asignado'}</td>
+            <td><span class="estado-${order.estado.toLowerCase()} estado">${order.estado.charAt(0).toUpperCase() + order.estado.slice(1)}</span></td>
+            <td>${horaFormateada}</td>
+            <td>${direccion}</td>
+            <td>${envioInmediato}</td>
+            <td>${alistamiento}</td>
+        `;
+
                 tbody.appendChild(tr);
             });
         }
-
         // Renderiza los controles de paginación
         function renderPagination(page) {
             const pagination = document.getElementById('paginationPedidos');
