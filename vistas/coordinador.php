@@ -314,8 +314,8 @@ verificarAcceso('coordinador');
                 }
                 // Por cada pedido en ruta, crea una fila
                 data.forEach(pedido => {
-                    const horaSalida = pedido.hora_salida ? new Date(pedido.hora_salida).toLocaleString('es-ES', {dateStyle: 'short', timeStyle: 'short'}) : '-';
-                    const horaLlegada = pedido.hora_llegada ? new Date(pedido.hora_llegada).toLocaleString('es-ES', {dateStyle: 'short', timeStyle: 'short'}) : '-';
+                    const horaSalida = pedido.hora_salida ? new Date(pedido.hora_salida).toLocaleString('es-ES', {timeStyle: 'short'}) : '-';
+                    const horaLlegada = pedido.hora_llegada ? new Date(pedido.hora_llegada).toLocaleString('es-ES', {timeStyle: 'short'}) : '-';
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${pedido.domiciliario || 'No asignado'}</td>
