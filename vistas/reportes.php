@@ -31,43 +31,107 @@ try {
         ORDER BY total DESC
     ")->fetchAll();
     
-    // Domiciliarios más activos
+    // Domiciliarios más activos (solo del historial de hoy)
     $domiciliariosActivos = $pdo->query("
-        SELECT d.nombre, COUNT(p.id_pedido) as entregas, SUM(p.total) as ingresos
-        FROM domiciliarios d
-        LEFT JOIN pedidos p ON d.id_domiciliario = p.id_domiciliario AND p.estado = 'entregado'
-        WHERE d.estado IN ('disponible', 'ocupado')
-        GROUP BY d.id_domiciliario, d.nombre
+        SELECT 
+            domiciliario_nombre as nombre,
+            COUNT(*) as entregas, 
+            SUM(total) as ingresos
+        FROM historico_pedidos
+        WHERE DATE(fecha_completado) = CURDATE() 
+            AND estado = 'entregado'
+            AND domiciliario_nombre IS NOT NULL
+        GROUP BY domiciliario_nombre
         ORDER BY entregas DESC
         LIMIT 5
     ")->fetchAll();
     
-    // Clientes más frecuentes
+    // Clientes más frecuentes (solo del historial de hoy)
     $clientesFrecuentes = $pdo->query("
-        SELECT c.nombre, COUNT(p.id_pedido) as pedidos, SUM(p.total) as total_gastado
-        FROM clientes c
-        LEFT JOIN pedidos p ON c.id_cliente = p.id_cliente
-        WHERE c.estado = 'activo'
-        GROUP BY c.id_cliente, c.nombre
-        HAVING pedidos > 0
+        SELECT 
+            cliente_nombre as nombre,
+            COUNT(*) as pedidos,
+            SUM(total) as total_gastado
+        FROM historico_pedidos
+        WHERE DATE(fecha_completado) = CURDATE()
+            AND estado = 'entregado'
+        GROUP BY cliente_nombre
         ORDER BY pedidos DESC
         LIMIT 5
     ")->fetchAll();
     
-    // Pedidos por estado
-    $pedidosPorEstado = $pdo->query("
+    // Pedidos por estado (combinar pedidos activos + historial de hoy)
+    $pedidosActivos = $pdo->query("
         SELECT estado, COUNT(*) as total
         FROM pedidos
+        WHERE DATE(fecha_pedido) = CURDATE()
         GROUP BY estado
-        ORDER BY total DESC
     ")->fetchAll();
     
-    // Pedidos de los últimos 7 días
+    $pedidosHistorial = $pdo->query("
+        SELECT estado, COUNT(*) as total
+        FROM historico_pedidos
+        WHERE DATE(fecha_completado) = CURDATE()
+        GROUP BY estado
+    ")->fetchAll();
+    
+    // Combinar ambos arrays
+    $pedidosPorEstado = [];
+    $estadosCount = [];
+    
+    foreach ($pedidosActivos as $pedido) {
+        $estadosCount[$pedido['estado']] = ($estadosCount[$pedido['estado']] ?? 0) + $pedido['total'];
+    }
+    
+    foreach ($pedidosHistorial as $pedido) {
+        $estadosCount[$pedido['estado']] = ($estadosCount[$pedido['estado']] ?? 0) + $pedido['total'];
+    }
+    
+    foreach ($estadosCount as $estado => $total) {
+        $pedidosPorEstado[] = ['estado' => $estado, 'total' => $total];
+    }
+    
+    // Detalle por zona (solo del historial de hoy)
+    // Detalle por zona - Zonas donde más se pidieron domicilios (todos los tiempos)
+    // Detalle por zona - Últimos 30 días (más relevante)
+    // Detalle por zona (versión simple y funcional)
+    // Detalle por zona con datos reales del historial
+    $zonaDetalle = $pdo->query("
+        SELECT 
+            zona_nombre as zona,
+            COUNT(*) as pedidos,
+            SUM(total) as ingresos
+        FROM historico_pedidos
+        WHERE estado = 'entregado'
+        GROUP BY zona_nombre
+        
+        UNION ALL
+        
+        SELECT 
+            z.nombre as zona,
+            0 as pedidos,
+            0 as ingresos
+        FROM zonas z
+        WHERE z.estado = 'activo'
+            AND z.nombre NOT IN (
+                SELECT DISTINCT zona_nombre 
+                FROM historico_pedidos 
+                WHERE estado = 'entregado'
+            )
+        
+        ORDER BY pedidos DESC, zona ASC
+    ")->fetchAll();
+    
+    // Pedidos de los últimos 7 días (solo historial)
     $pedidosUltimos7Dias = $pdo->query("
-        SELECT DATE(fecha_pedido) as fecha, COUNT(*) as total, SUM(total) as ingresos
-        FROM pedidos
-        WHERE fecha_pedido >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-        GROUP BY DATE(fecha_pedido)
+        SELECT 
+            DATE(fecha_completado) as fecha, 
+            COUNT(*) as total, 
+            SUM(total) as ingresos
+        FROM historico_pedidos
+        WHERE fecha_completado >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            AND estado = 'entregado'
+        GROUP BY DATE(fecha_completado)
         ORDER BY fecha DESC
     ")->fetchAll();
     
@@ -168,21 +232,56 @@ try {
         <!-- Estadísticas principales -->
         <!-- Tarjetas de resumen de KPIs solicitados -->
         <?php
-        // --- Cálculos para los KPIs del reporte ---
-        // Pedidos entregados hoy con zona y tiempos
+        // --- Cálculos para los KPIs del reporte (ESTADÍSTICAS DIARIAS) ---
+        
+        // 1. Total de pedidos creados HOY (siguen en tabla pedidos hasta ser procesados)
+        $totalPedidosHoy = $pdo->query("
+            SELECT COUNT(*) 
+            FROM pedidos 
+            WHERE DATE(fecha_pedido) = CURDATE()
+        ")->fetchColumn();
+        
+        // 2. Pedidos entregados HOY (están en historial)
         $pedidosEntregadosHoy = $pdo->query("
-            SELECT p.hora_salida, p.hora_llegada, z.tiempo_estimado
-            FROM pedidos p
-            LEFT JOIN zonas z ON p.id_zona = z.id_zona
-            WHERE DATE(p.fecha_pedido) = CURDATE() AND p.estado = 'entregado'
+            SELECT hp.hora_salida, hp.hora_llegada, hp.tiempo_estimado
+            FROM historico_pedidos hp
+            WHERE DATE(hp.fecha_completado) = CURDATE() AND hp.estado = 'entregado'
         ")->fetchAll();
-        $totalPedidosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()") ->fetchColumn();
-        $domiciliosEnviadosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND (estado = 'en_camino' OR estado = 'entregado')")->fetchColumn();
-        $valorDomiciliosHoy = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
-        // Tiempo promedio de entrega y % cumplimiento real
+        
+        // 3. Domicilios enviados HOY (en camino + entregados)
+        $enCaminoHoy = $pdo->query("
+            SELECT COUNT(*) 
+            FROM pedidos 
+            WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'en_camino'
+        ")->fetchColumn();
+        
+        $entregadosHoy = $pdo->query("
+            SELECT COUNT(*) 
+            FROM historico_pedidos 
+            WHERE DATE(fecha_completado) = CURDATE() AND estado = 'entregado'
+        ")->fetchColumn();
+        
+        $domiciliosEnviadosHoy = $enCaminoHoy + $entregadosHoy;
+        
+        // 4. Valor total de domicilios entregados HOY (solo del historial)
+        $valorDomiciliosHoy = $pdo->query("
+            SELECT COALESCE(SUM(total), 0) 
+            FROM historico_pedidos 
+            WHERE DATE(fecha_completado) = CURDATE() AND estado = 'entregado'
+        ")->fetchColumn();
+        
+        // 5. Pedidos cancelados HOY (están en historial)
+        $canceladosHoy = $pdo->query("
+            SELECT COUNT(*) 
+            FROM historico_pedidos 
+            WHERE DATE(fecha_completado) = CURDATE() AND estado = 'cancelado'
+        ")->fetchColumn();
+        
+        // 6. Cálculo de tiempo promedio y cumplimiento HOY
         $totalTiempo = 0;
         $numEntregas = 0;
         $cumplidos = 0;
+        
         foreach ($pedidosEntregadosHoy as $pedido) {
             if (!empty($pedido['hora_salida']) && !empty($pedido['hora_llegada']) && !empty($pedido['tiempo_estimado'])) {
                 $salida = strtotime($pedido['hora_salida']);
@@ -190,11 +289,13 @@ try {
                 $tiempoReal = ($llegada - $salida) / 60; // minutos
                 $totalTiempo += $tiempoReal;
                 $numEntregas++;
+                
                 if ($tiempoReal <= $pedido['tiempo_estimado']) {
                     $cumplidos++;
                 }
             }
         }
+        
         $tiempoPromedio = $numEntregas > 0 ? round($totalTiempo / $numEntregas, 2) : 0;
         $cumplimiento = $numEntregas > 0 ? round(($cumplidos / $numEntregas) * 100, 2) : 0;
         ?>
@@ -298,17 +399,51 @@ try {
                                     <td><?php echo $cliente['pedidos']; ?></td>
                                     <td>$<?php echo number_format($cliente['total_gastado'] ?? 0, 2); ?></td>
                                 </tr>
-                            <?php endforeach; ?>
+                            <?php endforeach; 
+                            // Detalle por zona (mostrar todas las zonas activas)
+                            // **Versión más segura (recomendada):**
+                            // Detalle por zona - versión segura
+                            try {
+                                $zonaDetalle = $pdo->query("
+                                    SELECT 
+                                        z.nombre as zona,
+                                        COALESCE(stats.pedidos, 0) as pedidos,
+                                        COALESCE(stats.ingresos, 0) as ingresos
+                                    FROM zonas z
+                                    LEFT JOIN (
+                                        SELECT 
+                                            zona_nombre,
+                                            COUNT(*) as pedidos,
+                                            SUM(total) as ingresos
+                                        FROM historico_pedidos
+                                        WHERE estado = 'entregado'
+                                        GROUP BY zona_nombre
+                                    ) stats ON z.nombre = stats.zona_nombre
+                                    WHERE z.estado = 'activo'
+                                    ORDER BY pedidos DESC, z.nombre ASC
+                                ")->fetchAll();
+                            } catch (Exception $e) {
+                                // Si hay error, mostrar zonas vacías
+                                $zonaDetalle = $pdo->query("
+                                    SELECT 
+                                        nombre as zona,
+                                        0 as pedidos,
+                                        0 as ingresos
+                                    FROM zonas
+                                    WHERE estado = 'activo'
+                                    ORDER BY nombre ASC
+                                ")->fetchAll();
+                            }
+                            ?>
                         </tbody>
                     </table>
                 </div>
             </div>
-
-            <!-- Tabla de pedidos por zona -->
+            <!-- Tabla de detalle por zona -->
             <div class="report-card">
                 <div class="report-header">
                     <h3>Detalle por Zona</h3>
-                    <button class="btn-export" onclick="exportarReporte('detalle_zonas')">
+                    <button class="btn-export" onclick="exportarReporte('zonas')">
                         <i class="fas fa-download"></i>
                     </button>
                 </div>
