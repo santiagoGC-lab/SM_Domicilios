@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 31-07-2025 a las 13:41:36
+-- Tiempo de generación: 01-08-2025 a las 14:47:39
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -36,15 +36,6 @@ CREATE TABLE `actividad_reciente` (
   `fecha_actividad` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---
--- Volcado de datos para la tabla `actividad_reciente`
---
-
-INSERT INTO `actividad_reciente` (`id_actividad`, `tipo_actividad`, `descripcion`, `id_usuario`, `id_pedido`, `fecha_actividad`) VALUES
-(1, 'pedido_archivado', 'Pedido #4 archivado por usuario #1', 1, 4, '2025-07-14 11:47:32'),
-(2, 'pedido_archivado', 'Pedido #2 archivado por usuario #1', 1, 2, '2025-07-14 11:52:25'),
-(3, 'pedido_archivado', 'Pedido #1 archivado por usuario #1', 1, 1, '2025-07-14 11:53:00');
-
 -- --------------------------------------------------------
 
 --
@@ -67,20 +58,13 @@ CREATE TABLE `clientes` (
 --
 
 INSERT INTO `clientes` (`id_cliente`, `nombre`, `documento`, `telefono`, `direccion`, `barrio`, `fecha_creacion`, `estado`) VALUES
-(1, 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90|', 'La Esperanza', '2025-07-09 14:27:48', 'activo'),
-(2, 'María González', '12345678', '3001111111', 'Calle 123 #45-67', 'La Soledad', '2025-07-12 08:44:28', 'activo'),
-(3, 'Pedro Martínez', '87654321', '3002222222', 'Carrera 78 #90-12', 'Chapinero', '2025-07-12 08:44:28', 'activo'),
-(4, 'Sofia Ruiz', '11223344', '3003333333', 'Avenida 15 #23-45', 'Usaquén', '2025-07-12 08:44:28', 'activo'),
-(5, 'Roberto Silva', '4433221', '3004444444', 'Calle 89 #12-34', 'Suba', '2025-07-12 08:44:28', 'activo'),
-(6, 'Juan Pérez', '10000001', '3001111111', 'Calle 10 #5-20', 'Centro', '2025-07-15 15:49:45', 'activo'),
-(7, 'María Gómez', '10000002', '3002222222', 'Carrera 8 #12-34', 'Norte', '2025-07-15 15:49:45', 'activo'),
-(8, 'Carlos Ruiz', '10000003', '3003333333', 'Avenida 15 #45-67', 'Sur', '2025-07-15 15:49:45', 'activo'),
-(9, 'Ana Torres', '10000004', '3004444444', 'Calle 20 #8-90', 'Occidente', '2025-07-15 15:49:45', 'activo'),
-(10, 'Luisa Martínez', '10000005', '3005555555', 'Carrera 30 #10-50', 'Centro', '2025-07-15 15:49:45', 'activo'),
-(11, 'Laura Fernández', '55443322', '3005555555', 'Calle 45 #67-89', 'Fontibón', '2025-07-15 15:00:00', 'activo'),
-(12, 'Andrés Morales', '99887766', '3006666666', 'Carrera 12 #34-56', 'Teusaquillo', '2025-07-15 15:10:00', 'activo'),
-(13, 'Camila Torres', '77665544', '3007777777', 'Avenida 68 #90-12', 'Engativá', '2025-07-15 15:20:00', 'activo'),
-(14, 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'San vicente', '2025-07-23 08:47:54', 'activo');
+(1, 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'La Esperanza', '2025-07-09 14:27:48', 'activo'),
+(7, 'María Gómez', '10000002', '3002222222', 'Carrera 8 #12-34', 'Cuba', '2025-07-15 15:49:45', 'activo'),
+(8, 'Carlos Ruiz', '10000003', '3003333333', 'Avenida 15 #45-67', 'Las palmas', '2025-07-15 15:49:45', 'activo'),
+(9, 'Ana Torres', '10000004', '3004444444', 'Calle 20 #8-90', 'La esperanza', '2025-07-15 15:49:45', 'activo'),
+(10, 'Luisa Martínez', '10000005', '3005555555', 'Carrera 30 #10-50', 'la ciudadela', '2025-07-15 15:49:45', 'activo'),
+(14, 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'San vicente', '2025-07-23 08:47:54', 'activo'),
+(15, 'JOSE', '444444', '88888888888', 'Cas omwa 23 Q', 'LA ciudadela', '2025-07-31 11:40:34', 'activo');
 
 -- --------------------------------------------------------
 
@@ -92,6 +76,8 @@ CREATE TABLE `domiciliarios` (
   `id_domiciliario` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `telefono` varchar(20) NOT NULL,
+  `vehiculo` varchar(50) NOT NULL,
+  `placa` varchar(20) NOT NULL,
   `id_zona` int(11) DEFAULT NULL,
   `estado` enum('disponible','ocupado','inactivo') NOT NULL DEFAULT 'disponible',
   `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP
@@ -101,14 +87,14 @@ CREATE TABLE `domiciliarios` (
 -- Volcado de datos para la tabla `domiciliarios`
 --
 
-INSERT INTO `domiciliarios` (`id_domiciliario`, `nombre`, `telefono`, `id_zona`, `estado`, `fecha_creacion`) VALUES
-(1, 'Juan Pérez', '3001234567', 3, 'disponible', '2025-07-12 08:44:28'),
-(2, 'Carlos López', '3002345678', 3, 'disponible', '2025-07-12 08:44:28'),
-(3, 'Ana García', '3003456789', NULL, 'disponible', '2025-07-12 08:44:28'),
-(4, 'Luis Rodríguez', '3004567890', 3, 'disponible', '2025-07-12 08:44:28'),
-(6, 'Diego Ramírez', '3005678901', 1, 'disponible', '2025-07-15 15:50:00'),
-(7, 'Valeria Castro', '3006789012', 2, 'disponible', '2025-07-15 16:00:00'),
-(8, 'Felipe Gómez', '3007890123', 3, 'disponible', '2025-07-15 16:10:00');
+INSERT INTO `domiciliarios` (`id_domiciliario`, `nombre`, `telefono`, `vehiculo`, `placa`, `id_zona`, `estado`, `fecha_creacion`) VALUES
+(1, 'Juan Pérez', '3001234567', 'Moto', 'ABC123', 3, 'disponible', '2025-07-12 08:44:28'),
+(2, 'Carlos López', '3002345678', 'Moto', 'DEF456', 3, 'disponible', '2025-07-12 08:44:28'),
+(3, 'Ana García', '3003456789', 'Bicicleta', 'GHI789', NULL, 'disponible', '2025-07-12 08:44:28'),
+(4, 'Luis Rodríguez', '3004567890', 'Moto', 'JKL012', 3, 'disponible', '2025-07-12 08:44:28'),
+(6, 'Diego Ramírez', '3005678901', 'Moto', 'MNO345', 1, 'disponible', '2025-07-15 15:50:00'),
+(7, 'Valeria Castro', '3006789012', 'Bicicleta', 'PQR678', 2, 'disponible', '2025-07-15 16:00:00'),
+(8, 'Felipe Gómez', '3007890123', 'Moto', 'STU901', 3, 'disponible', '2025-07-15 16:10:00');
 
 -- --------------------------------------------------------
 
@@ -144,24 +130,6 @@ CREATE TABLE `historico_pedidos` (
   `usuario_proceso` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `historico_pedidos`
---
-
-INSERT INTO `historico_pedidos` (`id_historico`, `id_pedido_original`, `id_cliente`, `id_zona`, `id_domiciliario`, `estado`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `fecha_pedido`, `hora_salida`, `hora_llegada`, `fecha_completado`, `cliente_nombre`, `cliente_documento`, `cliente_telefono`, `cliente_direccion`, `zona_nombre`, `zona_tarifa`, `domiciliario_nombre`, `domiciliario_telefono`, `usuario_proceso`) VALUES
-(1, 4, 4, 3, 1, 'entregado', 1, '7000.00', 30, '2025-07-12 13:29:28', NULL, NULL, '2025-07-14 11:47:32', 'Sofia Ruiz', '11223344', '3003333333', 'Avenida 15 #23-45', 'Sur', '7000.00', 'Juan Pérez', '3001234567', 1),
-(2, 2, 2, 2, 2, 'entregado', 1, '12000.00', 30, '2025-07-12 12:44:28', NULL, NULL, '2025-07-14 11:52:25', 'María González', '12345678', '3001111111', 'Calle 123 #45-67', 'Centro', '6000.00', 'Carlos López', '3002345678', 1),
-(3, 1, 1, 1, 1, 'entregado', 2, '10000.00', 30, '2025-07-12 11:44:28', NULL, NULL, '2025-07-14 11:53:00', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90|', 'Occidente', '5000.00', 'Juan Pérez', '3001234567', 1),
-(4, 7, 2, 3, 1, 'entregado', 55, '7000.00', 30, '2025-07-15 14:45:03', NULL, NULL, '2025-07-15 15:29:08', 'María González', '12345678', '3001111111', 'Calle 123 #45-67', 'Sur', '7000.00', 'Juan Pérez', '3001234567', 1),
-(5, 6, 4, 1, 2, 'entregado', 11, '5000.00', 30, '2025-07-15 14:44:43', NULL, NULL, '2025-07-15 15:42:35', 'Sofia Ruiz', '11223344', '3003333333', 'Avenida 15 #23-45', 'Occidente', '5000.00', 'Carlos López', '3002345678', 1),
-(6, 7, 2, 3, 1, 'entregado', 55, '7000.00', 30, '2025-07-15 14:45:03', NULL, NULL, '2025-07-15 16:50:00', 'María González', '12345678', '3001111111', 'Calle 123 #45-67', 'Sur', '7000.00', 'Juan Pérez', '3001234567', 1),
-(7, 6, 4, 1, 2, 'entregado', 11, '5000.00', 30, '2025-07-15 14:44:43', NULL, NULL, '2025-07-15 17:00:00', 'Sofia Ruiz', '11223344', '3003333333', 'Avenida 15 #23-45', 'Occidente', '5000.00', 'Carlos López', '3002345678', 1),
-(8, 11, 4, 1, 3, 'entregado', 1, '7000.00', 20, '2025-07-15 15:49:53', NULL, NULL, '2025-07-15 16:23:40', 'Sofia Ruiz', '11223344', '3003333333', 'Avenida 15 #23-45', 'Occidente', '5000.00', 'Ana García', '3003456789', 1),
-(9, 8, 1, 1, 1, 'entregado', 2, '15000.00', 30, '2025-07-14 15:49:53', NULL, NULL, '2025-07-15 16:23:47', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90|', 'Occidente', '5000.00', 'Juan Pérez', '3001234567', 1),
-(10, 25, 6, 3, 3, 'entregado', 6, '7000.00', 30, '2025-07-15 16:13:19', NULL, NULL, '2025-07-16 16:45:00', 'Juan Pérez', '10000001', '3001111111', 'Calle 10 #5-20', 'Sur', '7000.00', 'Ana García', '3003456789', 1),
-(11, 9, 2, 2, 2, 'entregado', 1, '8000.00', 25, '2025-07-15 15:49:53', NULL, NULL, '2025-07-16 16:45:03', 'María González', '12345678', '3001111111', 'Calle 123 #45-67', 'Centro', '6000.00', 'Carlos López', '3002345678', 1),
-(12, 5, 1, 1, 2, 'entregado', 5, '5000.00', 30, '2025-07-22 17:23:05', NULL, NULL, '2025-07-22 17:24:24', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90|', 'Occidente', '5000.00', 'Carlos López', '3002345678', 1);
-
 -- --------------------------------------------------------
 
 --
@@ -181,6 +149,8 @@ CREATE TABLE `pedidos` (
   `cantidad_paquetes` int(11) NOT NULL,
   `total` decimal(10,2) NOT NULL,
   `tiempo_estimado` int(11) DEFAULT NULL,
+  `envio_inmediato` tinyint(1) DEFAULT '0',
+  `alistamiento` tinyint(1) DEFAULT '0',
   `movido_historico` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -188,17 +158,8 @@ CREATE TABLE `pedidos` (
 -- Volcado de datos para la tabla `pedidos`
 --
 
-INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_vehiculo`, `id_zona`, `estado`, `hora_salida`, `hora_llegada`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `movido_historico`) VALUES
-(1, 1, 1, NULL, 1, 'entregado', NULL, NULL, '2025-07-12 11:44:28', 2, '10000.00', 30, 1),
-(2, 2, 2, NULL, 2, 'entregado', NULL, NULL, '2025-07-12 12:44:28', 1, '12000.00', 30, 1),
-(4, 4, 1, NULL, 3, 'entregado', NULL, NULL, '2025-07-12 13:29:28', 1, '7000.00', 30, 1),
-(6, 1, 1, 1, 4, 'entregado', '2025-07-24 09:11:58', '2025-07-24 09:12:36', '2025-07-24 09:05:05', 7, '8000.00', 30, 0),
-(7, 1, 6, 1, 4, 'entregado', '2025-07-24 15:07:59', '2025-07-30 17:05:04', '2025-07-24 15:07:38', 5, '8000.00', 30, 0),
-(8, 1, 1, 1, 4, 'entregado', '2025-07-30 17:05:28', '2025-07-30 17:06:53', '2025-07-30 16:59:43', 5, '8000.00', 30, 0),
-(9, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-07-30 17:01:45', 5, '8000.00', 30, 0),
-(10, 1, 3, 1, 4, 'entregado', '2025-07-30 17:28:44', '2025-07-30 17:29:54', '2025-07-30 17:26:15', 8, '8000.00', 30, 0),
-(11, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-07-30 17:28:23', 9, '8000.00', 30, 0),
-(12, 14, NULL, NULL, 1, 'pendiente', NULL, NULL, '2025-07-30 17:37:08', 5, '5000.00', 30, 0);
+INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_vehiculo`, `id_zona`, `estado`, `hora_salida`, `hora_llegada`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `envio_inmediato`, `alistamiento`, `movido_historico`) VALUES
+(21, 1, 1, 1, 4, 'en_camino', '2025-08-01 09:43:20', NULL, '2025-08-01 09:38:58', 5, '8000.00', 30, 1, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -276,11 +237,7 @@ CREATE TABLE `vehiculos` (
 --
 
 INSERT INTO `vehiculos` (`id_vehiculo`, `tipo`, `placa`, `estado`, `descripcion`) VALUES
-(1, 'Moto', 'ABC123', 'disponible', 'Moto Honda CG 150'),
-(2, 'Moto', 'DEF456', 'disponible', 'Moto Yamaha YBR 125'),
-(3, 'Moto', 'GHI789', 'disponible', 'Moto Suzuki GN 125'),
-(4, 'Bicicleta', 'BIC001', 'disponible', 'Bicicleta de reparto'),
-(5, 'Bicicleta', 'BIC002', 'disponible', 'Bicicleta de reparto');
+(1, 'Carro', 'ADS552', 'disponible', 'CARRO');
 
 -- --------------------------------------------------------
 
@@ -392,13 +349,13 @@ ALTER TABLE `zonas`
 -- AUTO_INCREMENT de la tabla `actividad_reciente`
 --
 ALTER TABLE `actividad_reciente`
-  MODIFY `id_actividad` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_actividad` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `clientes`
 --
 ALTER TABLE `clientes`
-  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT de la tabla `domiciliarios`
@@ -410,13 +367,13 @@ ALTER TABLE `domiciliarios`
 -- AUTO_INCREMENT de la tabla `historico_pedidos`
 --
 ALTER TABLE `historico_pedidos`
-  MODIFY `id_historico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id_historico` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos_mensuales`
