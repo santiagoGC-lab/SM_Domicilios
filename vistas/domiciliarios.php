@@ -408,13 +408,6 @@ $nombreCompleto = obtenerNombreUsuario();
             pagination.innerHTML = html;
         }
 
-        // Cierra el modal si se hace clic fuera de él
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        }
-
         // Manejo global de errores de sesión para todos los fetch
         (function() {
             const originalFetch = window.fetch;
