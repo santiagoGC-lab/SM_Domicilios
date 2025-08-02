@@ -13,7 +13,9 @@ try {
 
 // --- Estadísticas para las tarjetas del tablero ---
 $pendingOrders = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente' AND movido_historico = 0")->fetchColumn();
-$completedToday = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE() AND movido_historico = 0")->fetchColumn();
+$completedTodayPedidos = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE() AND movido_historico = 0")->fetchColumn() ?? 0;
+$completedTodayArchivados = $pdo->query("SELECT COUNT(*) FROM historico_pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0;
+$completedToday = $completedTodayPedidos + $completedTodayArchivados;
 // Calcular ingresos del día sumando pedidos entregados activos y archivados
 $revenueTodayPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
 $revenueTodayArchivados = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0.00;
@@ -205,7 +207,10 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
 
                         <div class="form-group">
                             <label for="hora">Hora estimada:</label>
-                            <input type="time" id="hora" name="hora" class="form-control" required>
+                            <div style="display: flex; gap: 5px; align-items: center;">
+                                <input type="time" id="hora" name="hora" class="form-control" required>
+                                <button type="button" onclick="calcularHoraAuto()" class="btn-login" style="padding: 5px 8px; font-size: 11px;">Auto</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -850,6 +855,25 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                         inputTotal.value = '';
                     });
             });
+        }
+
+        // Función para calcular hora automática
+        function calcularHoraAuto() {
+            const ahora = new Date();
+            const envioInmediato = document.getElementById('envio_inmediato').checked;
+            const alistamiento = document.getElementById('alistamiento').checked;
+
+            let minutos = 30; // Tiempo base
+
+            if (envioInmediato) minutos = 20;
+            if (alistamiento) minutos += 15;
+
+            ahora.setMinutes(ahora.getMinutes() + minutos);
+
+            const horas = ahora.getHours().toString().padStart(2, '0');
+            const mins = ahora.getMinutes().toString().padStart(2, '0');
+
+            document.getElementById('hora').value = horas + ':' + mins;
         }
     </script>
 </body>
