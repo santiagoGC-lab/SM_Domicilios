@@ -207,7 +207,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `action=obtener&id=${id}`
+                body: `accion=obtener&id=${id}`
             })
             .then(response => response.json())
             .then(data => {
@@ -236,7 +236,7 @@ $nombreCompleto = obtenerNombreUsuario();
             e.preventDefault();
             const formData = new FormData(e.target);
             const isEdit = formData.get('id') !== '';
-            formData.append('action', isEdit ? 'actualizar' : 'crear');
+            formData.append('accion', isEdit ? 'actualizar' : 'crear');
 
             fetch('../servicios/vehiculos.php', {
                 method: 'POST',
@@ -268,7 +268,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `action=listar&page=${page}&search=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(statusFilter)}`
+                body: `accion=listar&page=${page}&search=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(statusFilter)}`
             })
             .then(response => response.json())
             .then(data => {
@@ -278,11 +278,13 @@ $nombreCompleto = obtenerNombreUsuario();
                     currentPage = page;
                     updatePagination();
                 } else {
-                    console.error('Error al cargar vehículos:', data.message);
+                    console.error('Error al cargar vehículos:', data.error);
+                    document.getElementById('vehiculosTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">Error al cargar vehículos</td></tr>';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                document.getElementById('vehiculosTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">Error de conexión</td></tr>';
             });
         }
 
@@ -303,10 +305,10 @@ $nombreCompleto = obtenerNombreUsuario();
                 
                 // Clases para estados
                 const estadoClasses = {
-                    'disponible': 'status-disponible',
-                    'en_ruta': 'status-en-ruta',
-                    'mantenimiento': 'status-mantenimiento',
-                    'inactivo': 'status-inactivo'
+                    'disponible': 'estado-disponible',
+                    'en_ruta': 'estado-en-ruta', 
+                    'mantenimiento': 'estado-mantenimiento',
+                    'inactivo': 'estado-inactivo'
                 };
 
                 row.innerHTML = `
@@ -321,13 +323,10 @@ $nombreCompleto = obtenerNombreUsuario();
                     <td>${vehiculo.descripcion || '-'}</td>
                     <td>
                         <div class="actions">
-                            <button class="btn-edit" onclick="editarVehiculo(${vehiculo.id_vehiculo})" title="Editar">
+                            <button class="btn-editar" onclick="editarVehiculo(${vehiculo.id_vehiculo})" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn-status" onclick="cambiarEstado(${vehiculo.id_vehiculo}, '${vehiculo.estado}')" title="Cambiar Estado">
-                                <i class="fas fa-exchange-alt"></i>
-                            </button>
-                            <button class="btn-delete" onclick="eliminarVehiculo(${vehiculo.id_vehiculo})" title="Eliminar">
+                            <button class="btn-eliminar" onclick="eliminarVehiculo(${vehiculo.id_vehiculo})" title="Eliminar">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -378,43 +377,10 @@ $nombreCompleto = obtenerNombreUsuario();
         }
 
         // Cambia el estado de un vehículo
-        function cambiarEstado(id, estadoActual) {
-            const estados = ['disponible', 'en_ruta', 'mantenimiento', 'inactivo'];
-            const estadosTexto = ['Disponible', 'En Ruta', 'Mantenimiento', 'Inactivo'];
-            
-            let options = '';
-            estados.forEach((estado, index) => {
-                const selected = estado === estadoActual ? 'selected' : '';
-                options += `<option value="${estado}" ${selected}>${estadosTexto[index]}</option>`;
-            });
-            
-            const nuevoEstado = prompt(`Seleccionar nuevo estado:\n\n${estadosTexto.map((texto, i) => `${i+1}. ${texto}`).join('\n')}\n\nIngrese el número (1-4):`);
-            
-            if (nuevoEstado && nuevoEstado >= 1 && nuevoEstado <= 4) {
-                const estadoSeleccionado = estados[nuevoEstado - 1];
-                
-                fetch('../servicios/vehiculos.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=cambiar_estado&id=${id}&estado=${estadoSeleccionado}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        loadVehiculos(currentPage);
-                        alert('Estado actualizado exitosamente');
-                    } else {
-                        alert(data.message || 'Error al cambiar el estado');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cambiar el estado');
-                });
-            }
-        }
+        // ELIMINAR ESTA FUNCIÓN COMPLETA:
+        // function cambiarEstado(id, estadoActual) {
+        //     ... todo el código de esta función
+        // }
 
         // Elimina un vehículo
         function eliminarVehiculo(id) {
@@ -424,7 +390,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `action=eliminar&id=${id}`
+                    body: `accion=eliminar&id=${id}`
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -432,7 +398,7 @@ $nombreCompleto = obtenerNombreUsuario();
                         loadVehiculos(currentPage);
                         alert('Vehículo eliminado exitosamente');
                     } else {
-                        alert(data.message || 'Error al eliminar el vehículo');
+                        alert(data.error || 'Error al eliminar el vehículo');
                     }
                 })
                 .catch(error => {

@@ -24,6 +24,73 @@ function obtenerVehiculosDisponibles() {
     }
 }
 
+// Función para listar vehículos con paginación y filtros
+function listarVehiculos($page = 1, $search = '', $status = '') {
+    try {
+        $db = ConectarDB();
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+        
+        // Construir consulta base
+        $whereConditions = [];
+        $params = [];
+        $types = "";
+        
+        if (!empty($search)) {
+            $whereConditions[] = "(tipo LIKE ? OR placa LIKE ? OR descripcion LIKE ?)";
+            $searchParam = "%$search%";
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+            $types .= "sss";
+        }
+        
+        if (!empty($status)) {
+            $whereConditions[] = "estado = ?";
+            $params[] = $status;
+            $types .= "s";
+        }
+        
+        $whereClause = empty($whereConditions) ? "" : "WHERE " . implode(" AND ", $whereConditions);
+        
+        // Contar total
+        $countQuery = "SELECT COUNT(*) FROM vehiculos $whereClause";
+        if (!empty($params)) {
+            $stmt = $db->prepare($countQuery);
+            $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            $total = $stmt->get_result()->fetch_row()[0];
+            $stmt->close();
+        } else {
+            $total = $db->query($countQuery)->fetch_row()[0];
+        }
+        
+        // Obtener vehículos
+        $query = "SELECT * FROM vehiculos $whereClause ORDER BY tipo, placa LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        $types .= "ii";
+        
+        $stmt = $db->prepare($query);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $vehiculos = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $db->close();
+        
+        return [
+            'success' => true,
+            'vehiculos' => $vehiculos,
+            'total' => $total,
+            'page' => $page,
+            'totalPages' => ceil($total / $limit)
+        ];
+    } catch (Exception $e) {
+        return ['error' => 'Error al listar vehículos: ' . $e->getMessage()];
+    }
+}
+
 // Función para obtener un vehículo por ID
 function obtenerVehiculo($id) {
     try {
@@ -40,7 +107,10 @@ function obtenerVehiculo($id) {
             return ['error' => 'Vehículo no encontrado'];
         }
         
-        return $vehiculo;
+        return [
+            'success' => true,
+            'vehiculo' => $vehiculo
+        ];
     } catch (Exception $e) {
         return ['error' => 'Error al obtener vehículo: ' . $e->getMessage()];
     }
@@ -76,7 +146,7 @@ function crearVehiculo($datos) {
         if ($stmt->execute()) {
             $stmt->close();
             $db->close();
-            return ['success' => true];
+            return ['success' => true, 'message' => 'Vehículo creado exitosamente'];
         } else {
             $error = $stmt->error;
             $stmt->close();
@@ -118,7 +188,7 @@ function actualizarVehiculo($datos) {
         if ($stmt->execute()) {
             $stmt->close();
             $db->close();
-            return ['success' => true];
+            return ['success' => true, 'message' => 'Vehículo actualizado exitosamente'];
         } else {
             $error = $stmt->error;
             $stmt->close();
@@ -146,7 +216,7 @@ function cambiarEstadoVehiculo($id, $estado) {
         if ($stmt->execute()) {
             $stmt->close();
             $db->close();
-            return ['success' => true];
+            return ['success' => true, 'message' => 'Estado actualizado exitosamente'];
         } else {
             $error = $stmt->error;
             $stmt->close();
@@ -182,7 +252,7 @@ function eliminarVehiculo($id) {
         if ($stmt->execute()) {
             $stmt->close();
             $db->close();
-            return ['success' => true];
+            return ['success' => true, 'message' => 'Vehículo eliminado exitosamente'];
         } else {
             $error = $stmt->error;
             $stmt->close();
@@ -201,6 +271,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     switch ($accion) {
         case 'disponibles':
             $resultado = obtenerVehiculosDisponibles();
+            break;
+            
+        case 'listar':
+            $page = intval($_POST['page'] ?? 1);
+            $search = $_POST['search'] ?? '';
+            $status = $_POST['status'] ?? '';
+            $resultado = listarVehiculos($page, $search, $status);
             break;
             
         case 'obtener':

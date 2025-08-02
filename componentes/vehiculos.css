@@ -590,3 +590,27 @@
         max-width: 100%;
     }
 }
+
+/* 🎯 **Cambio de Estado a través del Modal de Edición:**
+
+Ahora el cambio de estado se hará únicamente a través del modal de edición, que es más limpio y organizado. Cuando edites un vehículo, podrás cambiar su estado junto con los demás datos.
+
+/* 📱 **Ajustar CSS (Opcional):**
+
+Si quieres que los botones se vean mejor centrados, puedes ajustar el CSS:
+```css
+.actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-editar,
+.btn-eliminar {
+    padding: 8px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all var(--transition-speed) var(--transition-timing);
+}
+```
