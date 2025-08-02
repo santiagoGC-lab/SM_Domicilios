@@ -7,14 +7,24 @@ require_once '../servicios/conexion.php';
 
 // --- Obtener estadísticas en tiempo real para el dashboard ---
 try {
-    // Estadísticas principales
-    $pedidosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
-    $pedidosEntregadosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn();
+    // Estadísticas principales - CORREGIDAS
+    
+    // Pedidos de hoy: combinar pedidos activos + histórico
+    $pedidosHoyActivos = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
+    $pedidosHoyHistorico = $pdo->query("SELECT COUNT(*) FROM historico_pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
+    $pedidosHoy = $pedidosHoyActivos + $pedidosHoyHistorico;
+    
+    // Pedidos entregados hoy: solo del histórico + pedidos activos entregados
+    $pedidosEntregadosActivos = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn();
+    $pedidosEntregadosHistorico = $pdo->query("SELECT COUNT(*) FROM historico_pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn();
+    $pedidosEntregadosHoy = $pedidosEntregadosActivos + $pedidosEntregadosHistorico;
+    
+    // Pedidos pendientes: solo de la tabla activa
     $pedidosPendientes = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente'")->fetchColumn();
 
-    // Ingresos de hoy: sumar pedidos entregados en ambas tablas
+    // Ingresos de hoy: usar fecha_pedido para ambas tablas
     $ingresosHoyPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
-    $ingresosHoyHistorico = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE DATE(fecha_completado) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
+    $ingresosHoyHistorico = $pdo->query("SELECT SUM(total) FROM historico_pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
     $ingresosHoy = $ingresosHoyPedidos + $ingresosHoyHistorico;
 
     // Domiciliarios
@@ -28,37 +38,69 @@ try {
     // Zonas activas
     $zonasActivas = $pdo->query("SELECT COUNT(*) FROM zonas WHERE estado = 'activo'")->fetchColumn();
 
-    // Actividad reciente (últimos 10 pedidos)
+    // Actividad reciente (últimos 10 pedidos) - CORREGIDA
     $actividadReciente = $pdo->query("
-        SELECT p.id_pedido, c.nombre as cliente, d.nombre as domiciliario, p.estado, p.fecha_pedido, p.total
-        FROM pedidos p
-        LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
-        LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
-        ORDER BY p.fecha_pedido DESC
+        (
+            SELECT p.id_pedido, c.nombre as cliente, d.nombre as domiciliario, p.estado, p.fecha_pedido, p.total, 'activo' as fuente
+            FROM pedidos p
+            LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+            LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+        )
+        UNION ALL
+        (
+            SELECT hp.id_pedido_original as id_pedido, hp.cliente_nombre as cliente, hp.domiciliario_nombre as domiciliario, hp.estado, hp.fecha_pedido, hp.total, 'historico' as fuente
+            FROM historico_pedidos hp
+        )
+        ORDER BY fecha_pedido DESC
         LIMIT 10
     ")->fetchAll();
 
-    // Top domiciliarios del día
+    // Top domiciliarios del día - CORREGIDO
     $topDomiciliarios = $pdo->query("
-        SELECT d.nombre, COUNT(p.id_pedido) as entregas
+        SELECT d.nombre, 
+               (COALESCE(pedidos_activos.entregas, 0) + COALESCE(pedidos_historico.entregas, 0)) as entregas
         FROM domiciliarios d
-        LEFT JOIN pedidos p ON d.id_domiciliario = p.id_domiciliario 
-        AND p.estado = 'entregado' 
-        AND DATE(p.fecha_pedido) = CURDATE()
+        LEFT JOIN (
+            SELECT id_domiciliario, COUNT(*) as entregas
+            FROM pedidos 
+            WHERE estado = 'entregado' 
+            AND DATE(fecha_pedido) = CURDATE()
+            GROUP BY id_domiciliario
+        ) pedidos_activos ON d.id_domiciliario = pedidos_activos.id_domiciliario
+        LEFT JOIN (
+            SELECT id_domiciliario, COUNT(*) as entregas
+            FROM historico_pedidos 
+            WHERE estado = 'entregado' 
+            AND DATE(fecha_completado) = CURDATE()
+            AND id_domiciliario IS NOT NULL
+            GROUP BY id_domiciliario
+        ) pedidos_historico ON d.id_domiciliario = pedidos_historico.id_domiciliario
         WHERE d.estado IN ('disponible', 'ocupado')
-        GROUP BY d.id_domiciliario, d.nombre
+        AND (COALESCE(pedidos_activos.entregas, 0) + COALESCE(pedidos_historico.entregas, 0)) > 0
         ORDER BY entregas DESC
         LIMIT 5
     ")->fetchAll();
 
-    // Pedidos por estado (para gráfico)
-    $pedidosPorEstado = $pdo->query("
-        SELECT estado, COUNT(*) as total
-        FROM pedidos
-        WHERE DATE(fecha_pedido) = CURDATE()
+    // Pedidos por estado (para gráfico) - CORREGIDA
+    $pedidosPorEstadoQuery = $pdo->query("
+        SELECT estado, SUM(total) as total FROM (
+            SELECT estado, COUNT(*) as total
+            FROM pedidos
+            WHERE DATE(fecha_pedido) = CURDATE()
+            GROUP BY estado
+            
+            UNION ALL
+            
+            SELECT estado, COUNT(*) as total
+            FROM historico_pedidos
+            WHERE DATE(fecha_pedido) = CURDATE()
+            GROUP BY estado
+        ) combined
         GROUP BY estado
         ORDER BY total DESC
-    ")->fetchAll();
+    ");
+    
+    $pedidosPorEstado = $pedidosPorEstadoQuery->fetchAll();
 } catch (Exception $e) {
     $error = $e->getMessage();
 }

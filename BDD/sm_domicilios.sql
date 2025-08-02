@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 01-08-2025 a las 14:47:39
+-- Tiempo de generación: 02-08-2025 a las 16:19:55
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -130,6 +130,22 @@ CREATE TABLE `historico_pedidos` (
   `usuario_proceso` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `historico_pedidos`
+--
+
+INSERT INTO `historico_pedidos` (`id_historico`, `id_pedido_original`, `id_cliente`, `id_zona`, `id_domiciliario`, `id_vehiculo`, `estado`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `fecha_pedido`, `hora_salida`, `hora_llegada`, `fecha_completado`, `cliente_nombre`, `cliente_documento`, `cliente_telefono`, `cliente_direccion`, `zona_nombre`, `zona_tarifa`, `domiciliario_nombre`, `domiciliario_telefono`, `vehiculo_tipo`, `vehiculo_placa`, `usuario_proceso`) VALUES
+(1, 24, 1, 4, 1, 1, 'entregado', 5, '8000.00', 30, '2025-08-01 15:18:58', '2025-08-01 15:19:08', '2025-08-01 15:19:11', '2025-08-01 15:19:11', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Juan Pérez', '3001234567', 'Carro', 'ADS552', 1),
+(2, 25, 1, 4, 1, 1, 'entregado', 4, '8000.00', 30, '2025-08-01 15:22:35', '2025-08-01 15:22:45', '2025-08-01 15:22:48', '2025-08-01 15:22:48', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Juan Pérez', '3001234567', 'Carro', 'ADS552', 1),
+(3, 26, 1, 4, 1, 1, 'entregado', 5, '8000.00', 30, '2025-08-01 15:27:36', '2025-08-01 15:49:00', '2025-08-01 15:49:04', '2025-08-01 15:49:04', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Juan Pérez', '3001234567', 'Carro', 'ADS552', 1),
+(4, 27, 14, 1, 4, 1, 'entregado', 4, '5000.00', 30, '2025-08-01 15:50:21', '2025-08-01 15:50:30', '2025-08-01 15:50:33', '2025-08-01 15:50:34', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Occidente', '5000.00', 'Luis Rodríguez', '3004567890', 'Carro', 'ADS552', 1),
+(5, 28, 1, 4, 1, 1, 'entregado', 8, '8000.00', 30, '2025-08-01 16:03:57', '2025-08-01 16:04:07', '2025-08-01 16:04:11', '2025-08-01 16:04:11', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Juan Pérez', '3001234567', 'Carro', 'ADS552', 1),
+(6, 1, 14, 1, 1, 1, 'entregado', 8, '5000.00', 30, '2025-08-02 08:18:56', '2025-08-02 08:19:03', '2025-08-02 08:19:06', '2025-08-02 08:19:06', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Occidente', '5000.00', 'Juan Pérez', '3001234567', 'Carro', 'ADS552', 1),
+(7, 2, 1, 4, 1, 1, 'entregado', 3, '8000.00', 30, '2025-08-02 08:20:33', '2025-08-02 08:41:12', '2025-08-02 08:56:23', '2025-08-02 08:56:23', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Juan Pérez', '3001234567', 'Carro', 'ADS552', 1),
+(8, 3, 1, 4, 1, 1, 'entregado', 5, '8000.00', 30, '2025-08-02 08:44:55', '2025-08-02 08:56:29', '2025-08-02 11:04:20', '2025-08-02 11:04:20', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Juan Pérez', '3001234567', 'Carro', 'ADS552', 1),
+(9, 4, 1, 4, 7, 2, 'entregado', 3, '10000.00', 30, '2025-08-02 11:04:43', '2025-08-02 11:04:58', '2025-08-02 11:06:17', '2025-08-02 11:06:17', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Valeria Castro', '3006789012', 'moto', 'GHI789', 1),
+(10, 5, 14, 1, 3, 1, 'entregado', 6, '43333.00', 30, '2025-08-02 11:05:24', '2025-08-02 11:05:34', '2025-08-02 11:06:22', '2025-08-02 11:06:22', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Occidente', '5000.00', 'Ana García', '3003456789', 'Carro', 'ADS552', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -153,13 +169,6 @@ CREATE TABLE `pedidos` (
   `alistamiento` tinyint(1) DEFAULT '0',
   `movido_historico` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Volcado de datos para la tabla `pedidos`
---
-
-INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_vehiculo`, `id_zona`, `estado`, `hora_salida`, `hora_llegada`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `envio_inmediato`, `alistamiento`, `movido_historico`) VALUES
-(21, 1, 1, 1, 4, 'en_camino', '2025-08-01 09:43:20', NULL, '2025-08-01 09:38:58', 5, '8000.00', 30, 1, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -237,7 +246,8 @@ CREATE TABLE `vehiculos` (
 --
 
 INSERT INTO `vehiculos` (`id_vehiculo`, `tipo`, `placa`, `estado`, `descripcion`) VALUES
-(1, 'Carro', 'ADS552', 'disponible', 'CARRO');
+(1, 'Carro', 'ADS552', 'disponible', 'CARRO'),
+(2, 'moto', 'GHI789', 'disponible', 'Moto buena');
 
 -- --------------------------------------------------------
 
@@ -311,7 +321,9 @@ ALTER TABLE `pedidos`
   ADD PRIMARY KEY (`id_pedido`),
   ADD KEY `id_cliente` (`id_cliente`),
   ADD KEY `id_domiciliario` (`id_domiciliario`),
-  ADD KEY `id_zona` (`id_zona`);
+  ADD KEY `id_zona` (`id_zona`),
+  ADD KEY `idx_hora_salida` (`hora_salida`),
+  ADD KEY `idx_hora_llegada` (`hora_llegada`);
 
 --
 -- Indices de la tabla `pedidos_mensuales`
@@ -367,13 +379,13 @@ ALTER TABLE `domiciliarios`
 -- AUTO_INCREMENT de la tabla `historico_pedidos`
 --
 ALTER TABLE `historico_pedidos`
-  MODIFY `id_historico` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_historico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos_mensuales`
@@ -391,7 +403,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `vehiculos`
 --
 ALTER TABLE `vehiculos`
-  MODIFY `id_vehiculo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_vehiculo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `zonas`
