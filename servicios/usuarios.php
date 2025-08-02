@@ -5,15 +5,16 @@ require_once 'verificar_permisos.php';
 session_start();
 
 // Función para registrar un nuevo usuario
-function registrarUsuario($datos) {
+function registrarUsuario($datos)
+{
     try {
         $conexion = ConectarDB();
-        
+
         $nombreCompleto = trim($datos['nombreCompleto'] ?? '');
         $numeroDocumento = trim($datos['numeroDocumento'] ?? '');
         $contrasena = $datos['contrasena'] ?? '';
         $rol = $datos['rol'] ?? '';
-        
+
         if (!$nombreCompleto || !$numeroDocumento || !$contrasena || !$rol) {
             return ['error' => 'Faltan campos obligatorios'];
         }
@@ -38,7 +39,7 @@ function registrarUsuario($datos) {
         // Insertar usuario
         $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, apellido, numero_documento, contrasena, rol) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("sssss", $nombre, $apellido, $numeroDocumento, $contrasenaHash, $rol);
-        
+
         if ($stmt->execute()) {
             $stmt->close();
             $conexion->close();
@@ -48,14 +49,14 @@ function registrarUsuario($datos) {
             $conexion->close();
             return ['error' => 'Error al registrar el usuario: ' . $stmt->error];
         }
-
     } catch (Exception $e) {
         return ['error' => 'Error general: ' . $e->getMessage()];
     }
 }
 
 // Función para autenticar usuario
-function autenticarUsuario($credenciales) {
+function autenticarUsuario($credenciales)
+{
     try {
         if (empty($credenciales['numeroDocumento']) || empty($credenciales['contrasena'])) {
             return ['error' => 'Por favor, completa todos los campos.'];
@@ -108,29 +109,29 @@ function autenticarUsuario($credenciales) {
             // Los gestores y cajeras van directamente a pedidos
             return ['success' => true, 'redirect' => '../vistas/pedidos.php'];
         }
-
     } catch (Exception $e) {
         return ['error' => 'Error: ' . $e->getMessage()];
     }
 }
 
 // Función para obtener usuario por ID
-function obtenerUsuarioPorId($id) {
+function obtenerUsuarioPorId($id)
+{
     try {
         if (!isset($id) || !is_numeric($id)) {
             return ['error' => 'ID de usuario inválido'];
         }
 
         $conexion = ConectarDB();
-        
+
         $query = "SELECT id_usuario, nombre, apellido, numero_documento, rol, estado, fecha_creacion 
                   FROM usuarios WHERE id_usuario = ?";
-        
+
         $stmt = mysqli_prepare($conexion, $query);
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
         $resultado = mysqli_stmt_get_result($stmt);
-        
+
         if ($usuario = mysqli_fetch_assoc($resultado)) {
             mysqli_stmt_close($stmt);
             mysqli_close($conexion);
@@ -140,13 +141,13 @@ function obtenerUsuarioPorId($id) {
             mysqli_close($conexion);
             return ['error' => 'Usuario no encontrado'];
         }
-        
     } catch (Exception $e) {
         return ['error' => 'Error al obtener el usuario: ' . $e->getMessage()];
     }
 }
 // Función para cerrar sesión
-function cerrarSesion() {
+function cerrarSesion()
+{
     // Regenerar ID de sesión para mayor seguridad
     session_regenerate_id(true);
 
@@ -158,19 +159,20 @@ function cerrarSesion() {
 
     // Eliminar la cookie de sesión si existe
     if (isset($_COOKIE[session_name()])) {
-        setcookie(session_name(), '', time()-3600, '/');
+        setcookie(session_name(), '', time() - 3600, '/');
     }
 
     // Eliminar otras cookies que puedan contener información sensible
     if (isset($_COOKIE['PHPSESSID'])) {
-        setcookie('PHPSESSID', '', time()-3600, '/');
+        setcookie('PHPSESSID', '', time() - 3600, '/');
     }
 
     return ['success' => true, 'redirect' => '../vistas/login.html?success=' . urlencode("Sesión cerrada exitosamente. ¡Hasta pronto!")];
 }
 
 // Función para verificar permisos
-function verificarPermisos($usuario, $permiso) {
+function verificarPermisos($usuario, $permiso)
+{
     // Verificar si el usuario está autenticado
     if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['rol'])) {
         return ['error' => 'Usuario no autenticado'];
@@ -211,17 +213,18 @@ function verificarPermisos($usuario, $permiso) {
     ];
 
     $rol = $_SESSION['rol'];
-    
+
     if (!isset($permisos[$rol])) {
         return ['error' => 'Rol no válido'];
     }
-    
+
     $tienePermiso = isset($permisos[$rol][$permiso]) && $permisos[$rol][$permiso];
     return ['success' => true, 'tiene_permiso' => $tienePermiso];
 }
 
 // Función para actualizar usuario
-function actualizarUsuario($datos) {
+function actualizarUsuario($datos)
+{
     try {
         $conexion = ConectarDB();
         $id = $datos['id'] ?? null;
@@ -245,7 +248,8 @@ function actualizarUsuario($datos) {
 }
 
 // Función para eliminar usuario
-function eliminarUsuario($id) {
+function eliminarUsuario($id)
+{
     try {
         $conexion = ConectarDB();
         if (!$id || !is_numeric($id)) {
@@ -263,7 +267,8 @@ function eliminarUsuario($id) {
 }
 
 // Función para cambiar el estado de usuario (activo/inactivo)
-function cambiarEstadoUsuario($id, $nuevoEstado) {
+function cambiarEstadoUsuario($id, $nuevoEstado)
+{
     try {
         $conexion = ConectarDB();
         if (!$id || !is_numeric($id) || !in_array($nuevoEstado, ['activo', 'inactivo'])) {
@@ -283,7 +288,7 @@ function cambiarEstadoUsuario($id, $nuevoEstado) {
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
-    
+
     switch ($accion) {
         case 'registrar':
             $resultado = registrarUsuario($_POST);
@@ -292,7 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'autenticar':
             $resultado = autenticarUsuario($_POST);
             // Detectar si es petición AJAX
@@ -315,7 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'obtener_por_id':
             verificarAcceso('tabla_usuarios');
             $resultado = obtenerUsuarioPorId($_POST['id']);
@@ -324,12 +329,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'cerrar_sesion':
             $resultado = cerrarSesion();
             echo json_encode($resultado);
             break;
-            
+
         case 'verificar_permisos':
             $resultado = verificarPermisos($_POST['usuario'], $_POST['permiso']);
             if (isset($resultado['error'])) {
@@ -337,7 +342,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'actualizar':
             $resultado = actualizarUsuario($_POST);
             if (isset($resultado['error'])) {
@@ -359,7 +364,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Acción no válida']);
@@ -367,7 +372,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Para compatibilidad con el código existente
     $accion = $_GET['accion'] ?? '';
-    
+
     if ($accion === 'obtener_por_id') {
         verificarAcceso('tabla_usuarios');
         $resultado = obtenerUsuarioPorId($_GET['id']);
@@ -383,4 +388,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Método no permitido']);
 }
-?> 

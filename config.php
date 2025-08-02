@@ -33,7 +33,8 @@ define('REPORTS_PATH', ROOT_PATH . '/reportes');
 define('PDF_PATH', REPORTS_PATH . '/pdf');
 
 // Función para incluir archivos de servicios
-function includeService($serviceName) {
+function includeService($serviceName)
+{
     $serviceFile = SERVICES_PATH . '/' . $serviceName . '.php';
     if (file_exists($serviceFile)) {
         require_once $serviceFile;
@@ -43,33 +44,39 @@ function includeService($serviceName) {
 }
 
 // Función para obtener la URL de un servicio
-function getServiceUrl($serviceName) {
+function getServiceUrl($serviceName)
+{
     return APP_URL . '/servicios/' . $serviceName . '.php';
 }
 
 // Función para obtener la ruta de una vista
-function getViewPath($viewName) {
+function getViewPath($viewName)
+{
     return VIEWS_PATH . '/' . $viewName . '.php';
 }
 
 // Función para verificar si el usuario está autenticado
-function isAuthenticated() {
+function isAuthenticated()
+{
     return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
 }
 
 // Función para redirigir
-function redirect($url) {
+function redirect($url)
+{
     header('Location: ' . $url);
     exit();
 }
 
 // Función para mostrar mensajes de error
-function showError($message) {
+function showError($message)
+{
     return '<div class="alert alert-danger">' . htmlspecialchars($message) . '</div>';
 }
 
 // Función para mostrar mensajes de éxito
-function showSuccess($message) {
+function showSuccess($message)
+{
     return '<div class="alert alert-success">' . htmlspecialchars($message) . '</div>';
 }
 

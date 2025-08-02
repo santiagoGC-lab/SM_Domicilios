@@ -12,7 +12,8 @@ if (!isset($_SESSION['id_usuario'])) {
 }
 
 // Función para obtener vehículos disponibles
-function obtenerVehiculosDisponibles() {
+function obtenerVehiculosDisponibles()
+{
     try {
         $db = ConectarDB();
         $result = $db->query("SELECT id_vehiculo, tipo, placa FROM vehiculos WHERE estado = 'disponible'");
@@ -25,17 +26,18 @@ function obtenerVehiculosDisponibles() {
 }
 
 // Función para listar vehículos con paginación y filtros
-function listarVehiculos($page = 1, $search = '', $status = '') {
+function listarVehiculos($page = 1, $search = '', $status = '')
+{
     try {
         $db = ConectarDB();
         $limit = 5;
         $offset = ($page - 1) * $limit;
-        
+
         // Construir consulta base
         $whereConditions = [];
         $params = [];
         $types = "";
-        
+
         if (!empty($search)) {
             $whereConditions[] = "(tipo LIKE ? OR placa LIKE ? OR descripcion LIKE ?)";
             $searchParam = "%$search%";
@@ -44,15 +46,15 @@ function listarVehiculos($page = 1, $search = '', $status = '') {
             $params[] = $searchParam;
             $types .= "sss";
         }
-        
+
         if (!empty($status)) {
             $whereConditions[] = "estado = ?";
             $params[] = $status;
             $types .= "s";
         }
-        
+
         $whereClause = empty($whereConditions) ? "" : "WHERE " . implode(" AND ", $whereConditions);
-        
+
         // Contar total
         $countQuery = "SELECT COUNT(*) FROM vehiculos $whereClause";
         if (!empty($params)) {
@@ -64,13 +66,13 @@ function listarVehiculos($page = 1, $search = '', $status = '') {
         } else {
             $total = $db->query($countQuery)->fetch_row()[0];
         }
-        
+
         // Obtener vehículos
         $query = "SELECT * FROM vehiculos $whereClause ORDER BY tipo, placa LIMIT ? OFFSET ?";
         $params[] = $limit;
         $params[] = $offset;
         $types .= "ii";
-        
+
         $stmt = $db->prepare($query);
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
@@ -78,7 +80,7 @@ function listarVehiculos($page = 1, $search = '', $status = '') {
         $vehiculos = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
         $db->close();
-        
+
         return [
             'success' => true,
             'vehiculos' => $vehiculos,
@@ -92,7 +94,8 @@ function listarVehiculos($page = 1, $search = '', $status = '') {
 }
 
 // Función para obtener un vehículo por ID
-function obtenerVehiculo($id) {
+function obtenerVehiculo($id)
+{
     try {
         $db = ConectarDB();
         $stmt = $db->prepare("SELECT * FROM vehiculos WHERE id_vehiculo = ?");
@@ -102,11 +105,11 @@ function obtenerVehiculo($id) {
         $vehiculo = $result->fetch_assoc();
         $stmt->close();
         $db->close();
-        
+
         if (!$vehiculo) {
             return ['error' => 'Vehículo no encontrado'];
         }
-        
+
         return [
             'success' => true,
             'vehiculo' => $vehiculo
@@ -117,15 +120,16 @@ function obtenerVehiculo($id) {
 }
 
 // Función para crear vehículo
-function crearVehiculo($datos) {
+function crearVehiculo($datos)
+{
     try {
         $db = ConectarDB();
-        
+
         // Validar datos requeridos
         if (empty($datos['tipo']) || empty($datos['placa'])) {
             return ['error' => 'Tipo y placa son requeridos'];
         }
-        
+
         // Verificar que la placa no exista
         $stmt = $db->prepare("SELECT id_vehiculo FROM vehiculos WHERE placa = ?");
         $stmt->bind_param("s", $datos['placa']);
@@ -136,13 +140,13 @@ function crearVehiculo($datos) {
             return ['error' => 'Ya existe un vehículo con esa placa'];
         }
         $stmt->close();
-        
+
         // Insertar vehículo
         $stmt = $db->prepare("INSERT INTO vehiculos (tipo, placa, estado, descripcion) VALUES (?, ?, ?, ?)");
         $estado = $datos['estado'] ?? 'disponible';
         $descripcion = $datos['descripcion'] ?? null;
         $stmt->bind_param("ssss", $datos['tipo'], $datos['placa'], $estado, $descripcion);
-        
+
         if ($stmt->execute()) {
             $stmt->close();
             $db->close();
@@ -159,15 +163,16 @@ function crearVehiculo($datos) {
 }
 
 // Función para actualizar vehículo
-function actualizarVehiculo($datos) {
+function actualizarVehiculo($datos)
+{
     try {
         $db = ConectarDB();
-        
+
         // Validar datos requeridos
         if (empty($datos['id']) || empty($datos['tipo']) || empty($datos['placa'])) {
             return ['error' => 'ID, tipo y placa son requeridos'];
         }
-        
+
         // Verificar que la placa no exista en otro vehículo
         $stmt = $db->prepare("SELECT id_vehiculo FROM vehiculos WHERE placa = ? AND id_vehiculo != ?");
         $stmt->bind_param("si", $datos['placa'], $datos['id']);
@@ -178,13 +183,13 @@ function actualizarVehiculo($datos) {
             return ['error' => 'Ya existe otro vehículo con esa placa'];
         }
         $stmt->close();
-        
+
         // Actualizar vehículo
         $stmt = $db->prepare("UPDATE vehiculos SET tipo = ?, placa = ?, estado = ?, descripcion = ? WHERE id_vehiculo = ?");
         $estado = $datos['estado'] ?? 'disponible';
         $descripcion = $datos['descripcion'] ?? null;
         $stmt->bind_param("ssssi", $datos['tipo'], $datos['placa'], $estado, $descripcion, $datos['id']);
-        
+
         if ($stmt->execute()) {
             $stmt->close();
             $db->close();
@@ -201,18 +206,19 @@ function actualizarVehiculo($datos) {
 }
 
 // Función para cambiar estado del vehículo
-function cambiarEstadoVehiculo($id, $estado) {
+function cambiarEstadoVehiculo($id, $estado)
+{
     try {
         $db = ConectarDB();
-        
+
         $estados_validos = ['disponible', 'en_ruta', 'mantenimiento', 'inactivo'];
         if (!in_array($estado, $estados_validos)) {
             return ['error' => 'Estado no válido'];
         }
-        
+
         $stmt = $db->prepare("UPDATE vehiculos SET estado = ? WHERE id_vehiculo = ?");
         $stmt->bind_param("si", $estado, $id);
-        
+
         if ($stmt->execute()) {
             $stmt->close();
             $db->close();
@@ -229,26 +235,27 @@ function cambiarEstadoVehiculo($id, $estado) {
 }
 
 // Función para eliminar vehículo
-function eliminarVehiculo($id) {
+function eliminarVehiculo($id)
+{
     try {
         $db = ConectarDB();
-        
+
         // Verificar que no esté en uso
         $stmt = $db->prepare("SELECT COUNT(*) FROM pedidos WHERE id_vehiculo = ? AND estado IN ('pendiente', 'en_camino')");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $count = $stmt->get_result()->fetch_row()[0];
         $stmt->close();
-        
+
         if ($count > 0) {
             $db->close();
             return ['error' => 'No se puede eliminar: el vehículo tiene pedidos activos'];
         }
-        
+
         // Eliminar vehículo
         $stmt = $db->prepare("DELETE FROM vehiculos WHERE id_vehiculo = ?");
         $stmt->bind_param("i", $id);
-        
+
         if ($stmt->execute()) {
             $stmt->close();
             $db->close();
@@ -267,55 +274,53 @@ function eliminarVehiculo($id) {
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
-    
+
     switch ($accion) {
         case 'disponibles':
             $resultado = obtenerVehiculosDisponibles();
             break;
-            
+
         case 'listar':
             $page = intval($_POST['page'] ?? 1);
             $search = $_POST['search'] ?? '';
             $status = $_POST['status'] ?? '';
             $resultado = listarVehiculos($page, $search, $status);
             break;
-            
+
         case 'obtener':
             $id = intval($_POST['id'] ?? 0);
             $resultado = obtenerVehiculo($id);
             break;
-            
+
         case 'crear':
             $resultado = crearVehiculo($_POST);
             break;
-            
+
         case 'actualizar':
             $resultado = actualizarVehiculo($_POST);
             break;
-            
+
         case 'cambiar_estado':
             $id = intval($_POST['id'] ?? 0);
             $estado = $_POST['estado'] ?? '';
             $resultado = cambiarEstadoVehiculo($id, $estado);
             break;
-            
+
         case 'eliminar':
             $id = intval($_POST['id'] ?? 0);
             $resultado = eliminarVehiculo($id);
             break;
-            
+
         default:
             http_response_code(400);
             $resultado = ['error' => 'Acción no válida'];
     }
-    
+
     if (isset($resultado['error'])) {
         http_response_code(500);
     }
     echo json_encode($resultado);
-    
 } else {
     http_response_code(405);
     echo json_encode(['error' => 'Método no permitido']);
 }
-?>

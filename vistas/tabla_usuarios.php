@@ -39,10 +39,10 @@ mysqli_close($conexion);
         </div>
         <div class="sidebar-menu">
             <?php if (tienePermiso('dashboard')): ?>
-            <a href="dashboard.php" class="menu-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span class="menu-text">Inicio</span>
-            </a>
+                <a href="dashboard.php" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-text">Inicio</span>
+                </a>
             <?php endif; ?>
             <a href="pedidos.php" class="menu-item">
                 <i class="fas fa-shopping-bag"></i>
@@ -57,32 +57,32 @@ mysqli_close($conexion);
                 <span class="menu-text">Clientes</span>
             </a>
             <?php if (tienePermiso('domiciliarios')): ?>
-            <a href="domiciliarios.php" class="menu-item">
-                <i class="fas fa-motorcycle"></i>
-                <span class="menu-text">Domiciliarios</span>
-            </a>
+                <a href="domiciliarios.php" class="menu-item">
+                    <i class="fas fa-motorcycle"></i>
+                    <span class="menu-text">Domiciliarios</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('vehiculos')): ?>
-            <a href="vehiculos.php" class="menu-item">
-                <i class="fas fa-car"></i>
-                <span class="menu-text">Vehiculos</span>
-            </a>
+                <a href="vehiculos.php" class="menu-item">
+                    <i class="fas fa-car"></i>
+                    <span class="menu-text">Vehiculos</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
-            <a href="zonas.php" class="menu-item">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="menu-text">Zonas de Entrega</span>
-            </a>
+                <a href="zonas.php" class="menu-item">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span class="menu-text">Zonas de Entrega</span>
+                </a>
             <?php endif; ?>
             <a href="reportes.php" class="menu-item">
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Reportes</span>
             </a>
             <?php if (esAdmin()): ?>
-            <a href="tabla_usuarios.php" class="menu-item active">
-                <i class="fas fa-users-cog"></i>
-                <span class="menu-text">Gestionar Usuarios</span>
-            </a>
+                <a href="tabla_usuarios.php" class="menu-item active">
+                    <i class="fas fa-users-cog"></i>
+                    <span class="menu-text">Gestionar Usuarios</span>
+                </a>
 
             <?php endif; ?>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
@@ -126,7 +126,9 @@ mysqli_close($conexion);
                         <i class="fas fa-user-shield"></i>
                     </div>
                 </div>
-                <div class="card-value"><?php echo count(array_filter($usuarios, function($u) { return $u['rol'] === 'admin'; })); ?></div>
+                <div class="card-value"><?php echo count(array_filter($usuarios, function ($u) {
+                                            return $u['rol'] === 'admin';
+                                        })); ?></div>
                 <div class="card-footer">Con acceso completo</div>
             </div>
 
@@ -137,7 +139,9 @@ mysqli_close($conexion);
                         <i class="fas fa-user-tie"></i>
                     </div>
                 </div>
-                <div class="card-value"><?php echo count(array_filter($usuarios, function($u) { return $u['rol'] === 'org_domicilios'; })); ?></div>
+                <div class="card-value"><?php echo count(array_filter($usuarios, function ($u) {
+                                            return $u['rol'] === 'org_domicilios';
+                                        })); ?></div>
                 <div class="card-footer">Gestión de domicilios</div>
             </div>
 
@@ -148,7 +152,9 @@ mysqli_close($conexion);
                         <i class="fas fa-user-check"></i>
                     </div>
                 </div>
-                <div class="card-value"><?php echo count(array_filter($usuarios, function($u) { return $u['rol'] === 'cajera'; })); ?></div>
+                <div class="card-value"><?php echo count(array_filter($usuarios, function ($u) {
+                                            return $u['rol'] === 'cajera';
+                                        })); ?></div>
                 <div class="card-footer">Atención al cliente</div>
             </div>
         </div>
@@ -175,12 +181,19 @@ mysqli_close($conexion);
                             <td><?php echo htmlspecialchars($usuario['numero_documento']); ?></td>
                             <td>
                                 <span class="rol-badge rol-<?php echo $usuario['rol']; ?>">
-                                    <?php 
-                                    switch($usuario['rol']) {
-                                        case 'admin': echo 'Administrador'; break;
-                                        case 'org_domicilios': echo 'Gestor'; break;
-                                        case 'cajera': echo 'Cajera'; break;
-                                        default: echo ucfirst($usuario['rol']);
+                                    <?php
+                                    switch ($usuario['rol']) {
+                                        case 'admin':
+                                            echo 'Administrador';
+                                            break;
+                                        case 'org_domicilios':
+                                            echo 'Gestor';
+                                            break;
+                                        case 'cajera':
+                                            echo 'Cajera';
+                                            break;
+                                        default:
+                                            echo ucfirst($usuario['rol']);
                                     }
                                     ?>
                                 </span>
@@ -197,9 +210,9 @@ mysqli_close($conexion);
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <?php if ($usuario['id_usuario'] != $_SESSION['usuario_id']): ?>
-                                    <button class="btn btn-eliminar" onclick="eliminarUsuario(<?php echo $usuario['id_usuario']; ?>)" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                        <button class="btn btn-eliminar" onclick="eliminarUsuario(<?php echo $usuario['id_usuario']; ?>)" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     <?php endif; ?>
                                     <button class="btn btn-toggle" onclick="toggleEstado(<?php echo $usuario['id_usuario']; ?>, '<?php echo $usuario['estado']; ?>')" title="<?php echo $usuario['estado'] === 'activo' ? 'Desactivar' : 'Activar'; ?>">
                                         <i class="fas fa-<?php echo $usuario['estado'] === 'activo' ? 'pause' : 'play'; ?>"></i>
@@ -224,13 +237,13 @@ mysqli_close($conexion);
             <form id="formNuevoUsuario">
                 <div class="form-group">
                     <label for="nombreCompleto">Nombre Completo</label>
-                    <input type="text" id="nombreCompleto" name="nombreCompleto" class="form-control" 
-                           placeholder="Ej: Juan Pérez" required>
+                    <input type="text" id="nombreCompleto" name="nombreCompleto" class="form-control"
+                        placeholder="Ej: Juan Pérez" required>
                 </div>
                 <div class="form-group">
                     <label for="numeroDocumentoNuevo">Número de Documento</label>
-                    <input type="text" id="numeroDocumentoNuevo" name="numeroDocumento" class="form-control" 
-                           placeholder="Ej: 123456789" minlength="6" maxlength="12" pattern="[0-9]+" required>
+                    <input type="text" id="numeroDocumentoNuevo" name="numeroDocumento" class="form-control"
+                        placeholder="Ej: 123456789" minlength="6" maxlength="12" pattern="[0-9]+" required>
                 </div>
                 <div class="form-group">
                     <label for="rolNuevo">Rol</label>
@@ -244,8 +257,8 @@ mysqli_close($conexion);
                 <div class="form-group">
                     <label for="contrasena">Contraseña</label>
                     <div class="password-input">
-                        <input type="password" id="contrasena" name="contrasena" class="form-control" 
-                               placeholder="Mínimo 8 caracteres" maxlength="20" minlength="8" required>
+                        <input type="password" id="contrasena" name="contrasena" class="form-control"
+                            placeholder="Mínimo 8 caracteres" maxlength="20" minlength="8" required>
                         <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('contrasena', this)"></i>
                     </div>
                 </div>
@@ -306,7 +319,7 @@ mysqli_close($conexion);
         document.getElementById('searchInput').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = document.querySelectorAll('#usersTableBody tr');
-            
+
             rows.forEach(row => {
                 const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(searchTerm) ? '' : 'none';
@@ -338,59 +351,59 @@ mysqli_close($conexion);
         // Manejar el formulario de nuevo usuario
         document.getElementById('formNuevoUsuario').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const formData = new FormData(this);
             formData.append('accion', 'registrar'); // Agregar acción correcta
-            
+
             fetch('../servicios/usuarios.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Usuario creado exitosamente');
-                    closeModal('modalNuevoUsuario');
-                    location.reload(); // Recargar para mostrar el nuevo usuario
-                } else {
-                    alert('Error: ' + (data.error || 'Error desconocido'));
-                }
-            })
-            .catch(error => {
-                alert('Error al crear el usuario');
-                console.error('Error:', error);
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Usuario creado exitosamente');
+                        closeModal('modalNuevoUsuario');
+                        location.reload(); // Recargar para mostrar el nuevo usuario
+                    } else {
+                        alert('Error: ' + (data.error || 'Error desconocido'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error al crear el usuario');
+                    console.error('Error:', error);
+                });
         });
 
         function editarUsuario(id) {
             // Obtener datos del usuario y mostrar el modal de edición
             fetch('../servicios/usuarios.php', {
-                method: 'POST',
-                body: (() => {
-                    const fd = new FormData();
-                    fd.append('accion', 'obtener_por_id');
-                    fd.append('id', id);
-                    return fd;
-                })()
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.usuario) {
-                    document.getElementById('usuarioId').value = data.usuario.id_usuario;
-                    document.getElementById('nombre').value = data.usuario.nombre;
-                    document.getElementById('apellido').value = data.usuario.apellido;
-                    document.getElementById('numeroDocumentoEditar').value = data.usuario.numero_documento;
-                    document.getElementById('rolEditar').value = data.usuario.rol;
-                    document.getElementById('estado').value = data.usuario.estado;
-                    document.getElementById('modalEditarUsuario').style.display = 'block';
-                } else {
-                    alert('No se pudo cargar el usuario');
-                }
-            })
-            .catch(error => {
-                alert('Error al cargar el usuario');
-                console.error(error);
-            });
+                    method: 'POST',
+                    body: (() => {
+                        const fd = new FormData();
+                        fd.append('accion', 'obtener_por_id');
+                        fd.append('id', id);
+                        return fd;
+                    })()
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.usuario) {
+                        document.getElementById('usuarioId').value = data.usuario.id_usuario;
+                        document.getElementById('nombre').value = data.usuario.nombre;
+                        document.getElementById('apellido').value = data.usuario.apellido;
+                        document.getElementById('numeroDocumentoEditar').value = data.usuario.numero_documento;
+                        document.getElementById('rolEditar').value = data.usuario.rol;
+                        document.getElementById('estado').value = data.usuario.estado;
+                        document.getElementById('modalEditarUsuario').style.display = 'block';
+                    } else {
+                        alert('No se pudo cargar el usuario');
+                    }
+                })
+                .catch(error => {
+                    alert('Error al cargar el usuario');
+                    console.error(error);
+                });
         }
 
         // Guardar cambios de edición
@@ -400,23 +413,23 @@ mysqli_close($conexion);
             const formData = new FormData(this);
             formData.append('accion', 'actualizar');
             fetch('../servicios/usuarios.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Usuario actualizado exitosamente');
-                    closeModal('modalEditarUsuario');
-                    location.reload();
-                } else {
-                    alert('Error: ' + (data.error || 'No se pudo actualizar el usuario'));
-                }
-            })
-            .catch(error => {
-                alert('Error al actualizar el usuario');
-                console.error(error);
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Usuario actualizado exitosamente');
+                        closeModal('modalEditarUsuario');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'No se pudo actualizar el usuario'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error al actualizar el usuario');
+                    console.error(error);
+                });
         });
 
         function eliminarUsuario(id) {
@@ -425,22 +438,22 @@ mysqli_close($conexion);
                 formData.append('accion', 'eliminar');
                 formData.append('id', id);
                 fetch('../servicios/usuarios.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Usuario eliminado exitosamente');
-                        location.reload();
-                    } else {
-                        alert('Error: ' + (data.error || 'No se pudo eliminar el usuario'));
-                    }
-                })
-                .catch(error => {
-                    alert('Error al eliminar el usuario');
-                    console.error(error);
-                });
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Usuario eliminado exitosamente');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (data.error || 'No se pudo eliminar el usuario'));
+                        }
+                    })
+                    .catch(error => {
+                        alert('Error al eliminar el usuario');
+                        console.error(error);
+                    });
             }
         }
 
@@ -453,62 +466,62 @@ mysqli_close($conexion);
                 formData.append('id', id);
                 formData.append('estado', nuevoEstado);
                 fetch('../servicios/usuarios.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(`Usuario ${accion}do exitosamente`);
-                        location.reload();
-                    } else {
-                        alert('Error: ' + (data.error || `No se pudo ${accion} el usuario`));
-                    }
-                })
-                .catch(error => {
-                    alert('Error al cambiar el estado del usuario');
-                    console.error(error);
-                });
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(`Usuario ${accion}do exitosamente`);
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (data.error || `No se pudo ${accion} el usuario`));
+                        }
+                    })
+                    .catch(error => {
+                        alert('Error al cambiar el estado del usuario');
+                        console.error(error);
+                    });
             }
         }
     </script>
     <script>
-// Paginación de usuarios (frontend)
-(function() {
-    const rowsPerPage = 10;
-    const table = document.getElementById('usersTable');
-    const tbody = document.getElementById('usersTableBody');
-    const pagination = document.getElementById('pagination');
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    let currentPage = 1;
-    const totalPages = Math.ceil(rows.length / rowsPerPage);
+        // Paginación de usuarios (frontend)
+        (function() {
+            const rowsPerPage = 10;
+            const table = document.getElementById('usersTable');
+            const tbody = document.getElementById('usersTableBody');
+            const pagination = document.getElementById('pagination');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            let currentPage = 1;
+            const totalPages = Math.ceil(rows.length / rowsPerPage);
 
-    function showPage(page) {
-        currentPage = page;
-        rows.forEach((row, i) => {
-            row.style.display = (i >= (page-1)*rowsPerPage && i < page*rowsPerPage) ? '' : 'none';
-        });
-        renderPagination();
-    }
-
-    function renderPagination() {
-        let html = '';
-        if (totalPages > 1) {
-            html += `<button onclick="showPage(1)" ${currentPage===1?'disabled':''}>Primera</button>`;
-            html += `<button onclick="showPage(${currentPage-1})" ${currentPage===1?'disabled':''}>Anterior</button>`;
-            for (let i = 1; i <= totalPages; i++) {
-                html += `<button onclick="showPage(${i})" ${currentPage===i?'class=active':''}>${i}</button>`;
+            function showPage(page) {
+                currentPage = page;
+                rows.forEach((row, i) => {
+                    row.style.display = (i >= (page - 1) * rowsPerPage && i < page * rowsPerPage) ? '' : 'none';
+                });
+                renderPagination();
             }
-            html += `<button onclick="showPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Siguiente</button>`;
-            html += `<button onclick="showPage(${totalPages})" ${currentPage===totalPages?'disabled':''}>Última</button>`;
-        }
-        pagination.innerHTML = html;
-    }
 
-    window.showPage = showPage;
-    showPage(1);
-})();
-</script>
+            function renderPagination() {
+                let html = '';
+                if (totalPages > 1) {
+                    html += `<button onclick="showPage(1)" ${currentPage===1?'disabled':''}>Primera</button>`;
+                    html += `<button onclick="showPage(${currentPage-1})" ${currentPage===1?'disabled':''}>Anterior</button>`;
+                    for (let i = 1; i <= totalPages; i++) {
+                        html += `<button onclick="showPage(${i})" ${currentPage===i?'class=active':''}>${i}</button>`;
+                    }
+                    html += `<button onclick="showPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Siguiente</button>`;
+                    html += `<button onclick="showPage(${totalPages})" ${currentPage===totalPages?'disabled':''}>Última</button>`;
+                }
+                pagination.innerHTML = html;
+            }
+
+            window.showPage = showPage;
+            showPage(1);
+        })();
+    </script>
 </body>
 
 </html>

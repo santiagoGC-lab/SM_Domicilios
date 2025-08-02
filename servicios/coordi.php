@@ -14,7 +14,8 @@ if (!isset($_SESSION['id_usuario'])) {
 }
 
 // Función para obtener pedidos pendientes de despacho
-function obtenerPedidosPendientesDespacho() {
+function obtenerPedidosPendientesDespacho()
+{
     try {
         $db = ConectarDB();
         $query = "SELECT p.id_pedido, c.nombre AS cliente, c.barrio, z.nombre AS zona
@@ -39,7 +40,8 @@ function obtenerPedidosPendientesDespacho() {
 }
 
 // Función para despachar un pedido
-function despacharPedido($id_pedido, $id_domiciliario, $id_vehiculo) {
+function despacharPedido($id_pedido, $id_domiciliario, $id_vehiculo)
+{
     try {
         $db = ConectarDB();
         // Validar que el domiciliario está disponible
@@ -95,7 +97,8 @@ function despacharPedido($id_pedido, $id_domiciliario, $id_vehiculo) {
 }
 
 // Función para marcar la llegada de un pedido
-function marcarLlegadaPedido($id_pedido) {
+function marcarLlegadaPedido($id_pedido)
+{
     try {
         $db = ConectarDB();
         // Obtener id_domiciliario e id_vehiculo del pedido
@@ -143,7 +146,8 @@ function marcarLlegadaPedido($id_pedido) {
 }
 
 // Función para obtener pedidos en ruta
-function obtenerPedidosEnRuta() {
+function obtenerPedidosEnRuta()
+{
     try {
         $db = ConectarDB();
         $query = "SELECT p.id_pedido, d.nombre AS domiciliario, p.hora_salida, p.hora_llegada
@@ -223,4 +227,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Método no permitido']);
 }
-?>

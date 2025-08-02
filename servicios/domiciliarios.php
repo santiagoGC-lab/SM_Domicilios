@@ -4,10 +4,11 @@ require_once 'conexion.php';
 header('Content-Type: application/json');
 
 // Función para guardar un domiciliario (crear o actualizar)
-function guardarDomiciliario($datos) {
+function guardarDomiciliario($datos)
+{
     try {
         $db = ConectarDB();
-        
+
         $id = $datos['id'] ?? null;
         $nombre = trim($datos['nombre'] ?? '');
         $telefono = trim($datos['telefono'] ?? '');
@@ -39,17 +40,17 @@ function guardarDomiciliario($datos) {
         $db->close();
 
         return ['success' => $success];
-
     } catch (Exception $e) {
         return ['success' => false, 'error' => 'Error: ' . $e->getMessage()];
     }
 }
 
 // Función para eliminar un domiciliario
-function eliminarDomiciliario($id) {
+function eliminarDomiciliario($id)
+{
     try {
         $db = ConectarDB();
-        
+
         if (!$id || !is_numeric($id)) {
             return ['success' => false, 'error' => 'ID inválido'];
         }
@@ -61,14 +62,14 @@ function eliminarDomiciliario($id) {
         $db->close();
 
         return ['success' => $success];
-
     } catch (Exception $e) {
         return ['success' => false, 'error' => 'Error: ' . $e->getMessage()];
     }
 }
 
 // Función para obtener todos los domiciliarios
-function obtenerDomiciliarios() {
+function obtenerDomiciliarios()
+{
     try {
         $db = ConectarDB();
         $result = $db->query("SELECT d.id_domiciliario, d.nombre, d.telefono, z.nombre AS zona, d.estado, d.id_zona 
@@ -77,17 +78,17 @@ function obtenerDomiciliarios() {
         $domiciliarios = $result->fetch_all(MYSQLI_ASSOC);
         $db->close();
         return $domiciliarios;
-
     } catch (Exception $e) {
         return ['error' => 'Error al obtener domiciliarios: ' . $e->getMessage()];
     }
 }
 
 // Función para obtener un domiciliario por ID
-function obtenerDomiciliarioPorId($id) {
+function obtenerDomiciliarioPorId($id)
+{
     try {
         $db = ConectarDB();
-        
+
         if (!$id || !is_numeric($id)) {
             return [];
         }
@@ -102,16 +103,16 @@ function obtenerDomiciliarioPorId($id) {
         $domiciliario = $result->fetch_assoc();
         $stmt->close();
         $db->close();
-        
-        return $domiciliario;
 
+        return $domiciliario;
     } catch (Exception $e) {
         return ['error' => 'Error al obtener domiciliario: ' . $e->getMessage()];
     }
 }
 
 // Nueva función para obtener domiciliarios paginados
-function obtenerDomiciliariosPaginados($pagina, $por_pagina) {
+function obtenerDomiciliariosPaginados($pagina, $por_pagina)
+{
     try {
         $db = ConectarDB();
         $offset = ($pagina - 1) * $por_pagina;
@@ -135,7 +136,8 @@ function obtenerDomiciliariosPaginados($pagina, $por_pagina) {
 }
 
 // Función para obtener domiciliarios disponibles
-function obtenerDomiciliariosDisponibles() {
+function obtenerDomiciliariosDisponibles()
+{
     try {
         $db = ConectarDB();
         $result = $db->query("SELECT id_domiciliario, nombre FROM domiciliarios WHERE estado = 'disponible'");
@@ -150,18 +152,18 @@ function obtenerDomiciliariosDisponibles() {
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
-    
+
     switch ($accion) {
         case 'guardar':
             $resultado = guardarDomiciliario($_POST);
             echo json_encode($resultado);
             break;
-            
+
         case 'eliminar':
             $resultado = eliminarDomiciliario($_POST['id']);
             echo json_encode($resultado);
             break;
-            
+
         case 'obtener':
             $resultado = obtenerDomiciliarios();
             if (isset($resultado['error'])) {
@@ -169,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'obtener_por_id':
             $resultado = obtenerDomiciliarioPorId($_POST['id']);
             if (isset($resultado['error'])) {
@@ -177,14 +179,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'paginar':
             $pagina = isset($_POST['pagina']) ? intval($_POST['pagina']) : 1;
             $por_pagina = isset($_POST['por_pagina']) ? intval($_POST['por_pagina']) : 5;
             $resultado = obtenerDomiciliariosPaginados($pagina, $por_pagina);
             echo json_encode($resultado);
             break;
-            
+
         case 'disponibles':
             $resultado = obtenerDomiciliariosDisponibles();
             if (isset($resultado['error'])) {
@@ -192,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Acción no válida']);
@@ -200,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Para compatibilidad con el código existente
     $accion = $_GET['accion'] ?? '';
-    
+
     if ($accion === 'obtener_por_id') {
         $resultado = obtenerDomiciliarioPorId($_GET['id']);
         if (isset($resultado['error'])) {
@@ -218,4 +220,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Método no permitido']);
 }
-?> 

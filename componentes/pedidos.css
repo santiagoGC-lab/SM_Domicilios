@@ -191,7 +191,7 @@
     animation: fadeIn 0.3s ease-in-out;
     max-height: 85vh;
     overflow-y: auto;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
     border: 2px solid var(--primary-color);
     font-family: 'Poppins', sans-serif;
 }
@@ -259,18 +259,18 @@
     font-weight: 500;
     margin-top: 10px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-login:hover {
     background-color: var(--secondary-color);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn-login:active {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-remove-producto {
@@ -558,7 +558,8 @@
     background-color: #495057;
 }
 
-.modal-content input:disabled, .modal-content select:disabled {
+.modal-content input:disabled,
+.modal-content select:disabled {
     background: #e9ecef;
     color: #888;
 }
@@ -597,9 +598,17 @@
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* Estilos para botones de acción */
@@ -729,15 +738,15 @@
     margin-right: 12px;
     position: relative;
     transition: all 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.checkbox-label:hover input ~ .checkmark {
+.checkbox-label:hover input~.checkmark {
     border-color: var(--primary-color);
     box-shadow: 0 2px 6px rgba(1, 89, 56, 0.2);
 }
 
-.checkbox-label input:checked ~ .checkmark {
+.checkbox-label input:checked~.checkmark {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
     box-shadow: 0 2px 8px rgba(1, 89, 56, 0.3);
@@ -756,7 +765,7 @@
     transform: rotate(45deg);
 }
 
-.checkbox-label input:checked ~ .checkmark:after {
+.checkbox-label input:checked~.checkmark:after {
     display: block;
     animation: checkmark 0.2s ease-in-out;
 }
@@ -770,6 +779,7 @@
         opacity: 0;
         transform: rotate(45deg) scale(0.8);
     }
+
     100% {
         opacity: 1;
         transform: rotate(45deg) scale(1);
@@ -825,18 +835,18 @@
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr;
         gap: 10px;
     }
-    
+
     .checkbox-container {
         flex-direction: column;
         gap: 15px;
         align-items: center;
     }
-    
+
     .modal-content {
         width: 98%;
         max-width: 95vw;
@@ -874,7 +884,7 @@
     color: white;
     border-color: var(--primary-color);
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .pagination button.active {

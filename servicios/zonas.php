@@ -4,10 +4,11 @@ require_once 'conexion.php';
 header('Content-Type: application/json');
 
 // Función para guardar una zona (crear o actualizar)
-function guardarZona($datos) {
+function guardarZona($datos)
+{
     try {
         $db = ConectarDB();
-        
+
         $id = $datos['id'] ?? '';
         $nombre = $datos['nombre'] ?? '';
         $ciudad = $datos['ciudad'] ?? '';
@@ -37,17 +38,17 @@ function guardarZona($datos) {
             $db->close();
             return ['success' => false, 'error' => $stmt->error];
         }
-
     } catch (Exception $e) {
         return ['success' => false, 'error' => 'Error: ' . $e->getMessage()];
     }
 }
 
 // Función para eliminar una zona
-function eliminarZona($id) {
+function eliminarZona($id)
+{
     try {
         $db = ConectarDB();
-        
+
         if (empty($id)) {
             return ['success' => false, 'error' => 'ID no proporcionado'];
         }
@@ -64,17 +65,17 @@ function eliminarZona($id) {
             $db->close();
             return ['success' => false, 'error' => $stmt->error];
         }
-
     } catch (Exception $e) {
         return ['success' => false, 'error' => 'Error: ' . $e->getMessage()];
     }
 }
 
 // Función para obtener todas las zonas
-function obtenerZonas() {
+function obtenerZonas()
+{
     try {
         $db = ConectarDB();
-        
+
         $query = "SELECT * FROM zonas ORDER BY id_zona DESC";
         $resultado = $db->query($query);
 
@@ -85,17 +86,17 @@ function obtenerZonas() {
 
         $db->close();
         return $zonas;
-
     } catch (Exception $e) {
         return ['error' => 'Error al obtener zonas: ' . $e->getMessage()];
     }
 }
 
 // Función para obtener una zona por ID
-function obtenerZonaPorId($id) {
+function obtenerZonaPorId($id)
+{
     try {
         $db = ConectarDB();
-        
+
         if (empty($id) || !is_numeric($id)) {
             return ['error' => 'ID inválido'];
         }
@@ -115,13 +116,13 @@ function obtenerZonaPorId($id) {
         $stmt->close();
         $db->close();
         return $zona;
-
     } catch (Exception $e) {
         return ['error' => 'Error al obtener zona: ' . $e->getMessage()];
     }
 }
 
-function obtenerZonasPaginadas($pagina, $por_pagina) {
+function obtenerZonasPaginadas($pagina, $por_pagina)
+{
     try {
         $db = ConectarDB();
         $offset = ($pagina - 1) * $por_pagina;
@@ -141,7 +142,8 @@ function obtenerZonasPaginadas($pagina, $por_pagina) {
 }
 
 // Buscar zona por barrio (insensible a mayúsculas y tildes, compatible con cualquier collation)
-function buscarZonaPorBarrio($barrio) {
+function buscarZonaPorBarrio($barrio)
+{
     try {
         $db = ConectarDB();
         $stmt = $db->prepare("SELECT id_zona, nombre, tarifa_base FROM zonas WHERE LOWER(CONVERT(barrio USING utf8)) = LOWER(CONVERT(? USING utf8)) AND estado = 'activo' LIMIT 1");
@@ -164,7 +166,7 @@ function buscarZonaPorBarrio($barrio) {
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
-    
+
     switch ($accion) {
         case 'guardar':
             $resultado = guardarZona($_POST);
@@ -173,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'eliminar':
             $resultado = eliminarZona($_POST['id']);
             if (isset($resultado['error'])) {
@@ -181,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'obtener':
             $resultado = obtenerZonas();
             if (isset($resultado['error'])) {
@@ -189,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'obtener_por_id':
             $resultado = obtenerZonaPorId($_POST['id']);
             if (isset($resultado['error'])) {
@@ -197,14 +199,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'paginar':
             $pagina = isset($_POST['pagina']) ? intval($_POST['pagina']) : 1;
             $por_pagina = isset($_POST['por_pagina']) ? intval($_POST['por_pagina']) : 10;
             $resultado = obtenerZonasPaginadas($pagina, $por_pagina);
             echo json_encode($resultado);
             break;
-            
+
         case 'buscar_por_barrio':
             $resultado = buscarZonaPorBarrio($_POST['barrio'] ?? '');
             if (isset($resultado['error'])) {
@@ -212,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Acción no válida']);
@@ -220,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Para compatibilidad con el código existente
     $accion = $_GET['accion'] ?? '';
-    
+
     if ($accion === 'obtener_por_id') {
         $resultado = obtenerZonaPorId($_GET['id']);
         if (isset($resultado['error'])) {
@@ -238,4 +240,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Método no permitido']);
 }
-?> 

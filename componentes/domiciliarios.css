@@ -291,7 +291,7 @@
 
 .estado-disponible {
     background-color: var(--disponible);
-     padding: 5px 10px;
+    padding: 5px 10px;
     border-radius: 15px;
     font-size: 0.9em;
     font-weight: 500;
@@ -303,7 +303,7 @@
 
 .estado-enservicio {
     background-color: var(--en-servicio);
-     padding: 5px 10px;
+    padding: 5px 10px;
     border-radius: 15px;
     font-size: 0.9em;
     font-weight: 500;
@@ -315,7 +315,7 @@
 
 .estado-inactivo {
     background-color: var(--danger-color);
-     padding: 5px 10px;
+    padding: 5px 10px;
     border-radius: 15px;
     font-size: 0.9em;
     font-weight: 500;
@@ -518,6 +518,7 @@
     margin-top: 16px;
     margin-bottom: 8px;
 }
+
 .pagination button {
     background: #fff;
     border: 1px solid var(--primary-color);
@@ -528,6 +529,7 @@
     cursor: pointer;
     transition: background 0.2s, color 0.2s, border 0.2s;
 }
+
 .pagination button.active,
 .pagination button:focus {
     background: var(--primary-color);
@@ -535,6 +537,7 @@
     border: 1.5px solid var(--primary-color);
     outline: none;
 }
+
 .pagination button[disabled] {
     background: #eee;
     color: #aaa;

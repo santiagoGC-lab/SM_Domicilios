@@ -93,46 +93,46 @@ try {
                 </a>
             <?php endif; ?>
             <?php if (tienePermiso('pedidos')): ?>
-            <a href="pedidos.php" class="menu-item">
-                <i class="fas fa-shopping-bag"></i>
-                <span class="menu-text">Pedidos</span>
-            </a>
+                <a href="pedidos.php" class="menu-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="menu-text">Pedidos</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('coordinador')): ?>
-            <a href="coordinador.php" class="menu-item">
-                <i class="fas fa-truck"></i>
-                <span class="menu-text">Coordinador</span>
-            </a>
+                <a href="coordinador.php" class="menu-item">
+                    <i class="fas fa-truck"></i>
+                    <span class="menu-text">Coordinador</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('clientes')): ?>
-            <a href="clientes.php" class="menu-item">
-                <i class="fas fa-users"></i>
-                <span class="menu-text">Clientes</span>
-            </a>
+                <a href="clientes.php" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Clientes</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('domiciliarios')): ?>
-            <a href="domiciliarios.php" class="menu-item">
-                <i class="fas fa-motorcycle"></i>
-                <span class="menu-text">Domiciliarios</span>
-            </a>
+                <a href="domiciliarios.php" class="menu-item">
+                    <i class="fas fa-motorcycle"></i>
+                    <span class="menu-text">Domiciliarios</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('vehiculos')): ?>
-            <a href="vehiculos.php" class="menu-item">
-                <i class="fas fa-car"></i>
-                <span class="menu-text">Vehiculos</span>
-            </a>
+                <a href="vehiculos.php" class="menu-item">
+                    <i class="fas fa-car"></i>
+                    <span class="menu-text">Vehiculos</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
-            <a href="zonas.php" class="menu-item">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="menu-text">Zonas de Entrega</span>
-            </a>
+                <a href="zonas.php" class="menu-item">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span class="menu-text">Zonas de Entrega</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('reportes')): ?>
-            <a href="reportes.php" class="menu-item">
-                <i class="fas fa-chart-bar"></i>
-                <span class="menu-text">Reportes</span>
-            </a>
+                <a href="reportes.php" class="menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="menu-text">Reportes</span>
+                </a>
             <?php endif; ?>
             <?php if (esAdmin()): ?>
                 <a href="tabla_usuarios.php" class="menu-item">

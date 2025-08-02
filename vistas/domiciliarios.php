@@ -57,10 +57,10 @@ $nombreCompleto = obtenerNombreUsuario();
                 </a>
             <?php endif; ?>
             <?php if (tienePermiso('vehiculos')): ?>
-            <a href="vehiculos.php" class="menu-item">
-                <i class="fas fa-car"></i>
-                <span class="menu-text">Vehiculos</span>
-            </a>
+                <a href="vehiculos.php" class="menu-item">
+                    <i class="fas fa-car"></i>
+                    <span class="menu-text">Vehiculos</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
                 <a href="zonas.php" class="menu-item">
@@ -351,25 +351,25 @@ $nombreCompleto = obtenerNombreUsuario();
         // Carga y muestra los domiciliarios, aplica paginación
         function loadDomiciliarios(page = 1) {
             fetch('../servicios/domiciliarios.php', {
-                method: 'POST',
-                body: (() => {
-                    const fd = new FormData();
-                    fd.append('accion', 'paginar');
-                    fd.append('pagina', page);
-                    fd.append('por_pagina', rowsPerPage);
-                    return fd;
-                })()
-            })
-            .then(res => res.json())
-            .then(data => {
-                totalDomiciliarios = data.total;
-                renderDomiciliarios(data.domiciliarios);
-                renderPaginationDomiciliarios(page);
-            })
-            .catch(error => {
-                alert('Error al cargar domiciliarios');
-                console.error(error);
-            });
+                    method: 'POST',
+                    body: (() => {
+                        const fd = new FormData();
+                        fd.append('accion', 'paginar');
+                        fd.append('pagina', page);
+                        fd.append('por_pagina', rowsPerPage);
+                        return fd;
+                    })()
+                })
+                .then(res => res.json())
+                .then(data => {
+                    totalDomiciliarios = data.total;
+                    renderDomiciliarios(data.domiciliarios);
+                    renderPaginationDomiciliarios(page);
+                })
+                .catch(error => {
+                    alert('Error al cargar domiciliarios');
+                    console.error(error);
+                });
         }
 
         // Renderiza la tabla de domiciliarios

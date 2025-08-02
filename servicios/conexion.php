@@ -9,8 +9,8 @@ define('DB_CHARSET', 'utf8mb4');
 // Conexión PDO global (para vistas que ya la usan)
 try {
     $pdo = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET, 
-        DB_USER, 
+        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET,
+        DB_USER,
         DB_PASS
     );
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -23,7 +23,8 @@ try {
 }
 
 // Función MySQLi (mantener compatibilidad con servicios existentes)
-function ConectarDB() {
+function ConectarDB()
+{
     $conexion = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
     if ($conexion->connect_error) {
@@ -37,16 +38,17 @@ function ConectarDB() {
 }
 
 // Función helper para obtener PDO (nueva)
-function getPDO() {
+function getPDO()
+{
     global $pdo;
     return $pdo;
 }
 
 // Función para cerrar conexiones de manera segura
-function cerrarConexion($conexion) {
+function cerrarConexion($conexion)
+{
     if ($conexion instanceof mysqli) {
         $conexion->close();
     }
     // PDO se cierra automáticamente
 }
-?>

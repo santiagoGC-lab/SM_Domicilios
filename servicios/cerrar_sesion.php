@@ -15,15 +15,14 @@ session_destroy();
 
 // Eliminar la cookie de sesión si existe
 if (isset($_COOKIE[session_name()])) {
-    setcookie(session_name(), '', time()-3600, '/');
+    setcookie(session_name(), '', time() - 3600, '/');
 }
 
 // Eliminar otras cookies que puedan contener información sensible
 if (isset($_COOKIE['PHPSESSID'])) {
-    setcookie('PHPSESSID', '', time()-3600, '/');
+    setcookie('PHPSESSID', '', time() - 3600, '/');
 }
 
 // Redirigir al login con mensaje de confirmación
 header('Location: ../vistas/login.html');
 exit();
-?>

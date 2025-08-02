@@ -50,7 +50,7 @@ foreach ($pedidos as $pedido) {
     $fecha = new DateTime($pedido['fecha_pedido']);
     $mes = (int)$fecha->format('m');
     $anio = (int)$fecha->format('Y');
-    
+
     try {
         $stmt->bind_param(
             "iiiisidssssssssssiii",
@@ -88,7 +88,7 @@ if ($migrados > 0) {
     // Eliminar los pedidos migrados de historico_pedidos
     $ids = implode(',', array_map('intval', array_column($pedidos, 'id_historico')));
     $db->query("DELETE FROM historico_pedidos WHERE id_historico IN ($ids)");
-    
+
     echo "Migración completada: $migrados pedidos movidos a pedidos_mensuales.\n";
     echo "Los pedidos del mes anterior ahora están disponibles en Reportes.\n";
 } else {
@@ -96,4 +96,3 @@ if ($migrados > 0) {
 }
 
 $db->close();
-?> 

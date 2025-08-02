@@ -118,7 +118,7 @@
                 .catch(error => {
                     console.error('Error al obtener token CSRF:', error);
                 });
-            
+
             // Validación del formulario de login antes de enviar
             const loginForm = document.getElementById('formlogin');
 
@@ -140,7 +140,7 @@
                         return false;
                     }
                 });
-            }   
+            }
 
             // Verificar si hay mensajes de error o éxito en la URL y mostrarlos
             const urlParams = new URLSearchParams(window.location.search);

@@ -4,10 +4,11 @@ require_once 'conexion.php';
 header('Content-Type: application/json');
 
 // Función para guardar un cliente (crear o actualizar)
-function guardarCliente($datos) {
+function guardarCliente($datos)
+{
     try {
         $db = ConectarDB();
-        
+
         $id = isset($datos['id']) && $datos['id'] !== '' ? (int) $datos['id'] : null;
         $nombre = trim($datos['nombre'] ?? '');
         $documento = trim($datos['documento'] ?? '');
@@ -29,7 +30,7 @@ function guardarCliente($datos) {
             $checkStmt->bind_param("s", $documento);
             $checkStmt->execute();
             $checkStmt->store_result();
-            
+
             if ($checkStmt->num_rows > 0) {
                 $checkStmt->close();
                 return ['error' => 'Ya existe un cliente con ese documento'];
@@ -51,7 +52,6 @@ function guardarCliente($datos) {
 
         $stmt->close();
         $db->close();
-
     } catch (mysqli_sql_exception $e) {
         if (str_contains($e->getMessage(), 'Duplicate entry')) {
             return ['error' => 'Ya existe un cliente con ese documento'];
@@ -64,7 +64,8 @@ function guardarCliente($datos) {
 }
 
 // Función para eliminar un cliente
-function eliminarCliente($id) {
+function eliminarCliente($id)
+{
     try {
         $db = ConectarDB();
 
@@ -84,14 +85,14 @@ function eliminarCliente($id) {
 
         $stmt->close();
         $db->close();
-
     } catch (Exception $e) {
         return ['error' => 'Error al eliminar cliente: ' . $e->getMessage()];
     }
 }
 
 // Función para obtener todos los clientes
-function obtenerClientes() {
+function obtenerClientes()
+{
     try {
         $db = ConectarDB();
         $query = "SELECT id_cliente, nombre, documento, telefono, direccion, barrio FROM clientes WHERE estado = 'activo' ORDER BY id_cliente DESC";
@@ -104,17 +105,17 @@ function obtenerClientes() {
 
         $db->close();
         return $clientes;
-
     } catch (Exception $e) {
         return ['error' => 'Error al obtener clientes: ' . $e->getMessage()];
     }
 }
 
 // Función para obtener un cliente por ID
-function obtenerClientePorId($id) {
+function obtenerClientePorId($id)
+{
     try {
         $db = ConectarDB();
-        
+
         if (!$id) {
             return ['error' => 'ID de cliente no proporcionado'];
         }
@@ -133,14 +134,14 @@ function obtenerClientePorId($id) {
             $db->close();
             return ['error' => 'Cliente no encontrado'];
         }
-
     } catch (Exception $e) {
         return ['error' => 'Error al obtener cliente: ' . $e->getMessage()];
     }
 }
 
 // Función para obtener un cliente por documento
-function obtenerClientePorDocumento($documento) {
+function obtenerClientePorDocumento($documento)
+{
     try {
         $db = ConectarDB();
         if (!$documento) {
@@ -167,7 +168,7 @@ function obtenerClientePorDocumento($documento) {
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
-    
+
     switch ($accion) {
         case 'guardar':
             $resultado = guardarCliente($_POST);
@@ -176,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'eliminar':
             $resultado = eliminarCliente($_POST['id']);
             if (isset($resultado['error'])) {
@@ -184,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'obtener':
             $resultado = obtenerClientes();
             if (isset($resultado['error'])) {
@@ -192,7 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'obtener_por_id':
             $resultado = obtenerClientePorId($_POST['id']);
             if (isset($resultado['error'])) {
@@ -200,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         case 'obtener_por_documento':
             $resultado = obtenerClientePorDocumento($_POST['documento']);
             if (isset($resultado['error'])) {
@@ -208,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-            
+
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Acción no válida']);
@@ -216,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Para compatibilidad con el código existente
     $accion = $_GET['accion'] ?? '';
-    
+
     if ($accion === 'obtener_por_id') {
         $resultado = obtenerClientePorId($_GET['id']);
         if (isset($resultado['error'])) {
@@ -234,4 +235,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Método no permitido']);
 }
-?> 

@@ -48,4 +48,3 @@ if (!file_exists($file_path)) {
 
 // Incluir la página
 include $file_path;
-?>

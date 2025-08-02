@@ -113,4 +113,3 @@ if ($hoy == '01') {
 
 $db->close();
 echo "\n=== FIN DE VERIFICACIÓN ===\n";
-?> 

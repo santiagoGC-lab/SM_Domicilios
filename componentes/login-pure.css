@@ -1,9 +1,13 @@
 :root {
-    --color-primario:  #015938 ; /* Azul principal */
-    --color-secundario: #007B55; /* Verde secundario */
+    --color-primario: #015938;
+    /* Azul principal */
+    --color-secundario: #007B55;
+    /* Verde secundario */
     --texto: #333;
-    --color-borde: #015938; /* Azul claro para bordes */
-    --light-bg: #F0F3FA; /* Fondo claro */
+    --color-borde: #015938;
+    /* Azul claro para bordes */
+    --light-bg: #F0F3FA;
+    /* Fondo claro */
 }
 
 * {
@@ -164,7 +168,7 @@ body {
     margin-top: 1.5rem;
 }
 
-.txt-olvidado{
+.txt-olvidado {
     text-decoration: none;
     color: var(--color-primario);
 }
@@ -179,6 +183,7 @@ body {
     margin-bottom: 1rem;
     position: relative;
 }
+
 .alert-danger {
     background-color: #f8d7da;
     color: #721c24;
@@ -226,11 +231,11 @@ body {
         flex-direction: column;
         min-height: auto;
     }
-    
+
     .img-auten {
         padding: 1.5rem;
     }
-    
+
     .img-auten h2 {
         font-size: 2rem;
     }

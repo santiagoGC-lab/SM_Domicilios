@@ -50,4 +50,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 // Si se accede por GET, redirigir al login
 header('Location: vistas/login.html');
-exit(); 
+exit();

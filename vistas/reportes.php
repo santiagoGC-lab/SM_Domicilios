@@ -20,7 +20,7 @@ try {
     $pedidosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
     $ingresosHoy = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
     $pedidosPendientes = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente'")->fetchColumn();
-    
+
     // Pedidos por zona
     $pedidosPorZona = $pdo->query("
         SELECT z.nombre, COUNT(p.id_pedido) as total, SUM(p.total) as ingresos
@@ -30,7 +30,7 @@ try {
         GROUP BY z.id_zona, z.nombre
         ORDER BY total DESC
     ")->fetchAll();
-    
+
     // Domiciliarios más activos (solo del historial de hoy)
     $domiciliariosActivos = $pdo->query("
         SELECT 
@@ -45,7 +45,7 @@ try {
         ORDER BY entregas DESC
         LIMIT 5
     ")->fetchAll();
-    
+
     // Clientes más frecuentes (solo del historial de hoy)
     $clientesFrecuentes = $pdo->query("
         SELECT 
@@ -59,7 +59,7 @@ try {
         ORDER BY pedidos DESC
         LIMIT 5
     ")->fetchAll();
-    
+
     // Pedidos por estado (combinar pedidos activos + historial de hoy)
     $pedidosActivos = $pdo->query("
         SELECT estado, COUNT(*) as total
@@ -67,30 +67,30 @@ try {
         WHERE DATE(fecha_pedido) = CURDATE()
         GROUP BY estado
     ")->fetchAll();
-    
+
     $pedidosHistorial = $pdo->query("
         SELECT estado, COUNT(*) as total
         FROM historico_pedidos
         WHERE DATE(fecha_completado) = CURDATE()
         GROUP BY estado
     ")->fetchAll();
-    
+
     // Combinar ambos arrays
     $pedidosPorEstado = [];
     $estadosCount = [];
-    
+
     foreach ($pedidosActivos as $pedido) {
         $estadosCount[$pedido['estado']] = ($estadosCount[$pedido['estado']] ?? 0) + $pedido['total'];
     }
-    
+
     foreach ($pedidosHistorial as $pedido) {
         $estadosCount[$pedido['estado']] = ($estadosCount[$pedido['estado']] ?? 0) + $pedido['total'];
     }
-    
+
     foreach ($estadosCount as $estado => $total) {
         $pedidosPorEstado[] = ['estado' => $estado, 'total' => $total];
     }
-    
+
     // Detalle por zona (solo del historial de hoy)
     // Detalle por zona - Zonas donde más se pidieron domicilios (todos los tiempos)
     // Detalle por zona - Últimos 30 días (más relevante)
@@ -121,7 +121,7 @@ try {
         
         ORDER BY pedidos DESC, zona ASC
     ")->fetchAll();
-    
+
     // Pedidos de los últimos 7 días (solo historial)
     $pedidosUltimos7Dias = $pdo->query("
         SELECT 
@@ -134,7 +134,6 @@ try {
         GROUP BY DATE(fecha_completado)
         ORDER BY fecha DESC
     ")->fetchAll();
-    
 } catch (Exception $e) {
     $error = $e->getMessage();
 }
@@ -163,57 +162,58 @@ try {
             <img src="../componentes/img/logo2.png" alt="Logo" />
         </div>
         <div class="sidebar-menu">
-            <?php // Menú lateral, muestra opciones según permisos del usuario ?>
+            <?php // Menú lateral, muestra opciones según permisos del usuario 
+            ?>
             <?php if (tienePermiso('dashboard')): ?>
-            <a href="dashboard.php" class="menu-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span class="menu-text">Inicio</span>
-            </a>
+                <a href="dashboard.php" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-text">Inicio</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('pedidos')): ?>
-            <a href="pedidos.php" class="menu-item">
-                <i class="fas fa-shopping-bag"></i>
-                <span class="menu-text">Pedidos</span>
-            </a>
+                <a href="pedidos.php" class="menu-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="menu-text">Pedidos</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('coordinador')): ?>
-            <a href="coordinador.php" class="menu-item">
-                <i class="fas fa-truck"></i>
-                <span class="menu-text">Coordinador</span>
-            </a>
+                <a href="coordinador.php" class="menu-item">
+                    <i class="fas fa-truck"></i>
+                    <span class="menu-text">Coordinador</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('clientes')): ?>
-            <a href="clientes.php" class="menu-item">
-                <i class="fas fa-users"></i>
-                <span class="menu-text">Clientes</span>
-            </a>
+                <a href="clientes.php" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Clientes</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('domiciliarios')): ?>
-            <a href="domiciliarios.php" class="menu-item">
-                <i class="fas fa-motorcycle"></i>
-                <span class="menu-text">Domiciliarios</span>
-            </a>
+                <a href="domiciliarios.php" class="menu-item">
+                    <i class="fas fa-motorcycle"></i>
+                    <span class="menu-text">Domiciliarios</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('vehiculos')): ?>
-            <a href="vehiculos.php" class="menu-item">
-                <i class="fas fa-car"></i>
-                <span class="menu-text">Vehiculos</span>
-            </a>
+                <a href="vehiculos.php" class="menu-item">
+                    <i class="fas fa-car"></i>
+                    <span class="menu-text">Vehiculos</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
-            <a href="zonas.php" class="menu-item">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="menu-text">Zonas de Entrega</span>
-            </a>
+                <a href="zonas.php" class="menu-item">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span class="menu-text">Zonas de Entrega</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('reportes')): ?>
-            <a href="reportes.php" class="menu-item active">
-                <i class="fas fa-chart-bar"></i>
-                <span class="menu-text">Reportes</span>
-            </a>
+                <a href="reportes.php" class="menu-item active">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="menu-text">Reportes</span>
+                </a>
             <?php endif; ?>
             <?php if (esAdmin()): ?>
-            <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
+                <a href="tabla_usuarios.php" class="menu-item"><i class="fas fa-users-cog"></i><span class="menu-text">Gestionar Usuarios</span></a>
             <?php endif; ?>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
                 <i class="fas fa-sign-out-alt"></i>
@@ -239,55 +239,55 @@ try {
         <!-- Tarjetas de resumen de KPIs solicitados -->
         <?php
         // --- Cálculos para los KPIs del reporte (ESTADÍSTICAS DIARIAS) ---
-        
+
         // 1. Total de pedidos creados HOY (siguen en tabla pedidos hasta ser procesados)
         $totalPedidosHoy = $pdo->query("
             SELECT COUNT(*) 
             FROM pedidos 
             WHERE DATE(fecha_pedido) = CURDATE()
         ")->fetchColumn();
-        
+
         // 2. Pedidos entregados HOY (están en historial)
         $pedidosEntregadosHoy = $pdo->query("
             SELECT hp.hora_salida, hp.hora_llegada, hp.tiempo_estimado
             FROM historico_pedidos hp
             WHERE DATE(hp.fecha_completado) = CURDATE() AND hp.estado = 'entregado'
         ")->fetchAll();
-        
+
         // 3. Domicilios enviados HOY (en camino + entregados)
         $enCaminoHoy = $pdo->query("
             SELECT COUNT(*) 
             FROM pedidos 
             WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'en_camino'
         ")->fetchColumn();
-        
+
         $entregadosHoy = $pdo->query("
             SELECT COUNT(*) 
             FROM historico_pedidos 
             WHERE DATE(fecha_completado) = CURDATE() AND estado = 'entregado'
         ")->fetchColumn();
-        
+
         $domiciliosEnviadosHoy = $enCaminoHoy + $entregadosHoy;
-        
+
         // 4. Valor total de domicilios entregados HOY (solo del historial)
         $valorDomiciliosHoy = $pdo->query("
             SELECT COALESCE(SUM(total), 0) 
             FROM historico_pedidos 
             WHERE DATE(fecha_completado) = CURDATE() AND estado = 'entregado'
         ")->fetchColumn();
-        
+
         // 5. Pedidos cancelados HOY (están en historial)
         $canceladosHoy = $pdo->query("
             SELECT COUNT(*) 
             FROM historico_pedidos 
             WHERE DATE(fecha_completado) = CURDATE() AND estado = 'cancelado'
         ")->fetchColumn();
-        
+
         // 6. Cálculo de tiempo promedio y cumplimiento HOY
         $totalTiempo = 0;
         $numEntregas = 0;
         $cumplidos = 0;
-        
+
         foreach ($pedidosEntregadosHoy as $pedido) {
             if (!empty($pedido['hora_salida']) && !empty($pedido['hora_llegada']) && !empty($pedido['tiempo_estimado'])) {
                 $salida = strtotime($pedido['hora_salida']);
@@ -295,13 +295,13 @@ try {
                 $tiempoReal = ($llegada - $salida) / 60; // minutos
                 $totalTiempo += $tiempoReal;
                 $numEntregas++;
-                
+
                 if ($tiempoReal <= $pedido['tiempo_estimado']) {
                     $cumplidos++;
                 }
             }
         }
-        
+
         $tiempoPromedio = $numEntregas > 0 ? round($totalTiempo / $numEntregas, 2) : 0;
         $cumplimiento = $numEntregas > 0 ? round(($cumplidos / $numEntregas) * 100, 2) : 0;
         ?>
@@ -405,7 +405,7 @@ try {
                                     <td><?php echo $cliente['pedidos']; ?></td>
                                     <td>$<?php echo number_format($cliente['total_gastado'] ?? 0, 2); ?></td>
                                 </tr>
-                            <?php endforeach; 
+                            <?php endforeach;
                             // Detalle por zona (mostrar todas las zonas activas)
                             // **Versión más segura (recomendada):**
                             // Detalle por zona - versión segura
@@ -480,9 +480,18 @@ try {
         <!-- Tabla de pedidos mensuales archivados por mes y año -->
         <?php
         $meses_es = [
-            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
-            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
-            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre'
         ];
         ?>
         <div class="report-card" style="max-width:100%;margin-top:30px;">
@@ -499,15 +508,15 @@ try {
                 ?>
                 <select name="mes" id="mes" required class="select-mes">
                     <?php for ($m = 1; $m <= 12; $m++): ?>
-                        <option value="<?php echo $m; ?>" <?php if($mesSeleccionado == $m) echo 'selected'; ?>>
+                        <option value="<?php echo $m; ?>" <?php if ($mesSeleccionado == $m) echo 'selected'; ?>>
                             <?php echo $meses_es[$m]; ?>
                         </option>
                     <?php endfor; ?>
                 </select>
                 <label for="anio">Año:</label>
                 <select name="anio" id="anio" required class="select-anio">
-                    <?php for ($a = $anioActual; $a >= $anioActual-5; $a--): ?>
-                        <option value="<?php echo $a; ?>" <?php if($anioSeleccionado == $a) echo 'selected'; ?>><?php echo $a; ?></option>
+                    <?php for ($a = $anioActual; $a >= $anioActual - 5; $a--): ?>
+                        <option value="<?php echo $a; ?>" <?php if ($anioSeleccionado == $a) echo 'selected'; ?>><?php echo $a; ?></option>
                     <?php endfor; ?>
                 </select>
                 <button type="submit" class="btn-login"><i class="fas fa-search"></i> Consultar</button>
@@ -562,7 +571,9 @@ try {
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="7" style="text-align:center;">No hay pedidos para este mes.</td></tr>
+                            <tr>
+                                <td colspan="7" style="text-align:center;">No hay pedidos para este mes.</td>
+                            </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -606,28 +617,29 @@ try {
             formData.append('accion', 'exportar');
             formData.append('tipo', tipo); // Agregar el tipo de reporte
             fetch('../servicios/reportes.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.blob())
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `reporte_${tipo}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-            })
-            .catch(error => {
-                console.error('Error al exportar el reporte:', error);
-                alert('Error al exportar el reporte.');
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `reporte_${tipo}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                })
+                .catch(error => {
+                    console.error('Error al exportar el reporte:', error);
+                    alert('Error al exportar el reporte.');
+                });
         }
     </script>
     <style>
-        .select-mes, .select-anio {
+        .select-mes,
+        .select-anio {
             padding: 8px 12px;
             border: 1px solid #b2b2b2;
             border-radius: 6px;
@@ -638,7 +650,9 @@ try {
             font-family: 'Poppins', sans-serif;
             transition: border-color 0.2s;
         }
-        .select-mes:focus, .select-anio:focus {
+
+        .select-mes:focus,
+        .select-anio:focus {
             border-color: #007B55;
             background: #fff;
         }

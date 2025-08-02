@@ -203,32 +203,32 @@ $nombreCompleto = obtenerNombreUsuario();
         // Carga los datos de un vehículo y abre el modal para editar
         function editarVehiculo(id) {
             fetch(`../servicios/vehiculos.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `accion=obtener&id=${id}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const vehiculo = data.vehiculo;
-                    document.getElementById('modalTitle').textContent = 'Editar Vehículo';
-                    document.getElementById('vehiculoId').value = vehiculo.id_vehiculo;
-                    document.getElementById('tipo').value = vehiculo.tipo;
-                    document.getElementById('placa').value = vehiculo.placa;
-                    document.getElementById('descripcion').value = vehiculo.descripcion || '';
-                    document.getElementById('estado').value = vehiculo.estado;
-                    document.getElementById('estadoGroup').style.display = 'block';
-                    document.getElementById('modalEditar').style.display = 'block';
-                } else {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `accion=obtener&id=${id}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const vehiculo = data.vehiculo;
+                        document.getElementById('modalTitle').textContent = 'Editar Vehículo';
+                        document.getElementById('vehiculoId').value = vehiculo.id_vehiculo;
+                        document.getElementById('tipo').value = vehiculo.tipo;
+                        document.getElementById('placa').value = vehiculo.placa;
+                        document.getElementById('descripcion').value = vehiculo.descripcion || '';
+                        document.getElementById('estado').value = vehiculo.estado;
+                        document.getElementById('estadoGroup').style.display = 'block';
+                        document.getElementById('modalEditar').style.display = 'block';
+                    } else {
+                        alert('Error al cargar los datos del vehículo');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                     alert('Error al cargar los datos del vehículo');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al cargar los datos del vehículo');
-            });
+                });
         }
 
         // Maneja el envío del formulario de vehículo
@@ -239,53 +239,53 @@ $nombreCompleto = obtenerNombreUsuario();
             formData.append('accion', isEdit ? 'actualizar' : 'crear');
 
             fetch('../servicios/vehiculos.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    closeModal('modalEditar');
-                    loadVehiculos(currentPage);
-                    alert(isEdit ? 'Vehículo actualizado exitosamente' : 'Vehículo creado exitosamente');
-                } else {
-                    alert(data.message || 'Error al procesar la solicitud');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al procesar la solicitud');
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        closeModal('modalEditar');
+                        loadVehiculos(currentPage);
+                        alert(isEdit ? 'Vehículo actualizado exitosamente' : 'Vehículo creado exitosamente');
+                    } else {
+                        alert(data.message || 'Error al procesar la solicitud');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al procesar la solicitud');
+                });
         }
 
         // Carga la lista de vehículos con paginación
         function loadVehiculos(page = 1) {
             const searchTerm = document.getElementById('searchInput').value;
             const statusFilter = document.getElementById('filterStatus').value;
-            
+
             fetch('../servicios/vehiculos.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `accion=listar&page=${page}&search=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(statusFilter)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    displayVehiculos(data.vehiculos);
-                    totalVehiculos = data.total;
-                    currentPage = page;
-                    updatePagination();
-                } else {
-                    console.error('Error al cargar vehículos:', data.error);
-                    document.getElementById('vehiculosTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">Error al cargar vehículos</td></tr>';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('vehiculosTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">Error de conexión</td></tr>';
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `accion=listar&page=${page}&search=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(statusFilter)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayVehiculos(data.vehiculos);
+                        totalVehiculos = data.total;
+                        currentPage = page;
+                        updatePagination();
+                    } else {
+                        console.error('Error al cargar vehículos:', data.error);
+                        document.getElementById('vehiculosTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">Error al cargar vehículos</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('vehiculosTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">Error de conexión</td></tr>';
+                });
         }
 
         // Muestra los vehículos en la tabla
@@ -295,18 +295,18 @@ $nombreCompleto = obtenerNombreUsuario();
 
             vehiculos.forEach(vehiculo => {
                 const row = document.createElement('tr');
-                
+
                 // Iconos para tipos de vehículos
                 const tipoIcons = {
                     'moto': '<i class="fas fa-motorcycle"></i>',
                     'camioneta': '<i class="fas fa-truck-pickup"></i>',
                     'carguero': '<i class="fas fa-truck"></i>'
                 };
-                
+
                 // Clases para estados
                 const estadoClasses = {
                     'disponible': 'estado-disponible',
-                    'en_ruta': 'estado-en-ruta', 
+                    'en_ruta': 'estado-en-ruta',
                     'mantenimiento': 'estado-mantenimiento',
                     'inactivo': 'estado-inactivo'
                 };
@@ -386,25 +386,25 @@ $nombreCompleto = obtenerNombreUsuario();
         function eliminarVehiculo(id) {
             if (confirm('¿Está seguro de que desea eliminar este vehículo?')) {
                 fetch('../servicios/vehiculos.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `accion=eliminar&id=${id}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        loadVehiculos(currentPage);
-                        alert('Vehículo eliminado exitosamente');
-                    } else {
-                        alert(data.error || 'Error al eliminar el vehículo');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al eliminar el vehículo');
-                });
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `accion=eliminar&id=${id}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadVehiculos(currentPage);
+                            alert('Vehículo eliminado exitosamente');
+                        } else {
+                            alert(data.error || 'Error al eliminar el vehículo');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al eliminar el vehículo');
+                    });
             }
         }
 
@@ -419,4 +419,5 @@ $nombreCompleto = obtenerNombreUsuario();
         }
     </script>
 </body>
+
 </html>

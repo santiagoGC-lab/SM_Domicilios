@@ -28,58 +28,58 @@ $nombreCompleto = obtenerNombreUsuario();
         </div>
         <div class="sidebar-menu">
             <?php if (tienePermiso('dashboard')): ?>
-            <a href="dashboard.php" class="menu-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span class="menu-text">Inicio</span>
-            </a>
+                <a href="dashboard.php" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-text">Inicio</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('pedidos')): ?>
-            <a href="pedidos.php" class="menu-item">
-                <i class="fas fa-shopping-bag"></i>
-                <span class="menu-text">Pedidos</span>
-            </a>
+                <a href="pedidos.php" class="menu-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="menu-text">Pedidos</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('coordinador')): ?>
-            <a href="coordinador.php" class="menu-item">
-                <i class="fas fa-truck"></i>
-                <span class="menu-text">Coordinador</span>
-            </a>
+                <a href="coordinador.php" class="menu-item">
+                    <i class="fas fa-truck"></i>
+                    <span class="menu-text">Coordinador</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('clientes')): ?>
-            <a href="clientes.php" class="menu-item">
-                <i class="fas fa-users"></i>
-                <span class="menu-text">Clientes</span>
-            </a>
+                <a href="clientes.php" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Clientes</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('domiciliarios')): ?>
-            <a href="domiciliarios.php" class="menu-item">
-                <i class="fas fa-motorcycle"></i>
-                <span class="menu-text">Domiciliarios</span>
-            </a>
+                <a href="domiciliarios.php" class="menu-item">
+                    <i class="fas fa-motorcycle"></i>
+                    <span class="menu-text">Domiciliarios</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('vehiculos')): ?>
-            <a href="vehiculos.php" class="menu-item">
-                <i class="fas fa-car"></i>
-                <span class="menu-text">Vehiculos</span>
-            </a>
+                <a href="vehiculos.php" class="menu-item">
+                    <i class="fas fa-car"></i>
+                    <span class="menu-text">Vehiculos</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
-            <a href="zonas.php" class="menu-item active">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="menu-text">Zonas de Entrega</span>
-            </a>
+                <a href="zonas.php" class="menu-item active">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span class="menu-text">Zonas de Entrega</span>
+                </a>
             <?php endif; ?>
             <?php if (tienePermiso('reportes')): ?>
-            <a href="reportes.php" class="menu-item">
-                <i class="fas fa-chart-bar"></i>
-                <span class="menu-text">Reportes</span>
-            </a>
+                <a href="reportes.php" class="menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="menu-text">Reportes</span>
+                </a>
             <?php endif; ?>
             <?php if (esAdmin()): ?>
-            <a href="tabla_usuarios.php" class="menu-item">
-                <i class="fas fa-users-cog"></i>
-                <span class="menu-text">Gestionar Usuarios</span>
-            </a>
+                <a href="tabla_usuarios.php" class="menu-item">
+                    <i class="fas fa-users-cog"></i>
+                    <span class="menu-text">Gestionar Usuarios</span>
+                </a>
             <?php endif; ?>
             <a href="../servicios/cerrar_sesion.php" class="menu-cerrar">
                 <i class="fas fa-sign-out-alt"></i>
@@ -197,9 +197,14 @@ $nombreCompleto = obtenerNombreUsuario();
 
         function editarZona(id) {
             fetch(`../servicios/zonas.php`, {
-                method: 'POST',
-                body: (() => { const fd = new FormData(); fd.append('accion', 'obtener_por_id'); fd.append('id', id); return fd; })()
-            })
+                    method: 'POST',
+                    body: (() => {
+                        const fd = new FormData();
+                        fd.append('accion', 'obtener_por_id');
+                        fd.append('id', id);
+                        return fd;
+                    })()
+                })
                 .then(res => {
                     if (res.status === 401) {
                         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
@@ -312,26 +317,26 @@ $nombreCompleto = obtenerNombreUsuario();
             const search = document.getElementById('searchInput').value.trim().toLowerCase();
             const estado = document.getElementById('filterStatus').value;
             fetch('../servicios/zonas.php', {
-                method: 'POST',
-                body: (() => {
-                    const fd = new FormData();
-                    fd.append('accion', 'paginar');
-                    fd.append('pagina', page);
-                    fd.append('por_pagina', rowsPerPage);
-                    return fd;
-                })()
-            })
-            .then(res => res.json())
-            .then(data => {
-                console.log('Respuesta paginación zonas:', data); // DEPURACIÓN
-                totalZonas = data.total;
-                renderZonas(data.zonas, search, estado);
-                renderPaginationZonas(page);
-            })
-            .catch(error => {
-                alert('Error al cargar zonas');
-                console.error(error);
-            });
+                    method: 'POST',
+                    body: (() => {
+                        const fd = new FormData();
+                        fd.append('accion', 'paginar');
+                        fd.append('pagina', page);
+                        fd.append('por_pagina', rowsPerPage);
+                        return fd;
+                    })()
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Respuesta paginación zonas:', data); // DEPURACIÓN
+                    totalZonas = data.total;
+                    renderZonas(data.zonas, search, estado);
+                    renderPaginationZonas(page);
+                })
+                .catch(error => {
+                    alert('Error al cargar zonas');
+                    console.error(error);
+                });
         }
 
         function renderZonas(zonas, search, estado) {
