@@ -9,10 +9,10 @@ function tienePermiso($seccion) {
     $rol = $_SESSION['rol'];
     $permisosPorRol = [
         'admin' => [
-            'tabla_usuarios', 'reportes', 'clientes', 'domiciliarios', 'zonas', 'despacho', 'pedidos', 'dashboard', 'ventana_flotante', 'coordinador'
+            'tabla_usuarios', 'reportes', 'clientes', 'domiciliarios', 'vehiculos', 'zonas', 'despacho', 'pedidos', 'dashboard', 'ventana_flotante', 'coordinador'
         ],
         'org_domicilios' => [
-            'reportes', 'clientes', 'domiciliarios', 'despacho', 'pedidos', 'dashboard', 'ventana_flotante', 'coordinador'
+            'reportes', 'clientes', 'domiciliarios', 'vehiculos', 'despacho', 'pedidos', 'dashboard', 'ventana_flotante', 'coordinador'
         ],
         'cajera' => [
             'pedidos', 'dashboard'
@@ -41,4 +41,5 @@ function obtenerNombreUsuario() {
         return $_SESSION['nombre'] . ' ' . $_SESSION['apellido'];
     }
     return '';
-} 
+}
+?>

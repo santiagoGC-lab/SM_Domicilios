@@ -84,6 +84,12 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
             <?php if (tienePermiso('domiciliarios')): ?>
                 <a href="domiciliarios.php" class="menu-item"><i class="fas fa-motorcycle"></i><span class="menu-text">Domiciliarios</span></a>
             <?php endif; ?>
+            <?php if (tienePermiso('vehiculos')): ?>
+            <a href="vehiculos.php" class="menu-item">
+                <i class="fas fa-car"></i>
+                <span class="menu-text">Vehiculos</span>
+            </a>
+            <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
                 <a href="zonas.php" class="menu-item"><i class="fas fa-map-marked-alt"></i><span class="menu-text">Zonas de Entrega</span></a>
             <?php endif; ?>

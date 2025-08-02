@@ -116,6 +116,12 @@ try {
                 <span class="menu-text">Domiciliarios</span>
             </a>
             <?php endif; ?>
+            <?php if (tienePermiso('vehiculos')): ?>
+            <a href="vehiculos.php" class="menu-item">
+                <i class="fas fa-car"></i>
+                <span class="menu-text">Vehiculos</span>
+            </a>
+            <?php endif; ?>
             <?php if (tienePermiso('zonas')): ?>
             <a href="zonas.php" class="menu-item">
                 <i class="fas fa-map-marked-alt"></i>
