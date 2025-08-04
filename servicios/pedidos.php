@@ -459,7 +459,7 @@ function obtenerPedidosPendientesDespacho($pagina = 1, $por_pagina = 10)
         
         // Obtener pedidos paginados
         $query = "SELECT p.id_pedido, c.nombre as cliente, c.direccion, c.telefono, c.barrio, 
-                         z.nombre as zona, p.cantidad_paquetes, p.tiempo_estimado
+                         z.nombre as zona, p.cantidad_paquetes, p.tiempo_estimado, p.alistamiento, p.envio_inmediato
                   FROM pedidos p
                   LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
                   LEFT JOIN zonas z ON p.id_zona = z.id_zona
