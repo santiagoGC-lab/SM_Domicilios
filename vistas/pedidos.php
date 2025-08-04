@@ -223,18 +223,18 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
 
                 <div class="checkbox-container">
                     <div class="checkbox-item">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="envio_inmediato" id="envio_inmediato" value="1">
-                            <span class="checkmark"></span>
-                            Envío inmediato
-                        </label>
+                        <label for="envio_inmediato">Envío inmediato:</label>
+                        <select name="envio_inmediato" id="envio_inmediato" class="form-control">
+                            <option value="no">No</option>
+                            <option value="si">Sí</option>
+                        </select>
                     </div>
                     <div class="checkbox-item">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="alistamiento" id="alistamiento" value="1">
-                            <span class="checkmark"></span>
-                            Alistamiento
-                        </label>
+                        <label for="alistamiento">Alistamiento:</label>
+                        <select name="alistamiento" id="alistamiento" class="form-control">
+                            <option value="no">No</option>
+                            <option value="si">Sí</option>
+                        </select>
                     </div>
                 </div>
 
@@ -662,12 +662,12 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 const direccion = order.direccion || 'No especificada';
 
                 // Determinar el estado de envío inmediato
-                const envioInmediato = order.envio_inmediato == 1 ?
+                const envioInmediato = order.envio_inmediato === 'si' ?
                     '<span class="badge-si">Sí</span>' :
                     '<span class="badge-no">No</span>';
 
                 // Determinar el estado de alistamiento
-                const alistamiento = order.alistamiento == 1 ?
+                const alistamiento = order.alistamiento === 'si' ?
                     '<span class="badge-si">Sí</span>' :
                     '<span class="badge-no">No</span>';
 

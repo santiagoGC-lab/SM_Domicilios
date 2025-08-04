@@ -2,6 +2,7 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+header('Content-Type: application/json');
 require_once '../config.php';
 require_once 'conexion.php';
 session_start();
@@ -71,15 +72,15 @@ function procesarPedido($datos)
         }
 
         // Procesar checkboxes
-        $envio_inmediato = isset($datos['envio_inmediato']) && $datos['envio_inmediato'] == '1' ? 1 : 0;
-        $alistamiento = isset($datos['alistamiento']) && $datos['alistamiento'] == '1' ? 1 : 0;
+        $envio_inmediato = isset($datos['envio_inmediato']) && $datos['envio_inmediato'] == 'si' ? 'SI' : 'NO';
+        $alistamiento = isset($datos['alistamiento']) && $datos['alistamiento'] == 'si' ? 'SI' : 'NO';
 
         // Insertar el pedido
         $stmt = $db->prepare("
             INSERT INTO pedidos (id_cliente, id_zona, id_domiciliario, estado, cantidad_paquetes, total, tiempo_estimado, envio_inmediato, alistamiento, fecha_pedido)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         ");
-        $stmt->bind_param("iiissdiis", $id_cliente, $id_zona, $id_domiciliario, $estado, $cantidad_paquetes, $total, $tiempo_estimado, $envio_inmediato, $alistamiento);
+        $stmt->bind_param("iiisidiss", $id_cliente, $id_zona, $id_domiciliario, $estado, $cantidad_paquetes, $total, $tiempo_estimado, $envio_inmediato, $alistamiento);
         $stmt->execute();
 
         // Actualizar estado del domiciliario según el estado del pedido
@@ -109,13 +110,13 @@ function actualizarPedido($datos)
         $estado = $datos['estado'];
         $id_domiciliario = intval($datos['id_domiciliario'] ?? 0);
 
-        // Procesar checkboxes
-        $envio_inmediato = isset($datos['envio_inmediato']) && $datos['envio_inmediato'] == '1' ? 1 : 0;
-        $alistamiento = isset($datos['alistamiento']) && $datos['alistamiento'] == '1' ? 1 : 0;
+        // Procesar checkboxes - CORREGIDO
+        $envio_inmediato = isset($datos['envio_inmediato']) && $datos['envio_inmediato'] == 'si' ? 'SI' : 'NO';
+        $alistamiento = isset($datos['alistamiento']) && $datos['alistamiento'] == 'si' ? 'SI' : 'NO';
 
         // Actualizar el pedido
         $stmt = $db->prepare("UPDATE pedidos SET estado = ?, id_domiciliario = ?, envio_inmediato = ?, alistamiento = ? WHERE id_pedido = ?");
-        $stmt->bind_param("siiis", $estado, $id_domiciliario, $envio_inmediato, $alistamiento, $id_pedido);
+        $stmt->bind_param("sissi", $estado, $id_domiciliario, $envio_inmediato, $alistamiento, $id_pedido);
         $stmt->execute();
 
         // Actualizar estado del domiciliario
@@ -709,11 +710,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $resTotal = $db->query("SELECT COUNT(*) as total FROM pedidos WHERE movido_historico = 0");
             $total = $resTotal->fetch_assoc()['total'];
             // Obtener pedidos paginados
+            // Obtener pedidos paginados
             $stmt = $db->prepare("
-                SELECT p.id_pedido, c.nombre AS cliente, c.documento, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.id_cliente, p.id_domiciliario, p.id_zona, p.cantidad_paquetes, p.total, p.tiempo_estimado
+                SELECT p.id_pedido, c.nombre AS cliente, c.documento, d.nombre AS domiciliario, p.estado, p.fecha_pedido, p.id_cliente, p.id_domiciliario, p.id_zona, p.cantidad_paquetes, p.total, p.tiempo_estimado, c.direccion, c.telefono, c.barrio, p.envio_inmediato, p.alistamiento, z.nombre as zona
                 FROM pedidos p
                 LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
                 LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+                LEFT JOIN zonas z ON p.id_zona = z.id_zona
                 WHERE p.movido_historico = 0
                 ORDER BY p.fecha_pedido DESC
                 LIMIT ? OFFSET ?

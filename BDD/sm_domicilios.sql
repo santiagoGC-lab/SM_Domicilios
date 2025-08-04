@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 04-08-2025 a las 14:42:06
+-- Tiempo de generación: 04-08-2025 a las 15:48:21
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -165,8 +165,8 @@ CREATE TABLE `pedidos` (
   `cantidad_paquetes` int(11) NOT NULL,
   `total` decimal(10,2) NOT NULL,
   `tiempo_estimado` int(11) DEFAULT NULL,
-  `envio_inmediato` tinyint(1) DEFAULT '0',
-  `alistamiento` tinyint(1) DEFAULT '0',
+  `envio_inmediato` varchar(2) DEFAULT 'NO',
+  `alistamiento` varchar(2) DEFAULT 'NO',
   `movido_historico` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -175,12 +175,14 @@ CREATE TABLE `pedidos` (
 --
 
 INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_vehiculo`, `id_zona`, `estado`, `hora_salida`, `hora_llegada`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `envio_inmediato`, `alistamiento`, `movido_historico`) VALUES
-(1, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-08-04 08:28:54', 5, '8000.00', 30, 1, 0, 0),
-(2, 14, NULL, NULL, 1, 'pendiente', NULL, NULL, '2025-08-04 08:29:52', 4, '5000.00', 30, 0, 1, 0),
-(3, 9, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-08-04 08:30:14', 6, '8000.00', 30, 0, 1, 0),
-(4, 8, NULL, NULL, 2, 'pendiente', NULL, NULL, '2025-08-04 08:30:42', 6, '6000.00', 30, 0, 1, 0),
-(5, 7, NULL, NULL, 6, 'pendiente', NULL, NULL, '2025-08-04 08:31:07', 8, '50000.00', 30, 1, 0, 0),
-(6, 10, NULL, NULL, 3, 'pendiente', NULL, NULL, '2025-08-04 08:31:39', 2, '7000.00', 30, 0, 0, 0);
+(1, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-08-04 08:28:54', 5, '8000.00', 30, 'SI', 'NO', 0),
+(2, 14, NULL, NULL, 1, 'pendiente', NULL, NULL, '2025-08-04 08:29:52', 4, '5000.00', 30, 'NO', 'SI', 0),
+(3, 9, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-08-04 08:30:14', 6, '8000.00', 30, 'NO', 'SI', 0),
+(4, 8, NULL, NULL, 2, 'pendiente', NULL, NULL, '2025-08-04 08:30:42', 6, '6000.00', 30, 'NO', 'SI', 0),
+(5, 7, NULL, NULL, 6, 'pendiente', NULL, NULL, '2025-08-04 08:31:07', 8, '50000.00', 30, 'SI', 'NO', 0),
+(6, 10, NULL, NULL, 3, 'pendiente', NULL, NULL, '2025-08-04 08:31:39', 2, '7000.00', 30, 'NO', 'NO', 0),
+(7, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-08-04 09:49:07', 4, '8000.00', 30, 'SI', 'NO', 0),
+(8, 14, NULL, NULL, 1, 'pendiente', NULL, NULL, '2025-08-04 09:53:16', 5, '5000.00', 30, 'SI', 'SI', 0);
 
 -- --------------------------------------------------------
 
@@ -397,7 +399,7 @@ ALTER TABLE `historico_pedidos`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos_mensuales`

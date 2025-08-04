@@ -97,21 +97,8 @@ verificarAcceso('coordinador');
         <div class="recent-activity">
             <!-- Controles de paginación superiores -->
             <div class="pagination-controls" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <div class="pagination-info">
-                    <span id="paginationInfo">Mostrando 0 de 0 pedidos</span>
-                </div>
-                <div class="pagination-size">
-                    <label for="pageSize">Mostrar:</label>
-                    <select id="pageSize" onchange="cambiarTamañoPagina()">
-                        <option value="5" selected>5</option>
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                    </select>
-                    <span>por página</span>
-                </div>
+                <!-- Información de paginación removida -->
             </div>
-            
             <div class="orders-table">
                 <!-- Tabla de pedidos pendientes de despacho -->
                 <table id="tablaDespachos">
@@ -119,11 +106,11 @@ verificarAcceso('coordinador');
                         <tr>
                             <th>Cliente</th>
                             <th>Direccion</th>
-                            <th>Cantidad de paquetes</th>
-                            <th>Hora estimada</th>
-                            <th>Telefono</th>
                             <th>Barrio</th>
                             <th>Zona</th>
+                            <th>Cantidad</th>
+                            <th>Estimada</th>
+                            <th>Telefono</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -132,25 +119,9 @@ verificarAcceso('coordinador');
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Controles de paginación inferiores -->
             <div id="paginationPedidos" class="pagination"></div>
-            <!-- ELIMINAR ESTE BLOQUE COMPLETO -->
-            <!-- <div class="pagination-controls" style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
-                <button id="btnPrimera" onclick="irAPagina(1)" class="btn-pagination" disabled>
-                    <i class="fas fa-angle-double-left"></i> Primera
-                </button>
-                <button id="btnAnterior" onclick="irAPagina(paginaActual - 1)" class="btn-pagination" disabled>
-                    <i class="fas fa-angle-left"></i> Anterior
-                </button>
-                <span id="paginaInfo" style="margin: 0 15px; font-weight: 500;">Página 1 de 1</span>
-                <button id="btnSiguiente" onclick="irAPagina(paginaActual + 1)" class="btn-pagination" disabled>
-                    Siguiente <i class="fas fa-angle-right"></i>
-                </button>
-                <button id="btnUltima" onclick="irAPagina(totalPaginas)" class="btn-pagination" disabled>
-                    Última <i class="fas fa-angle-double-right"></i>
-                </button>
-            </div> -->
         </div>
     </div>
     <!-- Modal para despachar pedido -->
@@ -209,7 +180,7 @@ verificarAcceso('coordinador');
             formData.append('accion', 'pendientes_despacho');
             formData.append('pagina', pagina);
             formData.append('por_pagina', porPagina);
-            
+
             fetch('../servicios/pedidos.php', {
                     method: 'POST',
                     body: formData
@@ -220,27 +191,27 @@ verificarAcceso('coordinador');
                         alert('Error: ' + data.error);
                         return;
                     }
-                    
+
                     // Actualizar variables de paginación
                     paginaActual = data.pagina_actual;
                     totalPaginas = data.total_paginas;
                     totalPedidos = data.total;
-                    
+
                     // Actualizar tabla
                     const tbody = document.querySelector('#tablaDespachos tbody');
                     tbody.innerHTML = '';
-                    
+
                     // Por cada pedido pendiente, crea una fila
                     data.pedidos.forEach(pedido => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                         <td>${pedido.cliente || 'N/A'}</td>
                         <td>${pedido.direccion || 'N/A'}</td>
+                         <td>${pedido.barrio || 'N/A'}</td>
+                        <td>${pedido.zona || 'N/A'}</td>
                         <td>${pedido.cantidad_paquetes || 'N/A'}</td>
                         <td>${pedido.tiempo_estimado || 'N/A'} min</td>
                         <td>${pedido.telefono || 'N/A'}</td>
-                        <td>${pedido.barrio || 'N/A'}</td>
-                        <td>${pedido.zona || 'N/A'}</td>
                         <td>
                             <button class="btn-despachar" onclick="abrirModalDespacho(${pedido.id_pedido})" title="Despachar">
                                 <i class="fas fa-truck"></i> Despachar
@@ -249,7 +220,7 @@ verificarAcceso('coordinador');
                     `;
                         tbody.appendChild(tr);
                     });
-                    
+
                     // Actualizar controles de paginación
                     actualizarControlesPaginacion();
                 })
@@ -263,9 +234,10 @@ verificarAcceso('coordinador');
             // Información de paginación
             const inicio = (paginaActual - 1) * porPagina + 1;
             const fin = Math.min(paginaActual * porPagina, totalPedidos);
-            document.getElementById('paginationInfo').textContent = 
-                `Mostrando ${inicio}-${fin} de ${totalPedidos} pedidos`;
-            
+            // Comentar o remover estas líneas:
+            // document.getElementById('paginationInfo').textContent =
+            //     `Mostrando ${inicio}-${fin} de ${totalPedidos} pedidos`;
+
             // Renderizar solo la paginación estándar
             renderPaginacion(paginaActual);
         }

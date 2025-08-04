@@ -1,6 +1,6 @@
 <?php
 require_once 'config.php';
-require_once 'servicios/Database.php';
+require_once 'servicios/conexion.php'; // CAMBIAR ESTA LÍNEA
 
 // Mostrar errores siempre para depuración
 ini_set('display_errors', 1);
@@ -21,12 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Buscar usuario en la base de datos por número de documento
     try {
-        $db = getDB();
-        $sql = 'SELECT id_usuario, numero_documento, contrasena, rol, estado, nombre, apellido 
-                FROM usuarios 
-                WHERE numero_documento = ? AND estado = "activo" 
-                LIMIT 1';
-        $usuario = $db->fetchOne($sql, [$numeroDocumento]);
+        $db = ConectarDB(); // CAMBIAR ESTA LÍNEA
+        $stmt = $db->prepare('SELECT id_usuario, numero_documento, contrasena, rol, estado, nombre, apellido FROM usuarios WHERE numero_documento = ? AND estado = "activo" LIMIT 1');
+        $stmt->bind_param("s", $numeroDocumento);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $usuario = $result->fetch_assoc();
 
         if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
             // Login exitoso
@@ -40,14 +40,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: vistas/dashboard.php');
             exit();
         }
+        $stmt->close();
+        $db->close();
     } catch (Exception $e) {
-        // Puedes mostrar el error si es desarrollo
-        // echo $e->getMessage();
+        error_log("Error de login: " . $e->getMessage());
     }
     // Si falla
     header('Location: vistas/login.html?error=' . urlencode('Número de documento o contraseña incorrectos.'));
     exit();
 }
-// Si se accede por GET, redirigir al login
+
+// Si no es POST, redirigir al login
 header('Location: vistas/login.html');
 exit();
