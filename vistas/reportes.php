@@ -587,6 +587,24 @@ try {
         const zonasData = <?php echo json_encode($pedidosPorZona); ?>;
         const ingresosData = <?php echo json_encode($pedidosUltimos7Dias); ?>;
 
+        // Función para asignar colores según el estado
+        function getColorByEstado(estado) {
+            switch(estado.toLowerCase()) {
+                case 'entregado':
+                case 'completado':
+                    return '#28a745'; // Verde para entregado
+                case 'pendiente':
+                case 'en_camino':
+                case 'despachado':
+                    return '#ffc107'; // Naranja para pendiente/en proceso
+                case 'cancelado':
+                case 'rechazado':
+                    return '#dc3545'; // Rojo para cancelado
+                default:
+                    return '#6c757d'; // Gris para otros estados
+            }
+        }
+
         // Gráfico de pedidos por estado usando Chart.js
         const estadosCtx = document.getElementById('estadosChart').getContext('2d');
         new Chart(estadosCtx, {
@@ -595,7 +613,7 @@ try {
                 labels: estadosData.map(item => item.estado.charAt(0).toUpperCase() + item.estado.slice(1)),
                 datasets: [{
                     data: estadosData.map(item => item.total),
-                    backgroundColor: ['#2ed573', '#ffa502', '#ff4757', '#747d8c'],
+                    backgroundColor: estadosData.map(item => getColorByEstado(item.estado)),
                     borderWidth: 2,
                     borderColor: '#fff'
                 }]

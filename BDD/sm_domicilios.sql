@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 02-08-2025 a las 16:19:55
+-- Tiempo de generación: 04-08-2025 a las 14:42:06
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -169,6 +169,18 @@ CREATE TABLE `pedidos` (
   `alistamiento` tinyint(1) DEFAULT '0',
   `movido_historico` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Volcado de datos para la tabla `pedidos`
+--
+
+INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_vehiculo`, `id_zona`, `estado`, `hora_salida`, `hora_llegada`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `envio_inmediato`, `alistamiento`, `movido_historico`) VALUES
+(1, 1, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-08-04 08:28:54', 5, '8000.00', 30, 1, 0, 0),
+(2, 14, NULL, NULL, 1, 'pendiente', NULL, NULL, '2025-08-04 08:29:52', 4, '5000.00', 30, 0, 1, 0),
+(3, 9, NULL, NULL, 4, 'pendiente', NULL, NULL, '2025-08-04 08:30:14', 6, '8000.00', 30, 0, 1, 0),
+(4, 8, NULL, NULL, 2, 'pendiente', NULL, NULL, '2025-08-04 08:30:42', 6, '6000.00', 30, 0, 1, 0),
+(5, 7, NULL, NULL, 6, 'pendiente', NULL, NULL, '2025-08-04 08:31:07', 8, '50000.00', 30, 1, 0, 0),
+(6, 10, NULL, NULL, 3, 'pendiente', NULL, NULL, '2025-08-04 08:31:39', 2, '7000.00', 30, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -385,7 +397,7 @@ ALTER TABLE `historico_pedidos`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos_mensuales`
