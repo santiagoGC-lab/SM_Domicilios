@@ -436,11 +436,27 @@ function archivarPedidosAutomatico()
     }
 }
 
-// Obtener pedidos pendientes de despacho
-function obtenerPedidosPendientesDespacho()
+// Obtener pedidos pendientes de despacho con paginación
+function obtenerPedidosPendientesDespacho($pagina = 1, $por_pagina = 10)
 {
     try {
         $db = ConectarDB();
+        
+        // Calcular offset
+        $offset = ($pagina - 1) * $por_pagina;
+        
+        // Contar total de pedidos pendientes
+        $queryTotal = "SELECT COUNT(*) as total 
+                      FROM pedidos p
+                      LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+                      LEFT JOIN zonas z ON p.id_zona = z.id_zona
+                      WHERE p.estado = 'pendiente' AND (p.id_domiciliario IS NULL OR p.id_domiciliario = 0)
+                            AND (p.id_vehiculo IS NULL OR p.id_vehiculo = '')
+                            AND (p.hora_salida IS NULL OR p.hora_salida = '')";
+        $resultTotal = $db->query($queryTotal);
+        $total = $resultTotal->fetch_assoc()['total'];
+        
+        // Obtener pedidos paginados
         $query = "SELECT p.id_pedido, c.nombre as cliente, c.direccion, c.telefono, c.barrio, 
                          z.nombre as zona, p.cantidad_paquetes, p.tiempo_estimado
                   FROM pedidos p
@@ -449,14 +465,29 @@ function obtenerPedidosPendientesDespacho()
                   WHERE p.estado = 'pendiente' AND (p.id_domiciliario IS NULL OR p.id_domiciliario = 0)
                         AND (p.id_vehiculo IS NULL OR p.id_vehiculo = '')
                         AND (p.hora_salida IS NULL OR p.hora_salida = '')
-                  ORDER BY p.fecha_pedido ASC";
-        $result = $db->query($query);
+                  ORDER BY p.fecha_pedido ASC
+                  LIMIT ? OFFSET ?";
+        
+        $stmt = $db->prepare($query);
+        $stmt->bind_param("ii", $por_pagina, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
         $pedidos = [];
         while ($row = $result->fetch_assoc()) {
             $pedidos[] = $row;
         }
+        
+        $stmt->close();
         $db->close();
-        return $pedidos;
+        
+        return [
+            'pedidos' => $pedidos,
+            'total' => $total,
+            'pagina_actual' => $pagina,
+            'por_pagina' => $por_pagina,
+            'total_paginas' => ceil($total / $por_pagina)
+        ];
     } catch (Exception $e) {
         return ['error' => 'Error al obtener pedidos pendientes: ' . $e->getMessage()];
     }
@@ -627,7 +658,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
 
         case 'pendientes_despacho':
-            $resultado = obtenerPedidosPendientesDespacho();
+            $pagina = isset($_POST['pagina']) ? intval($_POST['pagina']) : 1;
+            $por_pagina = isset($_POST['por_pagina']) ? intval($_POST['por_pagina']) : 10;
+            $resultado = obtenerPedidosPendientesDespacho($pagina, $por_pagina);
             if (isset($resultado['error'])) {
                 http_response_code(500);
             }

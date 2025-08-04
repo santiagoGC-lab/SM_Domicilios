@@ -95,6 +95,23 @@ verificarAcceso('coordinador');
             <!-- Se elimina el botón de ver domiciliarios en ruta -->
         </div>
         <div class="recent-activity">
+            <!-- Controles de paginación superiores -->
+            <div class="pagination-controls" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <div class="pagination-info">
+                    <span id="paginationInfo">Mostrando 0 de 0 pedidos</span>
+                </div>
+                <div class="pagination-size">
+                    <label for="pageSize">Mostrar:</label>
+                    <select id="pageSize" onchange="cambiarTamañoPagina()">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span>por página</span>
+                </div>
+            </div>
+            
             <div class="orders-table">
                 <!-- Tabla de pedidos pendientes de despacho -->
                 <table id="tablaDespachos">
@@ -115,6 +132,25 @@ verificarAcceso('coordinador');
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Controles de paginación inferiores -->
+            <div id="paginationPedidos" class="pagination"></div>
+            <!-- ELIMINAR ESTE BLOQUE COMPLETO -->
+            <!-- <div class="pagination-controls" style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                <button id="btnPrimera" onclick="irAPagina(1)" class="btn-pagination" disabled>
+                    <i class="fas fa-angle-double-left"></i> Primera
+                </button>
+                <button id="btnAnterior" onclick="irAPagina(paginaActual - 1)" class="btn-pagination" disabled>
+                    <i class="fas fa-angle-left"></i> Anterior
+                </button>
+                <span id="paginaInfo" style="margin: 0 15px; font-weight: 500;">Página 1 de 1</span>
+                <button id="btnSiguiente" onclick="irAPagina(paginaActual + 1)" class="btn-pagination" disabled>
+                    Siguiente <i class="fas fa-angle-right"></i>
+                </button>
+                <button id="btnUltima" onclick="irAPagina(totalPaginas)" class="btn-pagination" disabled>
+                    Última <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div> -->
         </div>
     </div>
     <!-- Modal para despachar pedido -->
@@ -155,30 +191,47 @@ verificarAcceso('coordinador');
         </table>
     </div>
     <script>
+        // Variables de paginación
+        let paginaActual = 1;
+        let totalPaginas = 1;
+        let totalPedidos = 0;
+        let porPagina = 5;
+
         // Al cargar la página, inicializa la interfaz
         document.addEventListener('DOMContentLoaded', function() {
             cargarPedidosPendientes();
             cargarDomiciliariosEnRuta();
         });
 
-        // Carga los pedidos pendientes de despacho en la tabla principal
-        function cargarPedidosPendientes() {
+        // Carga los pedidos pendientes de despacho con paginación
+        function cargarPedidosPendientes(pagina = 1) {
             const formData = new FormData();
             formData.append('accion', 'pendientes_despacho');
+            formData.append('pagina', pagina);
+            formData.append('por_pagina', porPagina);
+            
             fetch('../servicios/pedidos.php', {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
-                    const tbody = document.querySelector('#tablaDespachos tbody');
-                    tbody.innerHTML = '';
                     if (data.error) {
                         alert('Error: ' + data.error);
                         return;
                     }
-                    // Por cada pedido pendiente, crea una fila con todas las columnas
-                    data.forEach(pedido => {
+                    
+                    // Actualizar variables de paginación
+                    paginaActual = data.pagina_actual;
+                    totalPaginas = data.total_paginas;
+                    totalPedidos = data.total;
+                    
+                    // Actualizar tabla
+                    const tbody = document.querySelector('#tablaDespachos tbody');
+                    tbody.innerHTML = '';
+                    
+                    // Por cada pedido pendiente, crea una fila
+                    data.pedidos.forEach(pedido => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                         <td>${pedido.cliente || 'N/A'}</td>
@@ -196,10 +249,56 @@ verificarAcceso('coordinador');
                     `;
                         tbody.appendChild(tr);
                     });
+                    
+                    // Actualizar controles de paginación
+                    actualizarControlesPaginacion();
                 })
                 .catch(error => {
                     alert('Error al cargar pedidos pendientes: ' + error.message);
                 });
+        }
+
+        // Actualizar controles de paginación
+        function actualizarControlesPaginacion() {
+            // Información de paginación
+            const inicio = (paginaActual - 1) * porPagina + 1;
+            const fin = Math.min(paginaActual * porPagina, totalPedidos);
+            document.getElementById('paginationInfo').textContent = 
+                `Mostrando ${inicio}-${fin} de ${totalPedidos} pedidos`;
+            
+            // Renderizar solo la paginación estándar
+            renderPaginacion(paginaActual);
+        }
+
+        // Renderiza los controles de paginación estilo estándar
+        function renderPaginacion(page) {
+            const pagination = document.getElementById('paginationPedidos');
+            const totalPages = Math.ceil(totalPedidos / porPagina) || 1;
+            let html = '';
+            if (totalPages > 1) {
+                html += `<button onclick="irAPagina(1)" ${page===1?'disabled':''}><i class="fas fa-angle-double-left"></i> Primera</button>`;
+                html += `<button onclick="irAPagina(${page-1})" ${page===1?'disabled':''}><i class="fas fa-angle-left"></i> Anterior</button>`;
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `<button onclick="irAPagina(${i})" ${page===i?'class="active"':''}>${i}</button>`;
+                }
+                html += `<button onclick="irAPagina(${page+1})" ${page===totalPages?'disabled':''}> Siguiente <i class="fas fa-angle-right"></i></button>`;
+                html += `<button onclick="irAPagina(${totalPages})" ${page===totalPages?'disabled':''}>Última <i class="fas fa-angle-double-right"></i></button>`;
+            }
+            pagination.innerHTML = html;
+        }
+
+        // Ir a una página específica
+        function irAPagina(pagina) {
+            if (pagina >= 1 && pagina <= totalPaginas) {
+                cargarPedidosPendientes(pagina);
+            }
+        }
+
+        // Cambiar tamaño de página
+        function cambiarTamañoPagina() {
+            porPagina = parseInt(document.getElementById('pageSize').value);
+            paginaActual = 1;
+            cargarPedidosPendientes(1);
         }
 
         // Abre el modal para despachar un pedido y carga domiciliarios y vehículos disponibles

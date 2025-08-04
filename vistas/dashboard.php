@@ -38,18 +38,20 @@ try {
     // Zonas activas
     $zonasActivas = $pdo->query("SELECT COUNT(*) FROM zonas WHERE estado = 'activo'")->fetchColumn();
 
-    // Actividad reciente (últimos 10 pedidos) - CORREGIDA
+    // Actividad reciente (últimos 10 pedidos DEL DÍA) - CORREGIDA
     $actividadReciente = $pdo->query("
         (
             SELECT p.id_pedido, c.nombre as cliente, d.nombre as domiciliario, p.estado, p.fecha_pedido, p.total, 'activo' as fuente
             FROM pedidos p
             LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
             LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario
+            WHERE DATE(p.fecha_pedido) = CURDATE()
         )
         UNION ALL
         (
             SELECT hp.id_pedido_original as id_pedido, hp.cliente_nombre as cliente, hp.domiciliario_nombre as domiciliario, hp.estado, hp.fecha_pedido, hp.total, 'historico' as fuente
             FROM historico_pedidos hp
+            WHERE DATE(hp.fecha_pedido) = CURDATE()
         )
         ORDER BY fecha_pedido DESC
         LIMIT 10
@@ -369,6 +371,24 @@ try {
         // --- Datos para el gráfico de pedidos por estado ---
         const estadosData = <?php echo json_encode($pedidosPorEstado); ?>;
 
+        // Función para asignar colores según el estado
+        function getColorByEstado(estado) {
+            switch(estado.toLowerCase()) {
+                case 'entregado':
+                case 'completado':
+                    return '#28a745'; // Verde para entregado
+                case 'pendiente':
+                case 'en_camino':
+                case 'despachado':
+                    return '#ffc107'; // Naranja para pendiente/en proceso
+                case 'cancelado':
+                case 'rechazado':
+                    return '#dc3545'; // Rojo para cancelado
+                default:
+                    return '#6c757d'; // Gris para otros estados
+            }
+        }
+
         // Gráfico de pedidos por estado usando Chart.js
         const ctx = document.getElementById('estadosChart').getContext('2d');
         new Chart(ctx, {
@@ -377,7 +397,7 @@ try {
                 labels: estadosData.map(item => item.estado.charAt(0).toUpperCase() + item.estado.slice(1)),
                 datasets: [{
                     data: estadosData.map(item => item.total),
-                    backgroundColor: ['#2ed573', '#ffa502', '#ff4757', '#747d8c'],
+                    backgroundColor: estadosData.map(item => getColorByEstado(item.estado)),
                     borderWidth: 2,
                     borderColor: '#fff'
                 }]
