@@ -105,12 +105,12 @@ verificarAcceso('coordinador');
                     <thead>
                         <tr>
                             <th>Cliente</th>
+                            <th>Telefono</th>
                             <th>Direccion</th>
                             <th>Barrio</th>
                             <th>Zona</th>
-                            <th>Cantidad</th>
-                            <th>Estimada</th>
-                            <th>Telefono</th>
+                            <th>Cantidad Paq</th>
+                            <th>H-Estimada</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -206,12 +206,12 @@ verificarAcceso('coordinador');
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                         <td>${pedido.cliente || 'N/A'}</td>
+                        <td>${pedido.telefono || 'N/A'}</td>
                         <td>${pedido.direccion || 'N/A'}</td>
                          <td>${pedido.barrio || 'N/A'}</td>
                         <td>${pedido.zona || 'N/A'}</td>
                         <td>${pedido.cantidad_paquetes || 'N/A'}</td>
                         <td>${pedido.tiempo_estimado || 'N/A'} min</td>
-                        <td>${pedido.telefono || 'N/A'}</td>
                         <td>
                             <button class="btn-despachar" onclick="abrirModalDespacho(${pedido.id_pedido})" title="Despachar">
                                 <i class="fas fa-truck"></i> Despachar

@@ -120,6 +120,7 @@ $nombreCompleto = obtenerNombreUsuario();
                             <th>Nombre de Zona</th>
                             <th>Barrio</th>
                             <th>Tarifa Base</th>
+                            <th>Hora estimada</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
@@ -354,6 +355,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     <td>${z.nombre}</td>
                     <td>${z.barrio}</td>
                     <td>$${parseFloat(z.tarifa_base).toFixed(2)}</td>
+                    <td>${z.tiempo_estimado} Minutos</td>
                     <td><span class="estado-${z.estado}">${z.estado.charAt(0).toUpperCase() + z.estado.slice(1)}</span></td>
                     <td>
                         <button class="btn btn-editar" onclick="editarZona(${z.id_zona})"><i class="fas fa-edit"></i></button>
