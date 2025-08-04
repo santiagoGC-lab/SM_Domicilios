@@ -161,6 +161,10 @@ $nombreCompleto = obtenerNombreUsuario();
                     <input type="number" id="tarifa" name="tarifa" class="form-control" required placeholder="Ej. 5000" min="0" step="1">
                 </div>
                 <div class="form-group">
+                    <label for="tiempo_estimado">Tiempo Estimado (minutos):</label>
+                    <input type="number" id="tiempo_estimado" name="tiempo_estimado" class="form-control" required placeholder="Ej. 15" min="1" max="120" step="1">
+                </div>
+                <div class="form-group">
                     <label for="estado">Estado:</label>
                     <select id="estado" name="estado" class="form-control" required>
                         <option value="activo">Activo</option>
@@ -224,6 +228,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     document.getElementById('nuevoNombre').value = zona.nombre;
                     document.getElementById('barrio').value = zona.barrio;
                     document.getElementById('tarifa').value = zona.tarifa_base;
+                    document.getElementById('tiempo_estimado').value = zona.tiempo_estimado;
                     document.getElementById('estado').value = zona.estado;
                     document.getElementById('modalZona').style.display = 'block';
                 })
@@ -329,7 +334,6 @@ $nombreCompleto = obtenerNombreUsuario();
                 })
                 .then(res => res.json())
                 .then(data => {
-                    console.log('Respuesta paginación zonas:', data); // DEPURACIÓN
                     totalZonas = data.total;
                     renderZonas(data.zonas, search, estado);
                     renderPaginationZonas(page);

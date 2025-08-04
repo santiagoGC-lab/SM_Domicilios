@@ -11,22 +11,24 @@ function guardarZona($datos)
 
         $id = $datos['id'] ?? '';
         $nombre = $datos['nombre'] ?? '';
-        $ciudad = $datos['ciudad'] ?? '';
+        $barrio = $datos['barrio'] ?? '';  // Cambiar de 'ciudad' a 'barrio'
         $tarifa = $datos['tarifa'] ?? 0;
+        $tiempo_estimado = $datos['tiempo_estimado'] ?? 15;  // Agregar tiempo_estimado
         $estado = $datos['estado'] ?? 'activo';
 
-        if (empty($nombre) || empty($ciudad) || !is_numeric($tarifa) || !in_array($estado, ['activo', 'inactivo'])) {
+        // Actualizar validación
+        if (empty($nombre) || empty($barrio) || !is_numeric($tarifa) || !is_numeric($tiempo_estimado) || !in_array($estado, ['activo', 'inactivo'])) {
             return ['error' => 'Datos inválidos'];
         }
 
         if ($id) {
-            // Actualizar zona existente
-            $stmt = $db->prepare("UPDATE zonas SET nombre = ?, ciudad = ?, tarifa_base = ?, estado = ? WHERE id_zona = ?");
-            $stmt->bind_param("ssdsi", $nombre, $ciudad, $tarifa, $estado, $id);
+            // Actualizar zona existente - agregar tiempo_estimado
+            $stmt = $db->prepare("UPDATE zonas SET nombre = ?, barrio = ?, tarifa_base = ?, tiempo_estimado = ?, estado = ? WHERE id_zona = ?");
+            $stmt->bind_param("ssdisi", $nombre, $barrio, $tarifa, $tiempo_estimado, $estado, $id);
         } else {
-            // Crear nueva zona
-            $stmt = $db->prepare("INSERT INTO zonas (nombre, ciudad, tarifa_base, estado, fecha_creacion) VALUES (?, ?, ?, ?, NOW())");
-            $stmt->bind_param("ssds", $nombre, $ciudad, $tarifa, $estado);
+            // Crear nueva zona - agregar tiempo_estimado
+            $stmt = $db->prepare("INSERT INTO zonas (nombre, barrio, tarifa_base, tiempo_estimado, estado, fecha_creacion) VALUES (?, ?, ?, ?, ?, NOW())");
+            $stmt->bind_param("ssdis", $nombre, $barrio, $tarifa, $tiempo_estimado, $estado);
         }
 
         if ($stmt->execute()) {
