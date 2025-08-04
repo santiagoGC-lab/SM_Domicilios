@@ -117,7 +117,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 <table class="users-table">
                     <thead>
                         <tr>
-                            <th>Nombre de Zona</th>
+                            <th>Zona</th>
                             <th>Barrio</th>
                             <th>Tarifa Base</th>
                             <th>Hora estimada</th>

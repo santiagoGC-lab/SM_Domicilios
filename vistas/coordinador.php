@@ -104,13 +104,15 @@ verificarAcceso('coordinador');
                 <table id="tablaDespachos">
                     <thead>
                         <tr>
-                            <th>Cliente</th>
+                            <th>Clientes</th>
                             <th>Telefono</th>
-                            <th>Direccion</th>
+                            <th>Dirección</th>
                             <th>Barrio</th>
                             <th>Zona</th>
-                            <th>Cantidad Paq</th>
-                            <th>H-Estimada</th>
+                            <th>Num-Paq</th>
+                            <th>Alistamiento</th>
+                            <th>Inmediato?</th>
+                            <th>Estimado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -211,6 +213,8 @@ verificarAcceso('coordinador');
                          <td>${pedido.barrio || 'N/A'}</td>
                         <td>${pedido.zona || 'N/A'}</td>
                         <td>${pedido.cantidad_paquetes || 'N/A'}</td>
+                        <td>${pedido.alistamiento || 'N/A'}</td>
+                        <td>${pedido.envio_inmediato || 'N/A'}</td>
                         <td>${pedido.tiempo_estimado || 'N/A'} min</td>
                         <td>
                             <button class="btn-despachar" onclick="abrirModalDespacho(${pedido.id_pedido})" title="Despachar">
