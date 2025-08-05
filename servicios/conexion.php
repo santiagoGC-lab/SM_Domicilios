@@ -1,4 +1,7 @@
 <?php
+// Configuración de zona horaria
+date_default_timezone_set('America/Bogota');
+
 // Configuración de base de datos centralizada
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'sm_domicilios');
