@@ -312,6 +312,12 @@ function buscarHistorialPedidos($filtros)
 
         $pedidos = [];
         while ($row = $result->fetch_assoc()) {
+            // Formatear la hora estimada para mostrar solo hora:minutos
+            if ($row['hora_estimada_entrega']) {
+                $row['hora_estimada_formateada'] = date('g:i A', strtotime($row['hora_estimada_entrega']));
+            } else {
+                $row['hora_estimada_formateada'] = 'N/A';
+            }
             $pedidos[] = $row;
         }
 

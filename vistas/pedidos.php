@@ -655,7 +655,8 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                 const fechaPedido = new Date(order.fecha_pedido);
                 const horaFormateada = fechaPedido.toLocaleTimeString('es-ES', {
                     hour: '2-digit',
-                    minute: '2-digit'
+                    minute: '2-digit',
+                    hour12: true
                 });
 
                 // Obtener dirección del cliente (necesitarás incluir esto en la consulta SQL)
