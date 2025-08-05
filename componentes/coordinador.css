@@ -2195,6 +2195,65 @@
     font-family: 'Poppins', sans-serif;
 }
 
+/* Botón de despachar compacto y minimalista */
+.btn-despachar-mini {
+    background: linear-gradient(135deg, #0d5c2c 0%, #178a50 100%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 45px;
+    height: 45px;
+    box-shadow: 0 1px 3px rgba(13, 92, 44, 0.2);
+}
+
+.btn-despachar-mini:hover {
+    background: linear-gradient(135deg, #178a50 0%, #20a05a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(13, 92, 44, 0.3);
+}
+
+.btn-despachar-mini:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(13, 92, 44, 0.2);
+}
+
+.btn-despachar-mini i {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Versión aún más pequeña si necesitas */
+.btn-despachar-micro {
+    background: #0d5c2c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 24px;
+}
+
+.btn-despachar-micro:hover {
+    background: #178a50;
+}
+
+.btn-despachar-micro i {
+    font-size: 0.8rem;
+}
+
 /* Estilos para paginación estándar - alineada a la izquierda */
 .pagination {
     display: flex;

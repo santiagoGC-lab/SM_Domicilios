@@ -217,8 +217,8 @@ verificarAcceso('coordinador');
                         <td>${pedido.envio_inmediato || 'N/A'}</td>
                         <td>${pedido.tiempo_estimado || 'N/A'} min</td>
                         <td>
-                            <button class="btn-despachar" onclick="abrirModalDespacho(${pedido.id_pedido})" title="Despachar">
-                                <i class="fas fa-truck"></i> Despachar
+                            <button class="btn-despachar-mini" onclick="abrirModalDespacho(${pedido.id_pedido})" title="Despachar pedido">
+                                <i class="fas fa-truck"></i>
                             </button>
                         </td>
                     `;
