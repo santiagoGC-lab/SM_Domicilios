@@ -47,6 +47,7 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SM - Gestión de Pedidos</title>
     <link rel="shortcut icon" href="../componentes/img/logo2.png" />
+    <link rel="stylesheet" href="componentes/base-styles.css">
     <link rel="stylesheet" href="../componentes/dashboard.css">
     <link rel="stylesheet" href="../componentes/pedidos.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -211,33 +212,36 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                             <input type="number" id="bolsas" name="bolsas" class="form-control" min="1" required>
                         </div>
 
-                        <div class="form-group">
-                            <label for="hora">Hora estimada:</label>
-                            <div style="display: flex; gap: 5px; align-items: center;">
-                                <input type="time" id="hora" name="hora" class="form-control" required>
-                                <button type="button" onclick="calcularHoraAuto()" class="btn-login" style="padding: 5px 8px; font-size: 11px;">Auto</button>
+                        <div class="hora-checkboxes-container">
+                            <div class="hora-group">
+                                <div class="form-group">
+                                    <label for="hora">Hora estimada:</label>
+                                    <div style="display: flex; gap: 5px; align-items: center;">
+                                        <input type="time" id="hora" name="hora" class="form-control" required>
+                                        <button type="button" onclick="calcularHoraAuto()" class="btn-login" style="padding: 5px 8px; font-size: 11px;">Auto</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="checkboxes-inline">
+                                <div class="checkbox-item">
+                                    <label for="envio_inmediato">Envío inmediato:</label>
+                                    <select name="envio_inmediato" id="envio_inmediato" class="form-control">
+                                        <option value="no">No</option>
+                                        <option value="si">Sí</option>
+                                    </select>
+                                </div>
+                                <div class="checkbox-item">
+                                    <label for="alistamiento">Alistamiento:</label>
+                                    <select name="alistamiento" id="alistamiento" class="form-control">
+                                        <option value="no">No</option>
+                                        <option value="si">Sí</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="checkbox-container">
-                    <div class="checkbox-item">
-                        <label for="envio_inmediato">Envío inmediato:</label>
-                        <select name="envio_inmediato" id="envio_inmediato" class="form-control">
-                            <option value="no">No</option>
-                            <option value="si">Sí</option>
-                        </select>
-                    </div>
-                    <div class="checkbox-item">
-                        <label for="alistamiento">Alistamiento:</label>
-                        <select name="alistamiento" id="alistamiento" class="form-control">
-                            <option value="no">No</option>
-                            <option value="si">Sí</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div class="form-group form-full-width">
                     <label for="total">Total:</label>
                     <input type="number" id="total" name="total" class="form-control" step="0.01" required>

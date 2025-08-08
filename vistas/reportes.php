@@ -124,6 +124,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SM - Reportes</title>
     <link rel="shortcut icon" href="../componentes/img/logo2.png" />
+    <link rel="stylesheet" href="componentes/base-styles.css">
     <link rel="stylesheet" href="../componentes/dashboard.css" />
     <link rel="stylesheet" href="../componentes/reportes.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">

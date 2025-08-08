@@ -163,7 +163,7 @@
     background-color: var(--secondary-color);
 }
 
-/* Modal */
+/* Ajustes adicionales para mejor apariencia */
 .modal {
     display: none;
     position: fixed;
@@ -171,8 +171,10 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(1, 89, 56, 0.3);
+    background: rgba(1, 89, 56, 0.4);
     z-index: 1000;
+    padding: 2vh 0;
+    box-sizing: border-box;
 }
 
 .modal.active {
@@ -181,33 +183,339 @@
     justify-content: center;
 }
 
+/* Modal con diseño mejorado y sin scroll */
 .modal-content {
     background: #ffffff;
     width: 95%;
     max-width: 900px;
-    padding: 30px;
+    padding: 15px;
     border-radius: 12px;
     position: relative;
     animation: fadeIn 0.3s ease-in-out;
-    max-height: 85vh;
+    max-height: 95vh;
     overflow-y: auto;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
     border: 2px solid var(--primary-color);
     font-family: 'Poppins', sans-serif;
+    margin: auto;
 }
 
+.modal-content h2 {
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    font-size: 18px;
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 6px;
+    text-align: center;
+}
+
+/* Formulario con 2 columnas compactas */
+.form-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 15px;
+    align-items: start;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Campos de formulario más compactos */
+.form-group {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #fff;
+    height: 36px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(1, 89, 56, 0.1);
+    background: #fff;
+}
+
+/* Contenedor para hora y checkboxes optimizado */
+.hora-checkboxes-container {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 15px;
+    align-items: end;
+    margin-top: 0;
+}
+
+.hora-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Arreglar la alineación del botón AUTO */
+.hora-group .form-group div {
+    display: flex !important;
+    gap: 6px !important;
+    align-items: center !important;
+    margin-top: 4px !important;
+}
+
+.hora-group .form-group div input {
+    flex: 1;
+    min-width: 100px;
+}
+
+.hora-group .form-group div button {
+    padding: 8px 10px !important;
+    font-size: 10px !important;
+    height: 36px !important;
+    white-space: nowrap;
+    min-width: 44px;
+    border-radius: 6px;
+    font-weight: 600;
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border: none !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hora-group .form-group div button:hover {
+    background-color: var(--secondary-color) !important;
+    transform: translateY(-1px);
+}
+
+.checkboxes-inline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(1, 89, 56, 0.06) 0%, rgba(0, 123, 85, 0.04) 100%);
+    border-radius: 8px;
+    border: 2px solid rgba(1, 89, 56, 0.12);
+    align-items: center;
+    height: fit-content;
+}
+
+.checkbox-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+}
+
+.checkbox-item label {
+    font-size: 12px;
+    margin-bottom: 0;
+    font-weight: 600;
+    color: var(--primary-color);
+    white-space: nowrap;
+}
+
+.checkbox-item select {
+    width: 70px;
+    padding: 4px 6px;
+    font-size: 11px;
+    height: 28px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    font-weight: 500;
+    text-align: center;
+}
+
+.checkbox-item select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(1, 89, 56, 0.1);
+}
+
+/* Eliminar el contenedor grande de checkboxes */
+.checkbox-container {
+    display: none !important;
+}
+
+/* Campo total más compacto */
+.form-full-width {
+    grid-column: 1 / -1;
+    margin: 15px 0 10px 0;
+    text-align: center;
+}
+
+.form-full-width label {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-full-width input {
+    max-width: 180px;
+    margin: 0 auto;
+    display: block;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    border: 3px solid var(--primary-color);
+    background: #f8f9fa;
+    height: 42px;
+}
+
+/* Botones más compactos */
+.form-row {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid #eee;
+}
+
+.btn-login {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    min-width: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-login:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive para pantallas medianas */
+@media (max-width: 1024px) {
+    .hora-checkboxes-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .checkboxes-inline {
+        grid-template-columns: 1fr 1fr;
+        justify-items: center;
+    }
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 98%;
+        max-width: 95vw;
+        padding: 12px;
+        margin: 1% auto;
+        max-height: 97vh;
+    }
+    
+    .form-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .hora-checkboxes-container {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .checkboxes-inline {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 10px;
+    }
+    
+    .modal-content h2 {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .form-group label {
+        font-size: 12px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        font-size: 12px;
+        height: 34px;
+        padding: 6px 8px;
+    }
+    
+    .btn-login {
+        padding: 8px 16px;
+        font-size: 12px;
+        min-width: 90px;
+    }
+    
+    .form-full-width input {
+        height: 38px;
+        font-size: 14px;
+    }
+}
+
+/* Mejorar la apariencia del close button */
 .modal-content .close {
     position: absolute;
-    top: 12px;
-    right: 16px;
-    font-size: 22px;
-    font-weight: 500;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    font-weight: 700;
     cursor: pointer;
     color: var(--primary-color);
+    transition: all 0.3s ease;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(1, 89, 56, 0.1);
 }
 
 .modal-content .close:hover {
-    color: var(--secondary-color);
+    color: #fff;
+    background: var(--primary-color);
+    transform: rotate(90deg);
 }
 
 .modal-content h2 {
@@ -220,7 +528,7 @@
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 .form-group label {
@@ -339,7 +647,7 @@
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 .form-group label {

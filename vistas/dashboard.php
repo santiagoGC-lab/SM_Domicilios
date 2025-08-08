@@ -8,17 +8,17 @@ require_once '../servicios/conexion.php';
 // --- Obtener estadísticas en tiempo real para el dashboard ---
 try {
     // Estadísticas principales - CORREGIDAS
-    
+
     // Pedidos de hoy: combinar pedidos activos + histórico
     $pedidosHoyActivos = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
     $pedidosHoyHistorico = $pdo->query("SELECT COUNT(*) FROM historico_pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
     $pedidosHoy = $pedidosHoyActivos + $pedidosHoyHistorico;
-    
+
     // Pedidos entregados hoy: solo del histórico + pedidos activos entregados
     $pedidosEntregadosActivos = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn();
     $pedidosEntregadosHistorico = $pdo->query("SELECT COUNT(*) FROM historico_pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn();
     $pedidosEntregadosHoy = $pedidosEntregadosActivos + $pedidosEntregadosHistorico;
-    
+
     // Pedidos pendientes: solo de la tabla activa
     $pedidosPendientes = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente'")->fetchColumn();
 
@@ -101,7 +101,7 @@ try {
         GROUP BY estado
         ORDER BY total DESC
     ");
-    
+
     $pedidosPorEstado = $pedidosPorEstadoQuery->fetchAll();
 } catch (Exception $e) {
     $error = $e->getMessage();
@@ -116,6 +116,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SM Domicilios - Dashboard</title>
     <link rel="shortcut icon" href="../componentes/img/logo2.png" />
+    <link rel="stylesheet" href="componentes/base-styles.css">
     <link rel="stylesheet" href="../componentes/dashboard.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -373,7 +374,7 @@ try {
 
         // Función para asignar colores según el estado
         function getColorByEstado(estado) {
-            switch(estado.toLowerCase()) {
+            switch (estado.toLowerCase()) {
                 case 'entregado':
                 case 'completado':
                     return '#28a745'; // Verde para entregado
