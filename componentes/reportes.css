@@ -440,3 +440,268 @@ body {
 .report-card:nth-child(6) {
     animation-delay: 1.0s;
 }
+
+/* Estilos específicos para la tabla de Pedidos Mensuales Archivados */
+.monthly-orders-section {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-top: 30px;
+    border: 1px solid #e8ecf4;
+}
+
+.monthly-orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.monthly-orders-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 24px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.monthly-orders-header h3::before {
+    content: "📊";
+    font-size: 28px;
+}
+
+.filter-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    border: 1px solid #e9ecef;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-form label {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 14px;
+}
+
+.select-mes, .select-anio {
+    padding: 10px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    color: #333;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.select-mes:focus, .select-anio:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(1, 89, 56, 0.1);
+}
+
+.btn-search {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(1, 89, 56, 0.3);
+}
+
+.monthly-table-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: white;
+}
+
+.data-table thead {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.data-table th {
+    padding: 16px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.data-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+    transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.001);
+    transition: all 0.2s ease;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+.data-table tbody tr:nth-child(even):hover {
+    background-color: #f0f2f5;
+}
+
+/* Estilos para estados */
+.estado {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+.estado-entregado {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.estado-cancelado {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.estado-en_camino {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* Estilos para celdas específicas */
+.data-table td:first-child {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.data-table td:last-child {
+    font-weight: 600;
+    color: var(--success-color);
+    font-size: 15px;
+}
+
+/* Mensaje de tabla vacía */
+.empty-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    font-style: italic;
+    background: #f8f9fa;
+}
+
+.empty-message::before {
+    content: "📭";
+    display: block;
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+/* Scrollbar personalizada para la tabla */
+.monthly-table-container {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.monthly-table-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.monthly-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.monthly-table-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+.monthly-table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* Responsive design para la tabla mensual */
+@media (max-width: 768px) {
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .data-table {
+        font-size: 12px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 10px 8px;
+    }
+    
+    .monthly-orders-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}
+
+/* Animación de carga */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.monthly-orders-section {
+    animation: slideInUp 0.6s ease-out;
+}

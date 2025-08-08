@@ -11,14 +11,16 @@ function guardarZona($datos)
 
         $id = $datos['id'] ?? '';
         $nombre = $datos['nombre'] ?? '';
-        $barrio = $datos['barrio'] ?? '';  // Cambiar de 'ciudad' a 'barrio'
+        $barrio = $datos['barrio'] ?? '';
         $tarifa = $datos['tarifa'] ?? 0;
-        $tiempo_estimado = $datos['tiempo_estimado'] ?? 15;  // Agregar tiempo_estimado
+        $tiempo_estimado = $datos['tiempo_estimado'] ?? 15;
         $estado = $datos['estado'] ?? 'activo';
 
-        // Actualizar validación
-        if (empty($nombre) || empty($barrio) || !is_numeric($tarifa) || !is_numeric($tiempo_estimado) || !in_array($estado, ['activo', 'inactivo'])) {
-            return ['error' => 'Datos inválidos'];
+        // Validar direcciones cardinales permitidas
+        $direcciones_validas = ['Norte', 'Sur', 'Oriente', 'Occidente', 'Nororiente', 'Noroccidente', 'Suroriente', 'Suroccidente'];
+        
+        if (empty($nombre) || !in_array($nombre, $direcciones_validas) || empty($barrio) || !is_numeric($tarifa) || !is_numeric($tiempo_estimado) || !in_array($estado, ['activo', 'inactivo'])) {
+            return ['error' => 'Datos inválidos. El nombre debe ser una dirección cardinal válida.'];
         }
 
         if ($id) {

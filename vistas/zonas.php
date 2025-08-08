@@ -147,9 +147,12 @@ $nombreCompleto = obtenerNombreUsuario();
                         <option value="">Selecciona una zona</option>
                         <option value="Norte">Norte</option>
                         <option value="Sur">Sur</option>
-                        <option value="Centro">Centro</option>
-                        <option value="Occidente">Occidente</option>
                         <option value="Oriente">Oriente</option>
+                        <option value="Occidente">Occidente</option>
+                        <option value="Nororiente">Nororiente</option>
+                        <option value="Noroccidente">Noroccidente</option>
+                        <option value="Suroriente">Suroriente</option>
+                        <option value="Suroccidente">Suroccidente</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -223,13 +226,29 @@ $nombreCompleto = obtenerNombreUsuario();
                         alert('Error: ' + zona.error);
                         return;
                     }
+                    console.log('Datos de zona recibidos:', zona); // Para debug
                     document.getElementById('modalTitle').textContent = 'Editar Zona';
                     document.getElementById('zonaId').value = zona.id_zona;
-                    document.getElementById('nuevoNombre').value = zona.nombre;
-                    document.getElementById('barrio').value = zona.barrio;
-                    document.getElementById('tarifa').value = zona.tarifa_base;
-                    document.getElementById('tiempo_estimado').value = zona.tiempo_estimado;
-                    document.getElementById('estado').value = zona.estado;
+                    
+                    // Asegurar que el valor del nombre se establezca correctamente
+                    const selectNombre = document.getElementById('nuevoNombre');
+                    selectNombre.value = zona.nombre || '';
+                    
+                    // Si el valor no se establece, intentar encontrar una coincidencia
+                    if (!selectNombre.value && zona.nombre) {
+                        const opciones = selectNombre.options;
+                        for (let i = 0; i < opciones.length; i++) {
+                            if (opciones[i].text.toLowerCase() === zona.nombre.toLowerCase()) {
+                                selectNombre.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    document.getElementById('barrio').value = zona.barrio || '';
+                    document.getElementById('tarifa').value = zona.tarifa_base || '';
+                    document.getElementById('tiempo_estimado').value = zona.tiempo_estimado || '';
+                    document.getElementById('estado').value = zona.estado || 'activo';
                     document.getElementById('modalZona').style.display = 'block';
                 })
                 .catch(error => {

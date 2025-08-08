@@ -377,12 +377,18 @@ $nombreCompleto = obtenerNombreUsuario();
             const tbody = document.getElementById('domiciliariosTableBody');
             let html = '';
             domiciliarios.forEach(d => {
+                // Cambiar el texto del estado para mostrar
+                let estadoTexto = d.estado;
+                if (d.estado === 'ocupado') {
+                    estadoTexto = 'en servicio';
+                }
+                
                 html += `
                 <tr>
                     <td>${d.nombre}</td>
                     <td>${d.telefono}</td>
                     <td>${d.zona || 'Sin asignar'}</td>
-                    <td><span class="estado-${d.estado.replace(/\s/g, '')}">${d.estado}</span></td>
+                    <td><span class="estado-${d.estado.replace(/\s/g, '')}">${estadoTexto}</span></td>
                     <td>
                         <button class="btn btn-editar" onclick="editarDomiciliario(${d.id_domiciliario})"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-eliminar" onclick="eliminarDomiciliario(${d.id_domiciliario})"><i class="fas fa-trash-alt"></i></button>

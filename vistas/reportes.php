@@ -13,127 +13,104 @@ if (!isset($_GET['mes']) || !isset($_GET['anio'])) {
     exit;
 }
 
+// Obtener mes y año de la URL
+$mes = (int)$_GET['mes'];
+$anio = (int)$_GET['anio'];
+
 // --- Obtener estadísticas para los reportes ---
 try {
-    // Estadísticas generales
-    $totalPedidos = $pdo->query("SELECT COUNT(*) FROM pedidos")->fetchColumn();
-    $pedidosHoy = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE()")->fetchColumn();
-    $ingresosHoy = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
-    $pedidosPendientes = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente'")->fetchColumn();
+    // Estadísticas generales del mes
+    $totalPedidos = $pdo->prepare("SELECT COUNT(*) FROM historico_pedidos WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ?");
+    $totalPedidos->execute([$mes, $anio]);
+    $totalPedidos = $totalPedidos->fetchColumn();
+    
+    $pedidosEntregados = $pdo->prepare("SELECT COUNT(*) FROM historico_pedidos WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ? AND estado = 'entregado'");
+    $pedidosEntregados->execute([$mes, $anio]);
+    $pedidosEntregados = $pedidosEntregados->fetchColumn();
+    
+    $ingresosMes = $pdo->prepare("SELECT SUM(total) FROM historico_pedidos WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ? AND estado = 'entregado'");
+    $ingresosMes->execute([$mes, $anio]);
+    $ingresosMes = $ingresosMes->fetchColumn() ?? 0;
+    
+    $pedidosCancelados = $pdo->prepare("SELECT COUNT(*) FROM historico_pedidos WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ? AND estado = 'cancelado'");
+    $pedidosCancelados->execute([$mes, $anio]);
+    $pedidosCancelados = $pedidosCancelados->fetchColumn();
 
-    // Pedidos por zona
-    $pedidosPorZona = $pdo->query("
-        SELECT z.nombre, COUNT(p.id_pedido) as total, SUM(p.total) as ingresos
-        FROM zonas z
-        LEFT JOIN pedidos p ON z.id_zona = p.id_zona
-        WHERE z.estado = 'activo'
-        GROUP BY z.id_zona, z.nombre
-        ORDER BY total DESC
-    ")->fetchAll();
-
-    // Domiciliarios más activos (solo del historial de hoy)
-    $domiciliariosActivos = $pdo->query("
+    // Domiciliarios más activos del mes
+    $domiciliariosActivos = $pdo->prepare("
         SELECT 
             domiciliario_nombre as nombre,
             COUNT(*) as entregas, 
             SUM(total) as ingresos
         FROM historico_pedidos
-        WHERE DATE(fecha_completado) = CURDATE() 
+        WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ?
             AND estado = 'entregado'
             AND domiciliario_nombre IS NOT NULL
         GROUP BY domiciliario_nombre
         ORDER BY entregas DESC
         LIMIT 5
-    ")->fetchAll();
+    ");
+    $domiciliariosActivos->execute([$mes, $anio]);
+    $domiciliariosActivos = $domiciliariosActivos->fetchAll();
 
-    // Clientes más frecuentes (solo del historial de hoy)
-    $clientesFrecuentes = $pdo->query("
+    // Clientes más frecuentes del mes
+    $clientesFrecuentes = $pdo->prepare("
         SELECT 
             cliente_nombre as nombre,
             COUNT(*) as pedidos,
             SUM(total) as total_gastado
         FROM historico_pedidos
-        WHERE DATE(fecha_completado) = CURDATE()
+        WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ?
             AND estado = 'entregado'
         GROUP BY cliente_nombre
         ORDER BY pedidos DESC
         LIMIT 5
-    ")->fetchAll();
+    ");
+    $clientesFrecuentes->execute([$mes, $anio]);
+    $clientesFrecuentes = $clientesFrecuentes->fetchAll();
 
-    // Pedidos por estado (combinar pedidos activos + historial de hoy)
-    $pedidosActivos = $pdo->query("
-        SELECT estado, COUNT(*) as total
-        FROM pedidos
-        WHERE DATE(fecha_pedido) = CURDATE()
-        GROUP BY estado
-    ")->fetchAll();
-
-    $pedidosHistorial = $pdo->query("
+    // Pedidos por estado del mes
+    $pedidosPorEstado = $pdo->prepare("
         SELECT estado, COUNT(*) as total
         FROM historico_pedidos
-        WHERE DATE(fecha_completado) = CURDATE()
+        WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ?
         GROUP BY estado
-    ")->fetchAll();
+    ");
+    $pedidosPorEstado->execute([$mes, $anio]);
+    $pedidosPorEstado = $pedidosPorEstado->fetchAll();
 
-    // Combinar ambos arrays
-    $pedidosPorEstado = [];
-    $estadosCount = [];
-
-    foreach ($pedidosActivos as $pedido) {
-        $estadosCount[$pedido['estado']] = ($estadosCount[$pedido['estado']] ?? 0) + $pedido['total'];
-    }
-
-    foreach ($pedidosHistorial as $pedido) {
-        $estadosCount[$pedido['estado']] = ($estadosCount[$pedido['estado']] ?? 0) + $pedido['total'];
-    }
-
-    foreach ($estadosCount as $estado => $total) {
-        $pedidosPorEstado[] = ['estado' => $estado, 'total' => $total];
-    }
-
-    // Detalle por zona (solo del historial de hoy)
-    // Detalle por zona - Zonas donde más se pidieron domicilios (todos los tiempos)
-    // Detalle por zona - Últimos 30 días (más relevante)
-    // Detalle por zona (versión simple y funcional)
-    // Detalle por zona con datos reales del historial
-    $zonaDetalle = $pdo->query("
+    // Detalle por zona del mes
+    $zonaDetalle = $pdo->prepare("
         SELECT 
             zona_nombre as zona,
             COUNT(*) as pedidos,
             SUM(total) as ingresos
         FROM historico_pedidos
-        WHERE estado = 'entregado'
+        WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ?
+            AND estado = 'entregado' 
+            AND zona_nombre IS NOT NULL 
+            AND zona_nombre != ''
         GROUP BY zona_nombre
-        
-        UNION ALL
-        
-        SELECT 
-            z.nombre as zona,
-            0 as pedidos,
-            0 as ingresos
-        FROM zonas z
-        WHERE z.estado = 'activo'
-            AND z.nombre NOT IN (
-                SELECT DISTINCT zona_nombre 
-                FROM historico_pedidos 
-                WHERE estado = 'entregado'
-            )
-        
         ORDER BY pedidos DESC, zona ASC
-    ")->fetchAll();
+    ");
+    $zonaDetalle->execute([$mes, $anio]);
+    $zonaDetalle = $zonaDetalle->fetchAll();
 
-    // Pedidos de los últimos 7 días (solo historial)
-    $pedidosUltimos7Dias = $pdo->query("
+    // Pedidos diarios del mes
+    $pedidosDiariosMes = $pdo->prepare("
         SELECT 
-            DATE(fecha_completado) as fecha, 
+            DAY(fecha_completado) as dia,
             COUNT(*) as total, 
             SUM(total) as ingresos
         FROM historico_pedidos
-        WHERE fecha_completado >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ?
             AND estado = 'entregado'
-        GROUP BY DATE(fecha_completado)
-        ORDER BY fecha DESC
-    ")->fetchAll();
+        GROUP BY DAY(fecha_completado)
+        ORDER BY dia ASC
+    ");
+    $pedidosDiariosMes->execute([$mes, $anio]);
+    $pedidosDiariosMes = $pedidosDiariosMes->fetchAll();
+
 } catch (Exception $e) {
     $error = $e->getMessage();
 }
@@ -310,28 +287,31 @@ try {
                 <div class="stat-icon"><i class="fas fa-clock"></i></div>
                 <div class="stat-content">
                     <h3><?php echo $tiempoPromedio; ?> min</h3>
-                    <p>Tiempo Promedio Entregas</p>
+                    <p>Tiempo Promedio (Hoy)</p>
+
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-percentage"></i></div>
                 <div class="stat-content">
                     <h3><?php echo $cumplimiento; ?>%</h3>
-                    <p>% Cumplimiento de Entregas</p>
+                    <p>% De cumplimiento (Hoy)</p>
+
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-truck"></i></div>
                 <div class="stat-content">
                     <h3><?php echo $domiciliosEnviadosHoy; ?></h3>
-                    <p>Domicilios Enviados Hoy</p>
+                    <p>Domicilios Enviados (Hoy)</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
                 <div class="stat-content">
                     <h3>$<?php echo number_format($valorDomiciliosHoy, 2); ?></h3>
-                    <p>Valor Domicilios Hoy</p>
+                    <p>Total Domicilios (Hoy)</p>
+
                 </div>
             </div>
         </div>
@@ -341,7 +321,7 @@ try {
             <!-- Gráfico de pedidos por estado -->
             <div class="report-card">
                 <div class="report-header">
-                    <h3>Pedidos por Estado</h3>
+                    <h3>Pedidos por Estado (MES)</h3>
                     <button class="btn-export" onclick="exportarReporte('estados')">
                         <i class="fas fa-file-pdf"></i>
                     </button>
@@ -354,7 +334,7 @@ try {
             <!-- Tabla de domiciliarios más activos -->
             <div class="report-card">
                 <div class="report-header">
-                    <h3>Domiciliarios Más Activos</h3>
+                    <h3>Domiciliarios Más Activos (MES)</h3>
                     <button class="btn-export" onclick="exportarReporte('domiciliarios')">
                         <i class="fas fa-download"></i>
                     </button>
@@ -384,7 +364,7 @@ try {
             <!-- Tabla de clientes más frecuentes -->
             <div class="report-card">
                 <div class="report-header">
-                    <h3>Clientes Más Frecuentes</h3>
+                    <h3>Clientes Más Frecuentes (MES)</h3>
                     <button class="btn-export" onclick="exportarReporte('clientes')">
                         <i class="fas fa-download"></i>
                     </button>
@@ -405,50 +385,16 @@ try {
                                     <td><?php echo $cliente['pedidos']; ?></td>
                                     <td>$<?php echo number_format($cliente['total_gastado'] ?? 0, 2); ?></td>
                                 </tr>
-                            <?php endforeach;
-                            // Detalle por zona (mostrar todas las zonas activas)
-                            // **Versión más segura (recomendada):**
-                            // Detalle por zona - versión segura
-                            try {
-                                $zonaDetalle = $pdo->query("
-                                    SELECT 
-                                        z.nombre as zona,
-                                        COALESCE(stats.pedidos, 0) as pedidos,
-                                        COALESCE(stats.ingresos, 0) as ingresos
-                                    FROM zonas z
-                                    LEFT JOIN (
-                                        SELECT 
-                                            zona_nombre,
-                                            COUNT(*) as pedidos,
-                                            SUM(total) as ingresos
-                                        FROM historico_pedidos
-                                        WHERE estado = 'entregado'
-                                        GROUP BY zona_nombre
-                                    ) stats ON z.nombre = stats.zona_nombre
-                                    WHERE z.estado = 'activo'
-                                    ORDER BY pedidos DESC, z.nombre ASC
-                                ")->fetchAll();
-                            } catch (Exception $e) {
-                                // Si hay error, mostrar zonas vacías
-                                $zonaDetalle = $pdo->query("
-                                    SELECT 
-                                        nombre as zona,
-                                        0 as pedidos,
-                                        0 as ingresos
-                                    FROM zonas
-                                    WHERE estado = 'activo'
-                                    ORDER BY nombre ASC
-                                ")->fetchAll();
-                            }
-                            ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
+
             <!-- Tabla de detalle por zona -->
             <div class="report-card">
                 <div class="report-header">
-                    <h3>Detalle por Zona</h3>
+                    <h3>Detalle por Zona (MES)</h3>
                     <button class="btn-export" onclick="exportarReporte('zonas')">
                         <i class="fas fa-download"></i>
                     </button>
@@ -463,10 +409,10 @@ try {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($pedidosPorZona as $zona): ?>
+                            <?php foreach ($zonaDetalle as $zona): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($zona['nombre']); ?></td>
-                                    <td><?php echo $zona['total']; ?></td>
+                                    <td><?php echo htmlspecialchars($zona['zona']); ?></td>
+                                    <td><?php echo $zona['pedidos']; ?></td>
                                     <td>$<?php echo number_format($zona['ingresos'] ?? 0, 2); ?></td>
                                 </tr>
                             <?php endforeach; ?>
@@ -479,20 +425,39 @@ try {
         <!-- Pedidos Mensuales Archivados (ahora ocupa todo el ancho, debajo de los reportes) -->
         <!-- Tabla de pedidos mensuales archivados por mes y año -->
         <?php
+        // Cambiar las estadísticas principales para mostrar datos del mes
         $meses_es = [
-            1 => 'Enero',
-            2 => 'Febrero',
-            3 => 'Marzo',
-            4 => 'Abril',
-            5 => 'Mayo',
-            6 => 'Junio',
-            7 => 'Julio',
-            8 => 'Agosto',
-            9 => 'Septiembre',
-            10 => 'Octubre',
-            11 => 'Noviembre',
-            12 => 'Diciembre'
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
         ];
+        
+        $mesNombre = $meses_es[$mes];
+        
+        // Calcular estadísticas del mes
+        $pedidosEntregadosMes = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM historico_pedidos 
+            WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ? AND estado = 'entregado'
+        ");
+        $pedidosEntregadosMes->execute([$mes, $anio]);
+        $entregadosMes = $pedidosEntregadosMes->fetchColumn();
+        
+        $valorDomiciliosMes = $pdo->prepare("
+            SELECT COALESCE(SUM(total), 0) 
+            FROM historico_pedidos 
+            WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ? AND estado = 'entregado'
+        ");
+        $valorDomiciliosMes->execute([$mes, $anio]);
+        $valorMes = $valorDomiciliosMes->fetchColumn();
+        
+        $canceladosMes = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM historico_pedidos 
+            WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ? AND estado = 'cancelado'
+        ");
+        $canceladosMes->execute([$mes, $anio]);
+        $canceladosMes = $canceladosMes->fetchColumn();
         ?>
         <div class="report-card" style="max-width:100%;margin-top:30px;">
             <div class="report-header">

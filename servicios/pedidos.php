@@ -35,6 +35,7 @@ function procesarPedido($datos)
         $cantidad_paquetes = intval($datos['bolsas']);
         $total = floatval($datos['total']);
         $tiempo_estimado = intval($datos['tiempo_estimado'] ?? 30);
+        $hora_estimada_entrega = isset($datos['hora']) && !empty($datos['hora']) ? $datos['hora'] : null;
 
         // Validar que el cliente existe
         $stmt = $db->prepare("SELECT id_cliente FROM clientes WHERE id_cliente = ? AND estado = 'activo'");
@@ -77,10 +78,10 @@ function procesarPedido($datos)
 
         // Insertar el pedido
         $stmt = $db->prepare("
-            INSERT INTO pedidos (id_cliente, id_zona, id_domiciliario, estado, cantidad_paquetes, total, tiempo_estimado, envio_inmediato, alistamiento, fecha_pedido)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO pedidos (id_cliente, id_zona, id_domiciliario, estado, cantidad_paquetes, total, tiempo_estimado, hora_estimada_entrega, envio_inmediato, alistamiento, fecha_pedido)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         ");
-        $stmt->bind_param("iiisidiss", $id_cliente, $id_zona, $id_domiciliario, $estado, $cantidad_paquetes, $total, $tiempo_estimado, $envio_inmediato, $alistamiento);
+        $stmt->bind_param("iiisidssss", $id_cliente, $id_zona, $id_domiciliario, $estado, $cantidad_paquetes, $total, $tiempo_estimado, $hora_estimada_entrega, $envio_inmediato, $alistamiento);
         $stmt->execute();
 
         // Actualizar estado del domiciliario según el estado del pedido
@@ -465,7 +466,7 @@ function obtenerPedidosPendientesDespacho($pagina = 1, $por_pagina = 10)
         
         // Obtener pedidos paginados
         $query = "SELECT p.id_pedido, c.nombre as cliente, c.direccion, c.telefono, c.barrio, 
-                         z.nombre as zona, p.cantidad_paquetes, p.tiempo_estimado, p.alistamiento, p.envio_inmediato
+                         z.nombre as zona, p.cantidad_paquetes, p.tiempo_estimado, p.hora_estimada_entrega, p.alistamiento, p.envio_inmediato
                   FROM pedidos p
                   LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
                   LEFT JOIN zonas z ON p.id_zona = z.id_zona

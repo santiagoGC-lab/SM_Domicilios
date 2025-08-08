@@ -210,12 +210,12 @@ verificarAcceso('coordinador');
                         <td>${pedido.cliente || 'N/A'}</td>
                         <td>${pedido.telefono || 'N/A'}</td>
                         <td>${pedido.direccion || 'N/A'}</td>
-                         <td>${pedido.barrio || 'N/A'}</td>
+                        <td>${pedido.barrio || 'N/A'}</td>
                         <td>${pedido.zona || 'N/A'}</td>
                         <td>${pedido.cantidad_paquetes || 'N/A'}</td>
                         <td>${pedido.alistamiento || 'N/A'}</td>
                         <td>${pedido.envio_inmediato || 'N/A'}</td>
-                        <td>${pedido.tiempo_estimado || 'N/A'} min</td>
+                        <td>${pedido.hora_estimada_entrega ? new Date('1970-01-01T' + pedido.hora_estimada_entrega).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit', hour12: true}) : 'N/A'}</td>
                         <td>
                             <button class="btn-despachar-mini" onclick="abrirModalDespacho(${pedido.id_pedido})" title="Despachar pedido">
                                 <i class="fas fa-truck"></i>

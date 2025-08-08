@@ -301,7 +301,8 @@
     color: white;
 }
 
-.estado-enservicio {
+
+.estado-ocupado {
     background-color: var(--en-servicio);
     padding: 5px 10px;
     border-radius: 15px;
