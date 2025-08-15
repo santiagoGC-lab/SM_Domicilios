@@ -505,8 +505,8 @@ function despacharPedido($id_pedido, $id_domiciliario, $id_vehiculo)
 {
     try {
         $db = ConectarDB();
-        // Actualizar pedido
-        $stmt = $db->prepare("UPDATE pedidos SET id_domiciliario = ?, id_vehiculo = ?, hora_salida = NOW(), estado = 'en_camino' WHERE id_pedido = ?");
+        // Actualizar pedido - cambiar 'en_camino' por 'pendiente'
+        $stmt = $db->prepare("UPDATE pedidos SET id_domiciliario = ?, id_vehiculo = ?, hora_salida = NOW(), estado = 'pendiente' WHERE id_pedido = ?");
         $stmt->bind_param("iii", $id_domiciliario, $id_vehiculo, $id_pedido);
         $stmt->execute();
         $stmt->close();
@@ -694,7 +694,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             echo json_encode($resultado);
             break;
-        // En el case 'en_ruta':
         case 'en_ruta':
             $db = ConectarDB();
             $result = $db->query("SELECT p.id_pedido, d.nombre AS domiciliario, p.hora_salida, p.hora_llegada, 
@@ -702,7 +701,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                   FROM pedidos p 
                                   LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario 
                                   LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
-                                  WHERE p.estado = 'en_camino'");
+                                  WHERE p.estado = 'pendiente' 
+                                  AND p.id_domiciliario IS NOT NULL 
+                                  AND p.hora_salida IS NOT NULL 
+                                  AND p.hora_llegada IS NULL");
             $pedidos = $result->fetch_all(MYSQLI_ASSOC);
             $db->close();
             echo json_encode($pedidos);

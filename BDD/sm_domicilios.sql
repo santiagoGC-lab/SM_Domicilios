@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 08-08-2025 a las 19:38:13
+-- Tiempo de generación: 15-08-2025 a las 19:30:11
 -- Versión del servidor: 5.7.24
 -- Versión de PHP: 8.2.14
 
@@ -71,13 +71,13 @@ CREATE TABLE `domiciliarios` (
 --
 
 INSERT INTO `domiciliarios` (`id_domiciliario`, `nombre`, `telefono`, `id_zona`, `estado`, `fecha_creacion`) VALUES
-(1, 'Juan Pérez', '3001234567', 8, 'disponible', '2025-07-12 08:44:28'),
-(2, 'Carlos López', '3002345678', 8, 'ocupado', '2025-07-12 08:44:28'),
-(3, 'Ana García', '3003456789', NULL, 'disponible', '2025-07-12 08:44:28'),
-(4, 'Luis Rodríguez', '3004567890', 8, 'disponible', '2025-07-12 08:44:28'),
-(6, 'Diego Ramírez', '3005678901', 8, 'disponible', '2025-07-15 15:50:00'),
-(7, 'Valeria Castro', '3006789012', 8, 'disponible', '2025-07-15 16:00:00'),
-(8, 'Felipe Gómez', '3007890123', 8, 'disponible', '2025-07-15 16:10:00');
+(1, 'Juan Pérez', '3001234567', NULL, 'ocupado', '2025-07-12 08:44:28'),
+(2, 'Carlos López', '3002345678', NULL, 'disponible', '2025-07-12 08:44:28'),
+(3, 'Ana García', '3003456789', NULL, 'ocupado', '2025-07-12 08:44:28'),
+(4, 'Luis Rodríguez', '3004567890', NULL, 'disponible', '2025-07-12 08:44:28'),
+(6, 'Diego Ramírez', '3005678901', NULL, 'disponible', '2025-07-15 15:50:00'),
+(7, 'Valeria Castro', '3006789012', NULL, 'disponible', '2025-07-15 16:00:00'),
+(8, 'Felipe Gómez', '3007890123', NULL, 'disponible', '2025-07-15 16:10:00');
 
 -- --------------------------------------------------------
 
@@ -96,6 +96,7 @@ CREATE TABLE `historico_pedidos` (
   `cantidad_paquetes` int(11) NOT NULL DEFAULT '1',
   `total` decimal(10,2) NOT NULL,
   `tiempo_estimado` int(11) NOT NULL DEFAULT '30',
+  `hora_estimada_entrega` time DEFAULT NULL,
   `fecha_pedido` datetime NOT NULL,
   `hora_salida` datetime DEFAULT NULL,
   `hora_llegada` datetime DEFAULT NULL,
@@ -117,13 +118,14 @@ CREATE TABLE `historico_pedidos` (
 -- Volcado de datos para la tabla `historico_pedidos`
 --
 
-INSERT INTO `historico_pedidos` (`id_historico`, `id_pedido_original`, `id_cliente`, `id_zona`, `id_domiciliario`, `id_vehiculo`, `estado`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `fecha_pedido`, `hora_salida`, `hora_llegada`, `fecha_completado`, `cliente_nombre`, `cliente_documento`, `cliente_telefono`, `cliente_direccion`, `zona_nombre`, `zona_tarifa`, `domiciliario_nombre`, `domiciliario_telefono`, `vehiculo_tipo`, `vehiculo_placa`, `usuario_proceso`) VALUES
-(31, 21, 1, 4, 1, 1, 'entregado', 4, '8000.00', 20, '2025-08-05 17:04:20', '2025-08-05 17:49:16', '2025-08-05 17:49:19', '2025-08-05 17:49:19', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Juan Pérez', '3001234567', 'carguero', 'ADS552', 1),
-(32, 1, 14, 8, 1, 1, 'entregado', 5, '5000.00', 30, '2025-08-06 08:28:34', '2025-08-06 14:37:11', '2025-08-06 14:37:14', '2025-08-06 14:37:14', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Occidente', '5000.00', 'Juan Pérez', '3001234567', 'carguero', 'ADS552', 1),
-(33, 2, 14, 8, 1, 2, 'entregado', 4, '5000.00', 30, '2025-08-06 14:44:42', '2025-08-06 14:50:33', '2025-08-06 15:04:16', '2025-08-06 15:04:16', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Occidente', '5000.00', 'Juan Pérez', '3001234567', 'moto', 'GHI789', 1),
-(34, 3, 1, 4, 3, 1, 'entregado', 4, '8000.00', 30, '2025-08-06 14:48:29', '2025-08-06 15:04:10', '2025-08-06 17:04:24', '2025-08-06 17:04:24', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Ana García', '3003456789', 'carguero', 'ADS552', 1),
-(35, 4, 14, 8, 4, 2, 'entregado', 4, '5000.00', 30, '2025-08-06 14:48:56', '2025-08-06 17:04:21', '2025-08-06 17:04:29', '2025-08-06 17:04:29', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Occidente', '5000.00', 'Luis Rodríguez', '3004567890', 'moto', 'GHI789', 1),
-(36, 1, 1, 14, 1, 1, 'entregado', 4, '5000.00', 30, '2025-08-08 11:11:35', '2025-08-08 11:12:11', '2025-08-08 11:12:20', '2025-08-08 11:12:21', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '5000.00', 'Juan Pérez', '3001234567', 'carguero', 'ADS552', 1);
+INSERT INTO `historico_pedidos` (`id_historico`, `id_pedido_original`, `id_cliente`, `id_zona`, `id_domiciliario`, `id_vehiculo`, `estado`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `hora_estimada_entrega`, `fecha_pedido`, `hora_salida`, `hora_llegada`, `fecha_completado`, `cliente_nombre`, `cliente_documento`, `cliente_telefono`, `cliente_direccion`, `zona_nombre`, `zona_tarifa`, `domiciliario_nombre`, `domiciliario_telefono`, `vehiculo_tipo`, `vehiculo_placa`, `usuario_proceso`) VALUES
+(31, 21, 1, 4, 1, 1, 'entregado', 4, '8000.00', 20, NULL, '2025-08-05 17:04:20', '2025-08-05 17:49:16', '2025-08-05 17:49:19', '2025-08-05 17:49:19', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Juan Pérez', '3001234567', 'carguero', 'ADS552', 1),
+(32, 1, 14, 8, 1, 1, 'entregado', 5, '5000.00', 30, NULL, '2025-08-06 08:28:34', '2025-08-06 14:37:11', '2025-08-06 14:37:14', '2025-08-06 14:37:14', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Occidente', '5000.00', 'Juan Pérez', '3001234567', 'carguero', 'ADS552', 1),
+(33, 2, 14, 8, 1, 2, 'entregado', 4, '5000.00', 30, NULL, '2025-08-06 14:44:42', '2025-08-06 14:50:33', '2025-08-06 15:04:16', '2025-08-06 15:04:16', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Occidente', '5000.00', 'Juan Pérez', '3001234567', 'moto', 'GHI789', 1),
+(34, 3, 1, 4, 3, 1, 'entregado', 4, '8000.00', 30, NULL, '2025-08-06 14:48:29', '2025-08-06 15:04:10', '2025-08-06 17:04:24', '2025-08-06 17:04:24', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '8000.00', 'Ana García', '3003456789', 'carguero', 'ADS552', 1),
+(35, 4, 14, 8, 4, 2, 'entregado', 4, '5000.00', 30, NULL, '2025-08-06 14:48:56', '2025-08-06 17:04:21', '2025-08-06 17:04:29', '2025-08-06 17:04:29', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Occidente', '5000.00', 'Luis Rodríguez', '3004567890', 'moto', 'GHI789', 1),
+(36, 1, 1, 14, 1, 1, 'entregado', 4, '5000.00', 30, NULL, '2025-08-08 11:11:35', '2025-08-08 11:12:11', '2025-08-08 11:12:20', '2025-08-08 11:12:21', 'wilmer', '1107841204', '3153194602', 'Transversal 8 #12A-90', 'Norte', '5000.00', 'Juan Pérez', '3001234567', 'carguero', 'ADS552', 1),
+(37, 1, 14, 31, 2, 1, 'entregado', 5, '5000.00', 30, NULL, '2025-08-09 08:30:17', '2025-08-09 12:38:28', '2025-08-09 12:38:35', '2025-08-09 12:38:35', 'CARLITOS', '5555555555', '88888888888', 'Calle 4 carrera 9', 'Oriente', '5000.00', 'Carlos López', '3002345678', 'carguero', 'ADS552', 1);
 
 -- --------------------------------------------------------
 
@@ -137,7 +139,7 @@ CREATE TABLE `pedidos` (
   `id_domiciliario` int(11) DEFAULT NULL,
   `id_vehiculo` int(11) DEFAULT NULL,
   `id_zona` int(11) NOT NULL,
-  `estado` enum('pendiente','en_camino','entregado','cancelado') NOT NULL DEFAULT 'pendiente',
+  `estado` enum('pendiente','entregado','cancelado') NOT NULL DEFAULT 'pendiente',
   `hora_salida` datetime DEFAULT NULL,
   `hora_llegada` datetime DEFAULT NULL,
   `fecha_pedido` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -149,6 +151,13 @@ CREATE TABLE `pedidos` (
   `alistamiento` enum('si','no') DEFAULT 'no',
   `movido_historico` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Volcado de datos para la tabla `pedidos`
+--
+
+INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_domiciliario`, `id_vehiculo`, `id_zona`, `estado`, `hora_salida`, `hora_llegada`, `fecha_pedido`, `cantidad_paquetes`, `total`, `tiempo_estimado`, `hora_estimada_entrega`, `envio_inmediato`, `alistamiento`, `movido_historico`) VALUES
+(4, 14, NULL, NULL, 31, 'pendiente', NULL, NULL, '2025-08-13 16:02:41', 5, '5000.00', 30, '16:32:00', 'si', 'si', 0);
 
 -- --------------------------------------------------------
 
@@ -184,7 +193,7 @@ INSERT INTO `usuarios` (`id_usuario`, `nombre`, `apellido`, `numero_documento`, 
 
 CREATE TABLE `vehiculos` (
   `id_vehiculo` int(11) NOT NULL,
-  `tipo` varchar(50) NOT NULL,
+  `tipo` enum('moto','camioneta','carguero') NOT NULL,
   `placa` varchar(20) NOT NULL,
   `estado` enum('disponible','en_ruta','mantenimiento','inactivo') NOT NULL DEFAULT 'disponible',
   `descripcion` varchar(255) DEFAULT NULL
@@ -359,13 +368,13 @@ ALTER TABLE `domiciliarios`
 -- AUTO_INCREMENT de la tabla `historico_pedidos`
 --
 ALTER TABLE `historico_pedidos`
-  MODIFY `id_historico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id_historico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
