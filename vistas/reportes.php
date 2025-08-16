@@ -69,15 +69,8 @@ try {
     $clientesFrecuentes->execute([$mes, $anio]);
     $clientesFrecuentes = $clientesFrecuentes->fetchAll();
 
-    // Pedidos por estado del mes
-    $pedidosPorEstado = $pdo->prepare("
-        SELECT estado, COUNT(*) as total
-        FROM historico_pedidos
-        WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ?
-        GROUP BY estado
-    ");
-    $pedidosPorEstado->execute([$mes, $anio]);
-    $pedidosPorEstado = $pedidosPorEstado->fetchAll();
+    // Eliminar consulta de pedidos por estado del mes
+    // CÓDIGO ELIMINADO: consulta $pedidosPorEstado
 
     // Detalle por zona del mes
     $zonaDetalle = $pdo->prepare("
@@ -318,18 +311,8 @@ try {
 
         <!-- Gráficos y reportes -->
         <div class="reports-grid">
-            <!-- Gráfico de pedidos por estado -->
-            <div class="report-card">
-                <div class="report-header">
-                    <h3>Pedidos por Estado (MES)</h3>
-                    <button class="btn-export" onclick="exportarReporte('estados')">
-                        <i class="fas fa-file-pdf"></i>
-                    </button>
-                </div>
-                <div class="chart-container">
-                    <canvas id="estadosChart"></canvas>
-                </div>
-            </div>
+            <!-- BLOQUE ELIMINADO: Gráfico de pedidos por estado -->
+            <!-- CÓDIGO ELIMINADO: div.report-card con estadosChart -->
 
             <!-- Tabla de domiciliarios más activos -->
             <div class="report-card">
@@ -548,7 +531,7 @@ try {
 
     <script>
         // --- Datos para los gráficos de reportes ---
-        const estadosData = <?php echo json_encode($pedidosPorEstado); ?>;
+        // ELIMINADO: const estadosData
         const zonasData = <?php echo json_encode($pedidosPorZona); ?>;
         const ingresosData = <?php echo json_encode($pedidosUltimos7Dias); ?>;
 
@@ -570,29 +553,8 @@ try {
             }
         }
 
-        // Gráfico de pedidos por estado usando Chart.js
-        const estadosCtx = document.getElementById('estadosChart').getContext('2d');
-        new Chart(estadosCtx, {
-            type: 'doughnut',
-            data: {
-                labels: estadosData.map(item => item.estado.charAt(0).toUpperCase() + item.estado.slice(1)),
-                datasets: [{
-                    data: estadosData.map(item => item.total),
-                    backgroundColor: estadosData.map(item => getColorByEstado(item.estado)),
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
+        // CÓDIGO ELIMINADO: Gráfico de pedidos por estado usando Chart.js
+        // ELIMINADO: const estadosCtx y new Chart(estadosCtx, ...)
 
         // Función para exportar reportes en PDF o descargar tablas
         function exportarReporte(tipo) {

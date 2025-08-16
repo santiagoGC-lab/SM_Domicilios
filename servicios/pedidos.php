@@ -505,8 +505,8 @@ function despacharPedido($id_pedido, $id_domiciliario, $id_vehiculo)
 {
     try {
         $db = ConectarDB();
-        // Actualizar pedido - cambiar 'en_camino' por 'pendiente'
-        $stmt = $db->prepare("UPDATE pedidos SET id_domiciliario = ?, id_vehiculo = ?, hora_salida = NOW(), estado = 'pendiente' WHERE id_pedido = ?");
+        // Actualizar pedido - usar estado correcto para pedidos despachados
+        $stmt = $db->prepare("UPDATE pedidos SET id_domiciliario = ?, id_vehiculo = ?, hora_salida = NOW(), estado = 'en_camino' WHERE id_pedido = ?");
         $stmt->bind_param("iii", $id_domiciliario, $id_vehiculo, $id_pedido);
         $stmt->execute();
         $stmt->close();
@@ -701,7 +701,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                   FROM pedidos p 
                                   LEFT JOIN domiciliarios d ON p.id_domiciliario = d.id_domiciliario 
                                   LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
-                                  WHERE p.estado = 'pendiente' 
+                                  WHERE p.estado = 'en_camino' 
                                   AND p.id_domiciliario IS NOT NULL 
                                   AND p.hora_salida IS NOT NULL 
                                   AND p.hora_llegada IS NULL");

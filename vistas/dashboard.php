@@ -19,8 +19,8 @@ try {
     $pedidosEntregadosHistorico = $pdo->query("SELECT COUNT(*) FROM historico_pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn();
     $pedidosEntregadosHoy = $pedidosEntregadosActivos + $pedidosEntregadosHistorico;
 
-    // Pedidos pendientes: solo de la tabla activa
-    $pedidosPendientes = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente'")->fetchColumn();
+    // Pedidos pendientes: incluir todos los estados activos (pendiente, en_camino)
+    $pedidosPendientes = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado IN ('pendiente', 'en_camino')")->fetchColumn();
 
     // Ingresos de hoy: usar fecha_pedido para ambas tablas
     $ingresosHoyPedidos = $pdo->query("SELECT SUM(total) FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado = 'entregado'")->fetchColumn() ?? 0;
@@ -83,17 +83,16 @@ try {
         LIMIT 5
     ")->fetchAll();
 
-    // Pedidos por estado (para gráfico) - CORREGIDA
+    // Pedidos por estado (para gráfico) - CORREGIDA para incluir todos los pedidos activos
     $pedidosPorEstadoQuery = $pdo->query("
-        SELECT estado, SUM(total) as total FROM (
-            SELECT estado, COUNT(*) as total
+        SELECT estado, SUM(cantidad) as total FROM (
+            SELECT estado, COUNT(*) as cantidad
             FROM pedidos
-            WHERE DATE(fecha_pedido) = CURDATE()
             GROUP BY estado
             
             UNION ALL
             
-            SELECT estado, COUNT(*) as total
+            SELECT estado, COUNT(*) as cantidad
             FROM historico_pedidos
             WHERE DATE(fecha_pedido) = CURDATE()
             GROUP BY estado
@@ -378,9 +377,10 @@ try {
                 case 'completado':
                     return '#28a745'; // Verde para entregado
                 case 'pendiente':
+                    return '#ffc107'; // Amarillo para pendiente
                 case 'en_camino':
                 case 'despachado':
-                    return '#ffc107'; // Naranja para pendiente/en proceso
+                    return '#87CEEB'; // Azul clarito para en camino/despachado
                 case 'cancelado':
                 case 'rechazado':
                     return '#dc3545'; // Rojo para cancelado

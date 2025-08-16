@@ -13,6 +13,8 @@ try {
 
 // --- Estadísticas para las tarjetas del tablero ---
 $pendingOrders = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'pendiente' AND movido_historico = 0")->fetchColumn();
+// Agregar consulta para pedidos en camino
+$enCaminoOrders = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'en_camino' AND movido_historico = 0")->fetchColumn();
 $completedTodayPedidos = $pdo->query("SELECT COUNT(*) FROM pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE() AND movido_historico = 0")->fetchColumn() ?? 0;
 $completedTodayArchivados = $pdo->query("SELECT COUNT(*) FROM historico_pedidos WHERE estado = 'entregado' AND DATE(fecha_pedido) = CURDATE()")->fetchColumn() ?? 0;
 $completedToday = $completedTodayPedidos + $completedTodayArchivados;
@@ -127,6 +129,14 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
                     <h3 class="card-title">Pedidos Pendientes</h3>
                 </div>
                 <div class="card-value"><?php echo $pendingOrders; ?></div>
+            </div>
+            <!-- Nueva tarjeta para pedidos en camino -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-truck"></i></div>
+                    <h3 class="card-title">En Camino</h3>
+                </div>
+                <div class="card-value"><?php echo $enCaminoOrders; ?></div>
             </div>
             <div class="card">
                 <div class="card-header">
