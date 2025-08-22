@@ -230,6 +230,10 @@ body {
     background: linear-gradient(135deg, var(--danger-color), #ff3742);
 }
 
+.stat-card:nth-child(5) .stat-icon {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+}
+
 .stat-content h3 {
     font-size: 28px;
     font-weight: 600;

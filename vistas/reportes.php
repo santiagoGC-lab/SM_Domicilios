@@ -270,14 +270,27 @@ try {
 
         $tiempoPromedio = $numEntregas > 0 ? round($totalTiempo / $numEntregas, 2) : 0;
         $cumplimiento = $numEntregas > 0 ? round(($cumplidos / $numEntregas) * 100, 2) : 0;
+        
+        // 7. Pedidos pendientes (en tabla pedidos con estado diferente a 'entregado' y 'cancelado')
+        $pedidosPendientes = $pdo->query("
+            SELECT COUNT(*) 
+            FROM pedidos 
+            WHERE estado NOT IN ('entregado', 'cancelado')
+        ")->fetchColumn();
         ?>
         <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-content">
+                    <h3><?php echo $pedidosPendientes; ?></h3>
+                    <p>Pedidos Pendientes</p>
+                </div>
+            </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-clock"></i></div>
                 <div class="stat-content">
                     <h3><?php echo $tiempoPromedio; ?> min</h3>
                     <p>Tiempo Promedio (Hoy)</p>
-
                 </div>
             </div>
             <div class="stat-card">
@@ -285,7 +298,6 @@ try {
                 <div class="stat-content">
                     <h3><?php echo $cumplimiento; ?>%</h3>
                     <p>% De cumplimiento (Hoy)</p>
-
                 </div>
             </div>
             <div class="stat-card">
@@ -300,7 +312,6 @@ try {
                 <div class="stat-content">
                     <h3>$<?php echo number_format($valorDomiciliosHoy, 2); ?></h3>
                     <p>Total Domicilios (Hoy)</p>
-
                 </div>
             </div>
         </div>

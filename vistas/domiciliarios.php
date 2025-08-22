@@ -98,9 +98,9 @@ $nombreCompleto = obtenerNombreUsuario();
                         <input type="text" id="searchInput" class="form-control" placeholder="Buscar domiciliario..." oninput="filterDomiciliarios()">
                     </div>
                     <select id="filterStatus" class="filter-select" onchange="filterDomiciliarios()">
-                        <option value="">Todos</option> <!-- Agregado -->
+                        <option value="">Todos</option>
                         <option value="disponible">Disponible</option>
-                        <option value="en servicio">En Servicio</option>
+                        <option value="en ruta">En ruta</option>
                         <option value="inactivo">Inactivo</option>
                     </select>
                 </div>
@@ -159,7 +159,7 @@ $nombreCompleto = obtenerNombreUsuario();
                     <label for="estado">Estado:</label>
                     <select id="estado" name="estado" class="form-control">
                         <option value="disponible">Disponible</option>
-                        <option value="en servicio">En Servicio</option>
+                        <option value="en ruta">En ruta</option>
                         <option value="inactivo">Inactivo</option>
                     </select>
                 </div>
@@ -203,40 +203,40 @@ $nombreCompleto = obtenerNombreUsuario();
 
         // Carga los datos de un domiciliario y abre el modal para editar
         function editarDomiciliario(id) {
-            fetch(`../servicios/domiciliarios.php`, {
-                    method: 'POST',
-                    body: (() => {
-                        const fd = new FormData();
-                        fd.append('accion', 'obtener_por_id');
-                        fd.append('id', id);
-                        return fd;
-                    })()
+            fetch('../servicios/domiciliarios.php', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    accion: 'obtener',
+                    id: id
                 })
-                .then(response => {
-                    if (response.status === 401) {
-                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../vistas/login.html';
-                        return Promise.reject('Sesión expirada');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    document.getElementById('modalTitle').textContent = 'Editar Domiciliario';
-                    document.getElementById('domiciliarioId').value = id;
-                    document.getElementById('nombre').value = data.nombre || '';
-                    document.getElementById('telefono').value = data.telefono || '';
-                    document.getElementById('zona').value = data.id_zona || '';
-                    document.getElementById('estado').value = data.estado || 'disponible';
-                    document.getElementById('zonaGroup').style.display = 'block';
-                    document.getElementById('estadoGroup').style.display = 'block';
-                    document.getElementById('modalEditar').style.display = 'block';
-                })
-                .catch(error => {
-                    if (error !== 'Sesión expirada') {
-                        alert('Error al cargar el domiciliario');
-                        console.error(error);
-                    }
-                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                document.getElementById('modalTitle').textContent = 'Editar Domiciliario';
+                document.getElementById('domiciliarioId').value = data.id_domiciliario;
+                document.getElementById('nombre').value = data.nombre;
+                document.getElementById('telefono').value = data.telefono;
+                document.getElementById('zona').value = data.id_zona || '';
+                
+                // Mapear el estado de la base de datos al mostrado en el modal
+                let estadoModal = data.estado;
+                if (data.estado === 'ocupado') {
+                    estadoModal = 'en ruta';
+                }
+                document.getElementById('estado').value = estadoModal;
+                
+                document.getElementById('zonaGroup').style.display = 'block';
+                document.getElementById('estadoGroup').style.display = 'block';
+                document.getElementById('modalEditar').style.display = 'block';
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
         }
 
         // Elimina un domiciliario por su id
@@ -284,34 +284,32 @@ $nombreCompleto = obtenerNombreUsuario();
             }
 
             const formData = new FormData(e.target);
-            formData.append('accion', 'guardar');
+            const isEditing = formData.get('id') !== '';
+            
+            // Mapear "en ruta" de vuelta a "ocupado" para la base de datos
+            if (formData.get('estado') === 'en ruta') {
+                formData.set('estado', 'ocupado');
+            }
+            
+            formData.append('accion', isEditing ? 'actualizar' : 'crear');
+            
             fetch('../servicios/domiciliarios.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => {
-                    if (res.status === 401) {
-                        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                        window.location.href = '../vistas/login.html';
-                        return Promise.reject('Sesión expirada');
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        alert('Domiciliario guardado correctamente.');
-                        closeModal('modalEditar');
-                        loadDomiciliarios();
-                    } else {
-                        alert('Error: ' + (data.error || 'No se pudo guardar'));
-                    }
-                })
-                .catch(error => {
-                    if (error !== 'Sesión expirada') {
-                        alert('Error al guardar el domiciliario');
-                        console.error(error);
-                    }
-                });
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    closeModal('modalEditar');
+                    loadDomiciliarios(currentPage);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
         }
 
         // Redirige al menú de usuario (en este caso, al login)
@@ -326,23 +324,23 @@ $nombreCompleto = obtenerNombreUsuario();
 
         // Filtra los domiciliarios en la tabla según búsqueda y estado
         function filterDomiciliarios() {
-            const searchInput = document.getElementById('searchInput').value.trim();
-            const search = quitarTildes(searchInput.toLowerCase());
-            const status = document.getElementById('filterStatus').value.toLowerCase();
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
             const rows = document.querySelectorAll('#domiciliariosTableBody tr');
 
             rows.forEach(row => {
-                const nombre = quitarTildes(row.children[0].textContent);
-                const telefono = row.children[1].textContent.toLowerCase();
-                const zona = quitarTildes((row.children[2].textContent || ''));
-                const estado = quitarTildes(row.children[3].textContent);
+                const nombre = row.cells[0].textContent.toLowerCase();
+                const telefono = row.cells[1].textContent.toLowerCase();
+                const estadoElement = row.cells[3].querySelector('span');
+                
+                // Mapear el filtro "en ruta" al estado real "ocupado"
+                let estadoFiltro = statusFilter;
+                if (statusFilter === 'en ruta') {
+                    estadoFiltro = 'ocupado';
+                }
 
-                const coincideTexto =
-                    nombre.includes(search) ||
-                    telefono.includes(search) ||
-                    zona.includes(search);
-
-                const coincideEstado = status === '' || estado === status;
+                const coincideTexto = nombre.includes(searchTerm) || telefono.includes(searchTerm);
+                const coincideEstado = !statusFilter || estadoElement.className.includes(estadoFiltro);
 
                 row.style.display = (coincideTexto && coincideEstado) ? '' : 'none';
             });
@@ -380,7 +378,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 // Cambiar el texto del estado para mostrar
                 let estadoTexto = d.estado;
                 if (d.estado === 'ocupado') {
-                    estadoTexto = 'en servicio';
+                    estadoTexto = 'En ruta';
                 }
 
                 html += `

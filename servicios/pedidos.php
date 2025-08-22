@@ -531,52 +531,69 @@ function marcarLlegadaPedido($id_pedido)
 {
     try {
         $db = ConectarDB();
-
-        // Verificar si el pedido existe antes de proceder
-        $stmt_check = $db->prepare("SELECT id_pedido FROM pedidos WHERE id_pedido = ?");
+        
+        // Iniciar transacción
+        $db->autocommit(false);
+        
+        // Verificar si el pedido existe
+        $stmt_check = $db->prepare("SELECT id_domiciliario, id_vehiculo FROM pedidos WHERE id_pedido = ?");
         $stmt_check->bind_param("i", $id_pedido);
         $stmt_check->execute();
-        $result_check = $stmt_check->get_result();
+        $result = $stmt_check->get_result();
+        $pedido_data = $result->fetch_assoc();
+        $stmt_check->close();
 
-        if (!$result_check->fetch_assoc()) {
-            $stmt_check->close();
+        if (!$pedido_data) {
+            $db->rollback();
             $db->close();
             return ['error' => 'El pedido ya fue procesado o no existe'];
         }
-        $stmt_check->close();
 
-        // Actualizar el estado del pedido a 'entregado' y marcar hora de llegada
+        $id_domiciliario = $pedido_data['id_domiciliario'];
+        $id_vehiculo = $pedido_data['id_vehiculo'];
+
+        // 1. Actualizar el estado del pedido
         $stmt = $db->prepare("UPDATE pedidos SET estado = 'entregado', hora_llegada = NOW() WHERE id_pedido = ?");
         $stmt->bind_param("i", $id_pedido);
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            $db->rollback();
+            $stmt->close();
+            $db->close();
+            return ['error' => 'Error al actualizar pedido'];
+        }
         $stmt->close();
 
-        // Obtener domiciliario y vehículo del pedido
-        $stmt = $db->prepare("SELECT id_domiciliario, id_vehiculo FROM pedidos WHERE id_pedido = ?");
-        $stmt->bind_param("i", $id_pedido);
-        $stmt->execute();
-        $stmt->bind_result($id_domiciliario, $id_vehiculo);
-        $stmt->fetch();
-        $stmt->close();
-
-        // Marcar domiciliario como disponible
+        // 2. Actualizar domiciliario a disponible
         if ($id_domiciliario) {
-            $stmt3 = $db->prepare("UPDATE domiciliarios SET estado = 'disponible' WHERE id_domiciliario = ?");
-            $stmt3->bind_param("i", $id_domiciliario);
-            $stmt3->execute();
+            $stmt2 = $db->prepare("UPDATE domiciliarios SET estado = 'disponible' WHERE id_domiciliario = ?");
+            $stmt2->bind_param("i", $id_domiciliario);
+            if (!$stmt2->execute()) {
+                $db->rollback();
+                $stmt2->close();
+                $db->close();
+                return ['error' => 'Error al actualizar domiciliario'];
+            }
+            $stmt2->close();
+        }
+
+        // 3. Actualizar vehículo a disponible
+        if ($id_vehiculo) {
+            $stmt3 = $db->prepare("UPDATE vehiculos SET estado = 'disponible' WHERE id_vehiculo = ?");
+            $stmt3->bind_param("i", $id_vehiculo);
+            if (!$stmt3->execute()) {
+                $db->rollback();
+                $stmt3->close();
+                $db->close();
+                return ['error' => 'Error al actualizar vehículo'];
+            }
             $stmt3->close();
         }
-        // Marcar vehículo como disponible
-        if ($id_vehiculo) {
-            $stmt4 = $db->prepare("UPDATE vehiculos SET estado = 'disponible' WHERE id_vehiculo = ?");
-            $stmt4->bind_param("i", $id_vehiculo);
-            $stmt4->execute();
-            $stmt4->close();
-        }
 
+        // Confirmar todas las operaciones
+        $db->commit();
         $db->close();
 
-        // Mover al histórico automáticamente (ahora con estado 'entregado')
+        // Solo después de confirmar todo, mover al histórico
         $resultado = moverPedidoHistorial($id_pedido);
         if (isset($resultado['error'])) {
             return $resultado;
@@ -584,6 +601,10 @@ function marcarLlegadaPedido($id_pedido)
 
         return ['success' => true, 'message' => 'Pedido entregado y movido al histórico'];
     } catch (Exception $e) {
+        if (isset($db)) {
+            $db->rollback();
+            $db->close();
+        }
         return ['error' => 'Error al marcar llegada: ' . $e->getMessage()];
     }
 }
