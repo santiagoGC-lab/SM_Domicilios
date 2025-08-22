@@ -205,11 +205,7 @@ try {
             </div>
         </div>
 
-        <!-- Estadísticas principales -->
-        <!-- Tarjetas de resumen de KPIs solicitados -->
         <?php
-        // --- Cálculos para los KPIs del reporte (ESTADÍSTICAS DIARIAS) ---
-
         // 1. Total de pedidos creados HOY (siguen en tabla pedidos hasta ser procesados)
         $totalPedidosHoy = $pdo->query("
             SELECT COUNT(*) 
@@ -311,8 +307,6 @@ try {
 
         <!-- Gráficos y reportes -->
         <div class="reports-grid">
-            <!-- BLOQUE ELIMINADO: Gráfico de pedidos por estado -->
-            <!-- CÓDIGO ELIMINADO: div.report-card con estadosChart -->
 
             <!-- Tabla de domiciliarios más activos -->
             <div class="report-card">
@@ -405,8 +399,6 @@ try {
             </div>
         </div>
 
-        <!-- Pedidos Mensuales Archivados (ahora ocupa todo el ancho, debajo de los reportes) -->
-        <!-- Tabla de pedidos mensuales archivados por mes y año -->
         <?php
         // Cambiar las estadísticas principales para mostrar datos del mes
         $meses_es = [
@@ -476,11 +468,14 @@ try {
                 $anio = intval($_GET['anio']);
                 $db = new mysqli('localhost', 'root', 'root', 'sm_domicilios');
                 $db->set_charset('utf8mb4');
-                // Consultar pedidos entregados del mes en historico_pedidos
-                $sqlHistorico = "SELECT id_pedido_original, cliente_nombre, domiciliario_nombre, zona_nombre, estado, fecha_pedido, hora_salida, hora_llegada, total
-                FROM historico_pedidos
-                WHERE YEAR(fecha_pedido) = $anio AND MONTH(fecha_pedido) = $mes
-                ORDER BY fecha_pedido DESC";
+                // Consultar pedidos entregados del mes en historico_pedidos con información adicional
+                $sqlHistorico = "SELECT hp.id_pedido_original, hp.cliente_nombre, hp.domiciliario_nombre, hp.zona_nombre, hp.estado, hp.fecha_pedido, hp.hora_salida, hp.hora_llegada, hp.total,
+                               hp.cliente_telefono, hp.cliente_direccion, hp.cantidad_paquetes, hp.tiempo_estimado,
+                               z.barrio
+                FROM historico_pedidos hp
+                LEFT JOIN zonas z ON hp.id_zona = z.id_zona
+                WHERE YEAR(hp.fecha_pedido) = $anio AND MONTH(hp.fecha_pedido) = $mes
+                ORDER BY hp.fecha_pedido DESC";
                 $resultHistorico = $db->query($sqlHistorico);
                 while ($row = $resultHistorico->fetch_assoc()) {
                     $pedidosMensuales[] = $row;
@@ -492,30 +487,30 @@ try {
                 <table class="data-table" style="width:100%;">
                     <thead>
                         <tr>
-                            <th>ID Pedido</th>
                             <th>Cliente</th>
                             <th>Domiciliario</th>
                             <th>Zona</th>
                             <th>Estado</th>
                             <th>Fecha</th>
-                            <th>Hora Salida</th>
-                            <th>Hora Llegada</th>
                             <th>Total</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (count($pedidosMensuales) > 0): ?>
                             <?php foreach ($pedidosMensuales as $pedido): ?>
                                 <tr>
-                                    <td>#<?php echo $pedido['id_pedido_original']; ?></td>
                                     <td><?php echo htmlspecialchars($pedido['cliente_nombre']); ?></td>
                                     <td><?php echo htmlspecialchars($pedido['domiciliario_nombre'] ?? 'No asignado'); ?></td>
                                     <td><?php echo htmlspecialchars($pedido['zona_nombre'] ?? ''); ?></td>
                                     <td><span class="estado-<?php echo strtolower($pedido['estado']); ?> estado"><?php echo ucfirst($pedido['estado']); ?></span></td>
                                     <td><?php echo date('d/m/Y', strtotime($pedido['fecha_pedido'])); ?></td>
-                                    <td><?php echo !empty($pedido['hora_salida']) ? date('H:i', strtotime($pedido['hora_salida'])) : '-'; ?></td>
-                                    <td><?php echo !empty($pedido['hora_llegada']) ? date('H:i', strtotime($pedido['hora_llegada'])) : '-'; ?></td>
                                     <td>$<?php echo number_format($pedido['total'], 2); ?></td>
+                                    <td>
+                                        <button class="btn btn-info btn-sm" onclick="verDetallesPedido(<?php echo htmlspecialchars(json_encode($pedido), ENT_QUOTES, 'UTF-8'); ?>)">
+                                            <i class="fas fa-eye"></i> Ver Detalles
+                                        </button>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -526,82 +521,88 @@ try {
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
 
-    <script>
-        // --- Datos para los gráficos de reportes ---
-        // ELIMINADO: const estadosData
-        const zonasData = <?php echo json_encode($pedidosPorZona); ?>;
-        const ingresosData = <?php echo json_encode($pedidosUltimos7Dias); ?>;
+            <!-- Modal para mostrar detalles del pedido -->
+            <div id="modalDetallesPedido" class="modal" style="display: none;">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>Detalles del Pedido</h3>
+                        <span class="close" onclick="cerrarModalDetalles()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <h4>Información del Cliente</h4>
+                                <p><strong>Nombre:</strong> <span id="detalle-cliente"></span></p>
+                                <p><strong>Teléfono:</strong> <span id="detalle-telefono"></span></p>
+                                <p><strong>Dirección:</strong> <span id="detalle-direccion"></span></p>
+                                <p><strong>Barrio:</strong> <span id="detalle-barrio"></span></p>
+                            </div>
+                            <div>
+                                <h4>Información del Pedido</h4>
+                                <p><strong>Domiciliario:</strong> <span id="detalle-domiciliario"></span></p>
+                                <p><strong>Zona:</strong> <span id="detalle-zona"></span></p>
+                                <p><strong>Estado:</strong> <span id="detalle-estado"></span></p>
+                                <p><strong>Fecha:</strong> <span id="detalle-fecha"></span></p>
+                            </div>
+                        </div>
+                        <div class="detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+                            <div>
+                                <h4>Tiempos</h4>
+                                <p><strong>Hora Salida:</strong> <span id="detalle-salida"></span></p>
+                                <p><strong>Hora Llegada:</strong> <span id="detalle-llegada"></span></p>
+                                <p><strong>Tiempo Estimado:</strong> <span id="detalle-estimado"></span></p>
+                            </div>
+                            <div>
+                                <h4>Paquetes</h4>
+                                <p><strong>Cantidad:</strong> <span id="detalle-paquetes"></span></p>
+                                <p><strong>Total:</strong> <span id="detalle-total"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        // Función para asignar colores según el estado
-        function getColorByEstado(estado) {
-            switch(estado.toLowerCase()) {
-                case 'entregado':
-                case 'completado':
-                    return '#28a745'; // Verde para entregado
-                case 'pendiente':
-                case 'en_camino':
-                case 'despachado':
-                    return '#ffc107'; // Naranja para pendiente/en proceso
-                case 'cancelado':
-                case 'rechazado':
-                    return '#dc3545'; // Rojo para cancelado
-                default:
-                    return '#6c757d'; // Gris para otros estados
+            <script>
+            function verDetallesPedido(pedido) {
+                document.getElementById('detalle-cliente').textContent = pedido.cliente_nombre || 'N/A';
+                document.getElementById('detalle-telefono').textContent = pedido.cliente_telefono || 'N/A';
+                document.getElementById('detalle-direccion').textContent = pedido.cliente_direccion || 'N/A';
+                document.getElementById('detalle-barrio').textContent = pedido.barrio || 'N/A';
+                document.getElementById('detalle-domiciliario').textContent = pedido.domiciliario_nombre || 'No asignado';
+                document.getElementById('detalle-zona').textContent = pedido.zona_nombre || 'N/A';
+                document.getElementById('detalle-estado').textContent = pedido.estado ? pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1) : 'N/A';
+                document.getElementById('detalle-fecha').textContent = pedido.fecha_pedido ? new Date(pedido.fecha_pedido).toLocaleDateString('es-ES') : 'N/A';
+                document.getElementById('detalle-salida').textContent = pedido.hora_salida ? new Date(pedido.hora_salida).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '-';
+                document.getElementById('detalle-llegada').textContent = pedido.hora_llegada ? new Date(pedido.hora_llegada).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '-';
+                document.getElementById('detalle-estimado').textContent = (pedido.tiempo_estimado || '30') + ' min';
+                document.getElementById('detalle-paquetes').textContent = pedido.cantidad_paquetes || '1';
+                document.getElementById('detalle-total').textContent = '$' + parseFloat(pedido.total || 0).toLocaleString('es-ES', {minimumFractionDigits: 2});
+                
+                document.getElementById('modalDetallesPedido').style.display = 'block';
             }
-        }
 
-        // CÓDIGO ELIMINADO: Gráfico de pedidos por estado usando Chart.js
-        // ELIMINADO: const estadosCtx y new Chart(estadosCtx, ...)
+            function cerrarModalDetalles() {
+                document.getElementById('modalDetallesPedido').style.display = 'none';
+            }
 
-        // Función para exportar reportes en PDF o descargar tablas
+            // Cerrar modal al hacer clic fuera de él
+            window.onclick = function(event) {
+                const modal = document.getElementById('modalDetallesPedido');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+            </script>
+        </div>
+
+        <script src="../componentes/dashboard.js"></script>
+        <script>
         function exportarReporte(tipo) {
-            const formData = new FormData();
-            formData.append('accion', 'exportar');
-            formData.append('tipo', tipo); // Agregar el tipo de reporte
-            fetch('../servicios/reportes.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `reporte_${tipo}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                })
-                .catch(error => {
-                    console.error('Error al exportar el reporte:', error);
-                    alert('Error al exportar el reporte.');
-                });
+            // Función para exportar reportes
+            console.log('Exportando reporte:', tipo);
         }
-    </script>
-    <style>
-        .select-mes,
-        .select-anio {
-            padding: 8px 12px;
-            border: 1px solid #b2b2b2;
-            border-radius: 6px;
-            font-size: 15px;
-            background: #f9f9f9;
-            color: #015938;
-            margin-right: 8px;
-            font-family: 'Poppins', sans-serif;
-            transition: border-color 0.2s;
-        }
-
-        .select-mes:focus,
-        .select-anio:focus {
-            border-color: #007B55;
-            background: #fff;
-        }
-    </style>
+        </script>
+    </div>
 </body>
-
 </html>
