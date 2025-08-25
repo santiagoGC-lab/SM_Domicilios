@@ -500,10 +500,11 @@ try {
                         <tr>
                             <th>Cliente</th>
                             <th>Domiciliario</th>
-                            <th>Zona</th>
-                            <th>Estado</th>
-                            <th>Fecha</th>
-                            <th>Total</th>
+                            <th>Barrio</th>
+                            <th>Hora Salida</th>
+                            <th>Hora Llegada</th>
+                            <th>Hora Estimada</th> <!-- Corregido: cambié el div por th -->
+                            <th>Cantidad</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -513,10 +514,19 @@ try {
                                 <tr>
                                     <td><?php echo htmlspecialchars($pedido['cliente_nombre']); ?></td>
                                     <td><?php echo htmlspecialchars($pedido['domiciliario_nombre'] ?? 'No asignado'); ?></td>
-                                    <td><?php echo htmlspecialchars($pedido['zona_nombre'] ?? ''); ?></td>
-                                    <td><span class="estado-<?php echo strtolower($pedido['estado']); ?> estado"><?php echo ucfirst($pedido['estado']); ?></span></td>
-                                    <td><?php echo date('d/m/Y', strtotime($pedido['fecha_pedido'])); ?></td>
-                                    <td>$<?php echo number_format($pedido['total'], 2); ?></td>
+                                    <td><?php echo htmlspecialchars($pedido['barrio'] ?? 'N/A'); ?></td>
+                                    <td><?php echo $pedido['hora_salida'] ? date('H:i', strtotime($pedido['hora_salida'])) : 'N/A'; ?></td>
+                                    <td><?php echo $pedido['hora_llegada'] ? date('H:i', strtotime($pedido['hora_llegada'])) : 'N/A'; ?></td>
+                                    <td><?php 
+                                        if ($pedido['hora_salida'] && $pedido['tiempo_estimado']) {
+                                            $hora_salida = new DateTime($pedido['hora_salida']);
+                                            $hora_salida->add(new DateInterval('PT' . $pedido['tiempo_estimado'] . 'M'));
+                                            echo $hora_salida->format('H:i');
+                                        } else {
+                                            echo 'N/A';
+                                        }
+                                    ?></td>
+                                    <td><?php echo $pedido['cantidad_paquetes']; ?></td>
                                     <td>
                                         <button class="btn btn-info btn-sm" onclick="verDetallesPedido(<?php echo htmlspecialchars(json_encode($pedido), ENT_QUOTES, 'UTF-8'); ?>)">
                                             <i class="fas fa-eye"></i> Ver Detalles
@@ -526,7 +536,7 @@ try {
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" style="text-align:center;">No hay pedidos para este mes.</td>
+                                <td colspan="8" style="text-align:center;">No hay pedidos para este mes.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -535,39 +545,81 @@ try {
 
             <!-- Modal para mostrar detalles del pedido -->
             <div id="modalDetallesPedido" class="modal" style="display: none;">
-                <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-content" style="max-width: 700px;">
                     <div class="modal-header">
                         <h3>Detalles del Pedido</h3>
                         <span class="close" onclick="cerrarModalDetalles()">&times;</span>
                     </div>
                     <div class="modal-body">
-                        <div class="detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div>
-                                <h4>Información del Cliente</h4>
-                                <p><strong>Nombre:</strong> <span id="detalle-cliente"></span></p>
-                                <p><strong>Teléfono:</strong> <span id="detalle-telefono"></span></p>
-                                <p><strong>Dirección:</strong> <span id="detalle-direccion"></span></p>
-                                <p><strong>Barrio:</strong> <span id="detalle-barrio"></span></p>
-                            </div>
-                            <div>
-                                <h4>Información del Pedido</h4>
-                                <p><strong>Domiciliario:</strong> <span id="detalle-domiciliario"></span></p>
-                                <p><strong>Zona:</strong> <span id="detalle-zona"></span></p>
-                                <p><strong>Estado:</strong> <span id="detalle-estado"></span></p>
-                                <p><strong>Fecha:</strong> <span id="detalle-fecha"></span></p>
+                        <!-- Información del Cliente -->
+                        <div class="detalle-section">
+                            <h4><i class="fas fa-user"></i> Información del Cliente</h4>
+                            <div class="detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <p><strong>Nombre:</strong> <span id="detalle-cliente"></span></p>
+                                    <p><strong>Teléfono:</strong> <span id="detalle-telefono"></span></p>
+                                </div>
+                                <div>
+                                    <p><strong>Dirección:</strong> <span id="detalle-direccion"></span></p>
+                                    <p><strong>Barrio:</strong> <span id="detalle-barrio"></span></p>
+                                </div>
                             </div>
                         </div>
-                        <div class="detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
-                            <div>
-                                <h4>Tiempos</h4>
-                                <p><strong>Hora Salida:</strong> <span id="detalle-salida"></span></p>
-                                <p><strong>Hora Llegada:</strong> <span id="detalle-llegada"></span></p>
-                                <p><strong>Tiempo Estimado:</strong> <span id="detalle-estimado"></span></p>
+
+                        <!-- Información del Domiciliario -->
+                        <div class="detalle-section" style="margin-top: 20px;">
+                            <h4><i class="fas fa-motorcycle"></i> Información del Domiciliario</h4>
+                            <div class="detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <p><strong>Domiciliario:</strong> <span id="detalle-domiciliario"></span></p>
+                                    <p><strong>Zona Asignada:</strong> <span id="detalle-zona"></span></p>
+                                </div>
+                                <div>
+                                    <p><strong>Estado del Pedido:</strong> <span id="detalle-estado"></span></p>
+                                    <p><strong>Fecha del Pedido:</strong> <span id="detalle-fecha"></span></p>
+                                </div>
                             </div>
-                            <div>
-                                <h4>Paquetes</h4>
-                                <p><strong>Cantidad:</strong> <span id="detalle-paquetes"></span></p>
-                                <p><strong>Total:</strong> <span id="detalle-total"></span></p>
+                        </div>
+
+                        <!-- Tiempos de Entrega -->
+                        <div class="detalle-section" style="margin-top: 20px;">
+                            <h4><i class="fas fa-clock"></i> Tiempos de Entrega</h4>
+                            <div class="detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <p><strong>Hora de Salida:</strong></p>
+                                    <p class="tiempo-valor" id="detalle-salida"></p>
+                                </div>
+                                <div>
+                                    <p><strong>Hora de Llegada:</strong></p>
+                                    <p class="tiempo-valor" id="detalle-llegada"></p>
+                                </div>
+                                <div>
+                                    <p><strong>Tiempo Estimado:</strong></p>
+                                    <p class="tiempo-valor" id="detalle-estimado"></p>
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                                <p><strong>Tiempo Real de Entrega:</strong> <span id="detalle-tiempo-real"></span></p>
+                                <p><strong>Cumplimiento:</strong> <span id="detalle-cumplimiento"></span></p>
+                            </div>
+                        </div>
+
+                        <!-- Información del Pedido -->
+                        <div class="detalle-section" style="margin-top: 20px;">
+                            <h4><i class="fas fa-box"></i> Información del Pedido</h4>
+                            <div class="detalle-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <p><strong>Cantidad de Paquetes:</strong></p>
+                                    <p class="pedido-valor" id="detalle-paquetes"></p>
+                                </div>
+                                <div>
+                                    <p><strong>Total del Pedido:</strong></p>
+                                    <p class="pedido-valor total" id="detalle-total"></p>
+                                </div>
+                                <div>
+                                    <p><strong>ID del Pedido:</strong></p>
+                                    <p class="pedido-valor" id="detalle-id"></p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -576,19 +628,60 @@ try {
 
             <script>
             function verDetallesPedido(pedido) {
+                // Información del Cliente
                 document.getElementById('detalle-cliente').textContent = pedido.cliente_nombre || 'N/A';
                 document.getElementById('detalle-telefono').textContent = pedido.cliente_telefono || 'N/A';
                 document.getElementById('detalle-direccion').textContent = pedido.cliente_direccion || 'N/A';
                 document.getElementById('detalle-barrio').textContent = pedido.barrio || 'N/A';
+                
+                // Información del Domiciliario
                 document.getElementById('detalle-domiciliario').textContent = pedido.domiciliario_nombre || 'No asignado';
                 document.getElementById('detalle-zona').textContent = pedido.zona_nombre || 'N/A';
-                document.getElementById('detalle-estado').textContent = pedido.estado ? pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1) : 'N/A';
+                document.getElementById('detalle-estado').innerHTML = `<span class="estado-${pedido.estado?.toLowerCase() || 'pendiente'}">${pedido.estado ? pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1) : 'N/A'}</span>`;
                 document.getElementById('detalle-fecha').textContent = pedido.fecha_pedido ? new Date(pedido.fecha_pedido).toLocaleDateString('es-ES') : 'N/A';
-                document.getElementById('detalle-salida').textContent = pedido.hora_salida ? new Date(pedido.hora_salida).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '-';
-                document.getElementById('detalle-llegada').textContent = pedido.hora_llegada ? new Date(pedido.hora_llegada).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '-';
-                document.getElementById('detalle-estimado').textContent = (pedido.tiempo_estimado || '30') + ' min';
+                
+                // Tiempos de Entrega
+                const horaSalida = pedido.hora_salida ? new Date(pedido.hora_salida).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '-';
+                const horaLlegada = pedido.hora_llegada ? new Date(pedido.hora_llegada).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '-';
+                
+                // Calcular hora estimada de llegada
+                let horaEstimada = '-';
+                if (pedido.hora_salida && pedido.tiempo_estimado) {
+                    const salida = new Date(pedido.hora_salida);
+                    salida.setMinutes(salida.getMinutes() + parseInt(pedido.tiempo_estimado || 30));
+                    horaEstimada = salida.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+                }
+                
+                document.getElementById('detalle-salida').textContent = horaSalida;
+                document.getElementById('detalle-llegada').textContent = horaLlegada;
+                document.getElementById('detalle-estimado').textContent = horaEstimada;
+                
+                // Calcular tiempo real y cumplimiento
+                let tiempoReal = '-';
+                let cumplimiento = '-';
+                
+                if (pedido.hora_salida && pedido.hora_llegada) {
+                    const salida = new Date(pedido.hora_salida);
+                    const llegada = new Date(pedido.hora_llegada);
+                    const tiempoRealMinutos = Math.round((llegada - salida) / (1000 * 60));
+                    tiempoReal = tiempoRealMinutos + ' min';
+                    
+                    const tiempoEstimadoNum = parseInt(pedido.tiempo_estimado) || 30;
+                    if (tiempoRealMinutos <= tiempoEstimadoNum) {
+                        cumplimiento = '<span style="color: #28a745; font-weight: bold;">✓ Cumplido</span>';
+                    } else {
+                        const retraso = tiempoRealMinutos - tiempoEstimadoNum;
+                        cumplimiento = `<span style="color: #dc3545; font-weight: bold;">✗ Retraso de ${retraso} min</span>`;
+                    }
+                }
+                
+                document.getElementById('detalle-tiempo-real').textContent = tiempoReal;
+                document.getElementById('detalle-cumplimiento').innerHTML = cumplimiento;
+                
+                // Información del Pedido
                 document.getElementById('detalle-paquetes').textContent = pedido.cantidad_paquetes || '1';
                 document.getElementById('detalle-total').textContent = '$' + parseFloat(pedido.total || 0).toLocaleString('es-ES', {minimumFractionDigits: 2});
+                document.getElementById('detalle-id').textContent = pedido.id_pedido_original || 'N/A';
                 
                 document.getElementById('modalDetallesPedido').style.display = 'block';
             }

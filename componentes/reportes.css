@@ -719,7 +719,7 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
+    overflow: hidden; /* Cambiado de 'auto' a 'hidden' */
     background-color: rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s ease;
 }
@@ -731,9 +731,44 @@ body {
     border: none;
     border-radius: 8px;
     width: 90%;
-    max-width: 600px;
+    max-width: 700px; /* Aumentado para acomodar el contenido */
+    max-height: 90vh; /* Limitamos la altura máxima */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     animation: slideIn 0.3s ease;
+    overflow: hidden; /* Evitamos scroll en el contenido principal */
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: calc(90vh - 120px); /* Restamos el header */
+    overflow-y: auto; /* Solo scroll vertical en el body si es necesario */
+    overflow-x: hidden; /* Sin scroll horizontal */
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 5% auto; /* Reducido el margen superior en móviles */
+        max-height: 95vh;
+    }
+    
+    .modal-body {
+        max-height: calc(95vh - 100px);
+        padding: 15px;
+    }
+    
+    .detalle-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .modal-header {
+        padding: 15px;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.3rem;
+    }
 }
 
 .modal-header {
