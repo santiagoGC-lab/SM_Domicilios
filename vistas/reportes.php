@@ -215,7 +215,7 @@ try {
 
         // 2. Pedidos entregados HOY (están en historial)
         $pedidosEntregadosHoy = $pdo->query("
-            SELECT hp.hora_salida, hp.hora_llegada, hp.tiempo_estimado
+            SELECT hp.hora_salida, hp.hora_llegada, hp.tiempo_estimado, hp.hora_estimada_entrega, hp.fecha_pedido
             FROM historico_pedidos hp
             WHERE DATE(hp.fecha_completado) = CURDATE() AND hp.estado = 'entregado'
         ")->fetchAll();
@@ -255,15 +255,26 @@ try {
         $cumplidos = 0;
 
         foreach ($pedidosEntregadosHoy as $pedido) {
-            if (!empty($pedido['hora_salida']) && !empty($pedido['hora_llegada']) && !empty($pedido['tiempo_estimado'])) {
+            if (!empty($pedido['hora_salida']) && !empty($pedido['hora_llegada'])) {
                 $salida = strtotime($pedido['hora_salida']);
                 $llegada = strtotime($pedido['hora_llegada']);
                 $tiempoReal = ($llegada - $salida) / 60; // minutos
                 $totalTiempo += $tiempoReal;
                 $numEntregas++;
 
-                if ($tiempoReal <= $pedido['tiempo_estimado']) {
-                    $cumplidos++;
+                // NUEVA LÓGICA: Usar hora programada si está disponible
+                if (!empty($pedido['hora_estimada_entrega'])) {
+                    $fechaPedido = date('Y-m-d', strtotime($pedido['fecha_pedido']));
+                    $horaProgramada = strtotime($fechaPedido . ' ' . $pedido['hora_estimada_entrega']);
+                    
+                    if ($llegada <= $horaProgramada) {
+                        $cumplidos++;
+                    }
+                } else {
+                    // Fallback: usar tiempo estimado
+                    if (!empty($pedido['tiempo_estimado']) && $tiempoReal <= $pedido['tiempo_estimado']) {
+                        $cumplidos++;
+                    }
                 }
             }
         }
@@ -481,7 +492,7 @@ try {
                 $db->set_charset('utf8mb4');
                 // Consultar pedidos entregados del mes en historico_pedidos con información adicional
                 $sqlHistorico = "SELECT hp.id_pedido_original, hp.cliente_nombre, hp.domiciliario_nombre, hp.zona_nombre, hp.estado, hp.fecha_pedido, hp.hora_salida, hp.hora_llegada, hp.total,
-                               hp.cliente_telefono, hp.cliente_direccion, hp.cantidad_paquetes, hp.tiempo_estimado,
+                               hp.cliente_telefono, hp.cliente_direccion, hp.cantidad_paquetes, hp.tiempo_estimado, hp.hora_estimada_entrega,
                                z.barrio
                 FROM historico_pedidos hp
                 LEFT JOIN zonas z ON hp.id_zona = z.id_zona
@@ -675,12 +686,27 @@ try {
                     const tiempoRealMinutos = Math.round((llegada - salida) / (1000 * 60));
                     tiempoReal = tiempoRealMinutos + ' min';
                     
-                    const tiempoEstimadoNum = parseInt(pedido.tiempo_estimado) || 30;
-                    if (tiempoRealMinutos <= tiempoEstimadoNum) {
-                        cumplimiento = '<span style="color: #28a745; font-weight: bold;">✓ Cumplido</span>';
+                    // NUEVA LÓGICA: Usar hora programada si está disponible
+                    if (pedido.hora_estimada_entrega) {
+                        const fechaPedido = pedido.fecha_pedido.split(' ')[0]; // Obtener solo la fecha
+                        const horaProgramada = new Date(fechaPedido + ' ' + pedido.hora_estimada_entrega);
+                        
+                        if (llegada <= horaProgramada) {
+                            const adelanto = Math.round((horaProgramada - llegada) / (1000 * 60));
+                            cumplimiento = `<span style="color: #28a745; font-weight: bold;">✓ Cumplido (${adelanto} min antes)</span>`;
+                        } else {
+                            const retraso = Math.round((llegada - horaProgramada) / (1000 * 60));
+                            cumplimiento = `<span style="color: #dc3545; font-weight: bold;">✗ Retraso de ${retraso} min</span>`;
+                        }
                     } else {
-                        const retraso = tiempoRealMinutos - tiempoEstimadoNum;
-                        cumplimiento = `<span style="color: #dc3545; font-weight: bold;">✗ Retraso de ${retraso} min</span>`;
+                        // Fallback: usar tiempo estimado
+                        const tiempoEstimadoNum = parseInt(pedido.tiempo_estimado) || 30;
+                        if (tiempoRealMinutos <= tiempoEstimadoNum) {
+                            cumplimiento = '<span style="color: #28a745; font-weight: bold;">✓ Cumplido (estimado)</span>';
+                        } else {
+                            const retraso = tiempoRealMinutos - tiempoEstimadoNum;
+                            cumplimiento = `<span style="color: #dc3545; font-weight: bold;">✗ Retraso de ${retraso} min (estimado)</span>`;
+                        }
                     }
                 }
                 

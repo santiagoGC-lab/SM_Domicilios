@@ -422,15 +422,33 @@ function exportarDetallesPedidoExcel($datos)
             $tiempoRealMinutos = round(($llegada->getTimestamp() - $salida->getTimestamp()) / 60);
             $tiempoReal = $tiempoRealMinutos . ' minutos';
             
-            $tiempoEstimadoNum = intval($pedido['tiempo_estimado']) ?: 30;
-            if ($tiempoRealMinutos <= $tiempoEstimadoNum) {
-                $cumplimiento = '✓ CUMPLIDO';
-                $diferencia = $tiempoEstimadoNum - $tiempoRealMinutos;
-                $observacionCumplimiento = "Entregado {$diferencia} minutos antes de lo estimado";
+            // NUEVA LÓGICA: Comparar hora de llegada con hora programada
+            if ($pedido['hora_estimada_entrega']) {
+                // Crear DateTime para la hora programada del mismo día que la llegada
+                $fechaLlegada = $llegada->format('Y-m-d');
+                $horaProgramada = new DateTime($fechaLlegada . ' ' . $pedido['hora_estimada_entrega']);
+                
+                if ($llegada <= $horaProgramada) {
+                    $cumplimiento = '✓ CUMPLIDO';
+                    $diferencia = round(($horaProgramada->getTimestamp() - $llegada->getTimestamp()) / 60);
+                    $observacionCumplimiento = "Entregado {$diferencia} minutos antes de la hora programada ({$pedido['hora_estimada_entrega']})";
+                } else {
+                    $retraso = round(($llegada->getTimestamp() - $horaProgramada->getTimestamp()) / 60);
+                    $cumplimiento = '✗ CON RETRASO';
+                    $observacionCumplimiento = "Retraso de {$retraso} minutos respecto a la hora programada ({$pedido['hora_estimada_entrega']})";
+                }
             } else {
-                $retraso = $tiempoRealMinutos - $tiempoEstimadoNum;
-                $cumplimiento = '✗ CON RETRASO';
-                $observacionCumplimiento = "Retraso de {$retraso} minutos respecto al tiempo estimado";
+                // Fallback: usar lógica anterior si no hay hora programada
+                $tiempoEstimadoNum = intval($pedido['tiempo_estimado']) ?: 30;
+                if ($tiempoRealMinutos <= $tiempoEstimadoNum) {
+                    $cumplimiento = '✓ CUMPLIDO (estimado)';
+                    $diferencia = $tiempoEstimadoNum - $tiempoRealMinutos;
+                    $observacionCumplimiento = "Entregado {$diferencia} minutos antes del tiempo estimado";
+                } else {
+                    $retraso = $tiempoRealMinutos - $tiempoEstimadoNum;
+                    $cumplimiento = '✗ CON RETRASO (estimado)';
+                    $observacionCumplimiento = "Retraso de {$retraso} minutos respecto al tiempo estimado";
+                }
             }
         }
         

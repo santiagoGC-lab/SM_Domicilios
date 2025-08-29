@@ -384,18 +384,19 @@ function moverPedidoHistorial($id)
         $domiciliario_telefono = $pedido['domiciliario_telefono'] ? "'" . $db->real_escape_string($pedido['domiciliario_telefono']) . "'" : 'NULL';
         $vehiculo_tipo = $pedido['vehiculo_tipo'] ? "'" . $db->real_escape_string($pedido['vehiculo_tipo']) . "'" : 'NULL';
         $vehiculo_placa = $pedido['vehiculo_placa'] ? "'" . $db->real_escape_string($pedido['vehiculo_placa']) . "'" : 'NULL';
+        $hora_estimada_entrega = $pedido['hora_estimada_entrega'] ? "'" . $db->real_escape_string($pedido['hora_estimada_entrega']) . "'" : 'NULL';
         $usuario_proceso = isset($_SESSION['id_usuario']) ? intval($_SESSION['id_usuario']) : 'NULL';
-
+        
         // 3. Insertar con consulta SQL directa
         $sql = "INSERT INTO historico_pedidos (
             id_pedido_original, id_cliente, id_zona, id_domiciliario, id_vehiculo, estado, 
-            cantidad_paquetes, total, tiempo_estimado, fecha_pedido, hora_salida, hora_llegada, 
+            cantidad_paquetes, total, tiempo_estimado, hora_estimada_entrega, fecha_pedido, hora_salida, hora_llegada, 
             fecha_completado, cliente_nombre, cliente_documento, cliente_telefono, cliente_direccion, 
             zona_nombre, zona_tarifa, domiciliario_nombre, domiciliario_telefono, vehiculo_tipo, 
             vehiculo_placa, usuario_proceso
         ) VALUES (
             $id_pedido_original, $id_cliente, $id_zona, $id_domiciliario, $id_vehiculo, '$estado',
-            $cantidad_paquetes, $total, $tiempo_estimado, $fecha_pedido, $hora_salida, $hora_llegada,
+            $cantidad_paquetes, $total, $tiempo_estimado, $hora_estimada_entrega, $fecha_pedido, $hora_salida, $hora_llegada,
             NOW(), $cliente_nombre, $cliente_documento, $cliente_telefono, $cliente_direccion,
             $zona_nombre, $zona_tarifa, $domiciliario_nombre, $domiciliario_telefono, $vehiculo_tipo,
             $vehiculo_placa, $usuario_proceso
