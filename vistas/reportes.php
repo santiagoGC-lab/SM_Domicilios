@@ -514,7 +514,7 @@ try {
                             <th>Barrio</th>
                             <th>Hora Salida</th>
                             <th>Hora Llegada</th>
-                            <th>Hora Estimada</th> <!-- Corregido: cambié el div por th -->
+                            <th>Hora Programada</th>
                             <th>Cantidad</th>
                             <th>Acciones</th>
                         </tr>
@@ -529,7 +529,11 @@ try {
                                     <td><?php echo $pedido['hora_salida'] ? date('H:i', strtotime($pedido['hora_salida'])) : 'N/A'; ?></td>
                                     <td><?php echo $pedido['hora_llegada'] ? date('H:i', strtotime($pedido['hora_llegada'])) : 'N/A'; ?></td>
                                     <td><?php 
-                                        if ($pedido['hora_salida'] && $pedido['tiempo_estimado']) {
+                                        if ($pedido['hora_estimada_entrega']) {
+                                            // Mostrar la hora programada original
+                                            echo date('H:i', strtotime($pedido['hora_estimada_entrega']));
+                                        } else if ($pedido['hora_salida'] && $pedido['tiempo_estimado']) {
+                                            // Fallback: calcular basado en hora de salida + tiempo estimado
                                             $hora_salida = new DateTime($pedido['hora_salida']);
                                             $hora_salida->add(new DateInterval('PT' . $pedido['tiempo_estimado'] . 'M'));
                                             echo $hora_salida->format('H:i');
@@ -666,7 +670,13 @@ try {
                 
                 // Calcular hora estimada de llegada
                 let horaEstimada = '-';
-                if (pedido.hora_salida && pedido.tiempo_estimado) {
+                if (pedido.hora_estimada_entrega) {
+                    // Mostrar la hora programada original
+                    const fechaPedido = pedido.fecha_pedido.split(' ')[0];
+                    const horaProgramada = new Date(fechaPedido + ' ' + pedido.hora_estimada_entrega);
+                    horaEstimada = horaProgramada.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+                } else if (pedido.hora_salida && pedido.tiempo_estimado) {
+                    // Fallback: calcular basado en hora de salida + tiempo estimado
                     const salida = new Date(pedido.hora_salida);
                     salida.setMinutes(salida.getMinutes() + parseInt(pedido.tiempo_estimado || 30));
                     horaEstimada = salida.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
