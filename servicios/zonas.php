@@ -167,6 +167,29 @@ function buscarZonaPorBarrio($barrio)
     }
 }
 
+// Función para obtener tiempo estimado de una zona
+function obtenerTiempoEstimado($id_zona) {
+    try {
+        $db = ConectarDB();
+        $stmt = $db->prepare("SELECT tiempo_estimado FROM zonas WHERE id_zona = ? AND estado = 'activo'");
+        $stmt->bind_param("i", $id_zona);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($row = $result->fetch_assoc()) {
+            $stmt->close();
+            $db->close();
+            return ['tiempo_estimado' => $row['tiempo_estimado']];
+        } else {
+            $stmt->close();
+            $db->close();
+            return ['error' => 'Zona no encontrada'];
+        }
+    } catch (Exception $e) {
+        return ['error' => 'Error al obtener tiempo estimado: ' . $e->getMessage()];
+    }
+}
+
 // Endpoint para manejar las peticiones
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -217,6 +240,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 http_response_code(404);
             }
             echo json_encode($resultado);
+            break;
+
+        case 'obtener_tiempo_estimado':
+            $id_zona = $_POST['id_zona'] ?? '';
+            if ($id_zona) {
+                echo json_encode(obtenerTiempoEstimado($id_zona));
+            } else {
+                echo json_encode(['error' => 'ID de zona requerido']);
+            }
             break;
 
         default:

@@ -880,20 +880,52 @@ $domiciliarios = $pdo->query("SELECT id_domiciliario, nombre FROM domiciliarios 
         // Función para calcular hora automática
         function calcularHoraAuto() {
             const ahora = new Date();
-            const envioInmediato = document.getElementById('envio_inmediato').checked;
-            const alistamiento = document.getElementById('alistamiento').checked;
-
-            let minutos = 30; // Tiempo base
-
-            if (envioInmediato) minutos = 20;
-            if (alistamiento) minutos += 15;
-
-            ahora.setMinutes(ahora.getMinutes() + minutos);
-
-            const horas = ahora.getHours().toString().padStart(2, '0');
-            const mins = ahora.getMinutes().toString().padStart(2, '0');
-
-            document.getElementById('hora').value = horas + ':' + mins;
+            const idZona = document.getElementById('id_zona').value;
+        
+            // Verificar que hay una zona seleccionada
+            if (!idZona) {
+                alert('Primero selecciona un barrio para determinar la zona');
+                return;
+            }
+        
+            // Obtener tiempo estimado específico de la zona
+            fetch('/SM_Domicilios/servicios/zonas.php', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                body: new URLSearchParams({
+                    accion: 'obtener_tiempo_estimado',
+                    id_zona: idZona
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && !data.error) {
+                    // Usar exactamente el tiempo estimado de la zona (sin modificaciones)
+                    const minutos = parseInt(data.tiempo_estimado) || 30;
+                    
+                    ahora.setMinutes(ahora.getMinutes() + minutos);
+        
+                    const horas = ahora.getHours().toString().padStart(2, '0');
+                    const mins = ahora.getMinutes().toString().padStart(2, '0');
+        
+                    document.getElementById('hora').value = horas + ':' + mins;
+                } else {
+                    // Fallback al tiempo base si hay error
+                    ahora.setMinutes(ahora.getMinutes() + 30);
+                    const horas = ahora.getHours().toString().padStart(2, '0');
+                    const mins = ahora.getMinutes().toString().padStart(2, '0');
+                    document.getElementById('hora').value = horas + ':' + mins;
+                }
+            })
+            .catch(() => {
+                // Fallback en caso de error de conexión
+                ahora.setMinutes(ahora.getMinutes() + 30);
+                const horas = ahora.getHours().toString().padStart(2, '0');
+                const mins = ahora.getMinutes().toString().padStart(2, '0');
+                document.getElementById('hora').value = horas + ':' + mins;
+            });
         }
     </script>
 </body>
