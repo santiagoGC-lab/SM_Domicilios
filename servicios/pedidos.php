@@ -386,7 +386,7 @@ function moverPedidoHistorial($id)
         $vehiculo_placa = $pedido['vehiculo_placa'] ? "'" . $db->real_escape_string($pedido['vehiculo_placa']) . "'" : 'NULL';
         $hora_estimada_entrega = $pedido['hora_estimada_entrega'] ? "'" . $db->real_escape_string($pedido['hora_estimada_entrega']) . "'" : 'NULL';
         $usuario_proceso = isset($_SESSION['id_usuario']) ? intval($_SESSION['id_usuario']) : 'NULL';
-        
+
         // 3. Insertar con consulta SQL directa
         $sql = "INSERT INTO historico_pedidos (
             id_pedido_original, id_cliente, id_zona, id_domiciliario, id_vehiculo, estado, 
@@ -450,10 +450,10 @@ function obtenerPedidosPendientesDespacho($pagina = 1, $por_pagina = 10)
 {
     try {
         $db = ConectarDB();
-        
+
         // Calcular offset
         $offset = ($pagina - 1) * $por_pagina;
-        
+
         // Contar total de pedidos pendientes
         $queryTotal = "SELECT COUNT(*) as total 
                       FROM pedidos p
@@ -464,7 +464,7 @@ function obtenerPedidosPendientesDespacho($pagina = 1, $por_pagina = 10)
                             AND (p.hora_salida IS NULL OR p.hora_salida = '')";
         $resultTotal = $db->query($queryTotal);
         $total = $resultTotal->fetch_assoc()['total'];
-        
+
         // Obtener pedidos paginados
         $query = "SELECT p.id_pedido, c.nombre as cliente, c.direccion, c.telefono, c.barrio, 
                          z.nombre as zona, p.cantidad_paquetes, p.tiempo_estimado, p.hora_estimada_entrega, p.alistamiento, p.envio_inmediato
@@ -476,20 +476,20 @@ function obtenerPedidosPendientesDespacho($pagina = 1, $por_pagina = 10)
                         AND (p.hora_salida IS NULL OR p.hora_salida = '')
                   ORDER BY p.fecha_pedido ASC
                   LIMIT ? OFFSET ?";
-        
+
         $stmt = $db->prepare($query);
         $stmt->bind_param("ii", $por_pagina, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         $pedidos = [];
         while ($row = $result->fetch_assoc()) {
             $pedidos[] = $row;
         }
-        
+
         $stmt->close();
         $db->close();
-        
+
         return [
             'pedidos' => $pedidos,
             'total' => $total,
@@ -532,10 +532,10 @@ function marcarLlegadaPedido($id_pedido)
 {
     try {
         $db = ConectarDB();
-        
+
         // Iniciar transacción
         $db->autocommit(false);
-        
+
         // Verificar si el pedido existe
         $stmt_check = $db->prepare("SELECT id_domiciliario, id_vehiculo FROM pedidos WHERE id_pedido = ?");
         $stmt_check->bind_param("i", $id_pedido);

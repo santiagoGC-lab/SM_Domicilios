@@ -801,35 +801,4 @@ try {
             </script>
         </div>
 
-        <script src="../componentes/dashboard.js"></script>
-        <script>
-            function exportarReporte(tipo) {
-                // Crear formulario para enviar datos por POST
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '../servicios/reportes.php';
-                form.style.display = 'none';
-
-                // Agregar campos del formulario
-                const accionInput = document.createElement('input');
-                accionInput.type = 'hidden';
-                accionInput.name = 'accion';
-                accionInput.value = 'exportar';
-                form.appendChild(accionInput);
-
-                const tipoInput = document.createElement('input');
-                tipoInput.type = 'hidden';
-                tipoInput.name = 'tipo';
-                tipoInput.value = tipo;
-                form.appendChild(tipoInput);
-
-                // Enviar formulario
-                document.body.appendChild(form);
-                form.submit();
-                document.body.removeChild(form);
-            }
-        </script>
-    </div>
-</body>
-
-</html>
+        // ...existing code ...

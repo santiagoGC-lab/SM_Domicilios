@@ -18,7 +18,7 @@ function guardarZona($datos)
 
         // Validar direcciones cardinales permitidas
         $direcciones_validas = ['Norte', 'Sur', 'Oriente', 'Occidente', 'Nororiente', 'Noroccidente', 'Suroriente', 'Suroccidente'];
-        
+
         if (empty($nombre) || !in_array($nombre, $direcciones_validas) || empty($barrio) || !is_numeric($tarifa) || !is_numeric($tiempo_estimado) || !in_array($estado, ['activo', 'inactivo'])) {
             return ['error' => 'Datos inválidos. El nombre debe ser una dirección cardinal válida.'];
         }

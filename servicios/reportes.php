@@ -324,13 +324,13 @@ function exportarDetallesPedidoExcel($datos)
         $pedidoId = $datos['pedido_id'] ?? null;
         $mes = $datos['mes'] ?? date('n');
         $anio = $datos['anio'] ?? date('Y');
-        
+
         if (!$pedidoId) {
             return ['error' => 'ID de pedido requerido'];
         }
-        
+
         $db = ConectarDB();
-        
+
         // Obtener detalles del pedido del historial
         $stmt = $db->prepare("
             SELECT hp.*, z.barrio
@@ -342,19 +342,19 @@ function exportarDetallesPedidoExcel($datos)
         $stmt->execute();
         $result = $stmt->get_result();
         $pedido = $result->fetch_assoc();
-        
+
         if (!$pedido) {
             return ['error' => 'Pedido no encontrado'];
         }
-        
+
         $fecha = date('Y-m-d_H-i-s');
         $filename = "Detalle_Pedido_{$pedidoId}_{$fecha}.csv";
-        
+
         $output = fopen('php://temp', 'w');
-        
+
         // Escribir BOM para UTF-8 (para caracteres especiales)
         fwrite($output, "\xEF\xBB\xBF");
-        
+
         // ===== ENCABEZADO PRINCIPAL =====
         fputcsv($output, ['SM DOMICILIOS - DETALLE COMPLETO DEL PEDIDO']);
         fputcsv($output, ['==============================================']);
@@ -363,7 +363,7 @@ function exportarDetallesPedidoExcel($datos)
         fputcsv($output, ['Estado:', strtoupper($pedido['estado'] ?? 'N/A')]);
         fputcsv($output, []);
         fputcsv($output, []);
-        
+
         // ===== TABLA 1: INFORMACIÓN DEL CLIENTE =====
         fputcsv($output, ['INFORMACIÓN DEL CLIENTE']);
         fputcsv($output, ['========================']);
@@ -374,7 +374,7 @@ function exportarDetallesPedidoExcel($datos)
         fputcsv($output, ['Barrio/Zona', $pedido['barrio'] ?? 'N/A']);
         fputcsv($output, []);
         fputcsv($output, []);
-        
+
         // ===== TABLA 2: INFORMACIÓN DEL SERVICIO =====
         fputcsv($output, ['INFORMACIÓN DEL SERVICIO DE ENTREGA']);
         fputcsv($output, ['=====================================']);
@@ -385,16 +385,16 @@ function exportarDetallesPedidoExcel($datos)
         fputcsv($output, ['Estado Actual', ucfirst($pedido['estado'] ?? 'N/A')]);
         fputcsv($output, []);
         fputcsv($output, []);
-        
+
         // ===== TABLA 3: ANÁLISIS DE TIEMPOS DE ENTREGA =====
         fputcsv($output, ['ANÁLISIS DE TIEMPOS DE ENTREGA']);
         fputcsv($output, ['===============================']);
         fputcsv($output, ['CONCEPTO', 'HORA/TIEMPO', 'OBSERVACIONES']);
-        
+
         // Hora de Salida
         $horaSalida = $pedido['hora_salida'] ? date('H:i', strtotime($pedido['hora_salida'])) : 'N/A';
         fputcsv($output, ['Hora de Salida', $horaSalida, 'Momento en que el domiciliario inició el recorrido']);
-        
+
         // Hora Estimada de Llegada
         $horaEstimada = 'N/A';
         $observacionEstimada = 'No se pudo calcular';
@@ -405,29 +405,29 @@ function exportarDetallesPedidoExcel($datos)
             $observacionEstimada = 'Basado en ' . $pedido['tiempo_estimado'] . ' minutos estimados';
         }
         fputcsv($output, ['Hora Estimada de Llegada', $horaEstimada, $observacionEstimada]);
-        
+
         // Hora Real de Llegada
         $horaLlegada = $pedido['hora_llegada'] ? date('H:i', strtotime($pedido['hora_llegada'])) : 'N/A';
         $observacionLlegada = $pedido['hora_llegada'] ? 'Hora real de entrega confirmada' : 'Pedido aún no entregado';
         fputcsv($output, ['Hora Real de Llegada', $horaLlegada, $observacionLlegada]);
-        
+
         // Tiempo Real de Entrega y Análisis de Cumplimiento
         $tiempoReal = 'N/A';
         $cumplimiento = 'N/A';
         $observacionCumplimiento = 'No se puede evaluar';
-        
+
         if ($pedido['hora_salida'] && $pedido['hora_llegada']) {
             $salida = new DateTime($pedido['hora_salida']);
             $llegada = new DateTime($pedido['hora_llegada']);
             $tiempoRealMinutos = round(($llegada->getTimestamp() - $salida->getTimestamp()) / 60);
             $tiempoReal = $tiempoRealMinutos . ' minutos';
-            
+
             // NUEVA LÓGICA: Comparar hora de llegada con hora programada
             if ($pedido['hora_estimada_entrega']) {
                 // Crear DateTime para la hora programada del mismo día que la llegada
                 $fechaLlegada = $llegada->format('Y-m-d');
                 $horaProgramada = new DateTime($fechaLlegada . ' ' . $pedido['hora_estimada_entrega']);
-                
+
                 if ($llegada <= $horaProgramada) {
                     $cumplimiento = '✓ CUMPLIDO';
                     $diferencia = round(($horaProgramada->getTimestamp() - $llegada->getTimestamp()) / 60);
@@ -451,12 +451,12 @@ function exportarDetallesPedidoExcel($datos)
                 }
             }
         }
-        
+
         fputcsv($output, ['Tiempo Real de Entrega', $tiempoReal, 'Tiempo total desde salida hasta entrega']);
         fputcsv($output, ['Evaluación de Cumplimiento', $cumplimiento, $observacionCumplimiento]);
         fputcsv($output, []);
         fputcsv($output, []);
-        
+
         // ===== TABLA 4: DETALLES FINANCIEROS DEL PEDIDO =====
         fputcsv($output, ['DETALLES FINANCIEROS Y DE CONTENIDO']);
         fputcsv($output, ['====================================']);
@@ -466,13 +466,13 @@ function exportarDetallesPedidoExcel($datos)
         fputcsv($output, ['Tiempo Estimado Inicial', ($pedido['tiempo_estimado'] ?? '30') . ' minutos', 'Tiempo estimado para la entrega']);
         fputcsv($output, []);
         fputcsv($output, []);
-        
+
         // ===== RESUMEN EJECUTIVO =====
         fputcsv($output, ['RESUMEN EJECUTIVO']);
         fputcsv($output, ['=================']);
-        
+
         $estadoResumen = '';
-        switch(strtolower($pedido['estado'] ?? '')) {
+        switch (strtolower($pedido['estado'] ?? '')) {
             case 'entregado':
                 $estadoResumen = 'Pedido completado exitosamente';
                 break;
@@ -488,28 +488,27 @@ function exportarDetallesPedidoExcel($datos)
             default:
                 $estadoResumen = 'Estado no definido';
         }
-        
+
         fputcsv($output, ['Estado del Pedido:', $estadoResumen]);
         fputcsv($output, ['Cliente:', $pedido['cliente_nombre'] ?? 'N/A']);
         fputcsv($output, ['Domiciliario:', $pedido['domiciliario_nombre'] ?? 'No asignado']);
         fputcsv($output, ['Valor Total:', '$' . number_format($pedido['total'] ?? 0, 2)]);
-        
+
         if ($cumplimiento !== 'N/A') {
             fputcsv($output, ['Cumplimiento de Tiempo:', $cumplimiento]);
         }
-        
+
         fputcsv($output, []);
         fputcsv($output, ['=== FIN DEL REPORTE ===']);
         fputcsv($output, ['Generado automáticamente por SM Domicilios']);
         fputcsv($output, ['Fecha: ' . date('d/m/Y H:i:s')]);
-        
+
         rewind($output);
         $csv = stream_get_contents($output);
         fclose($output);
         $db->close();
-        
+
         return ['success' => true, 'csv' => $csv, 'filename' => $filename];
-        
     } catch (Exception $e) {
         return ['error' => 'Error al exportar detalles del pedido: ' . $e->getMessage()];
     }
