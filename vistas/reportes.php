@@ -23,15 +23,15 @@ try {
     $totalPedidos = $pdo->prepare("SELECT COUNT(*) FROM historico_pedidos WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ?");
     $totalPedidos->execute([$mes, $anio]);
     $totalPedidos = $totalPedidos->fetchColumn();
-    
+
     $pedidosEntregados = $pdo->prepare("SELECT COUNT(*) FROM historico_pedidos WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ? AND estado = 'entregado'");
     $pedidosEntregados->execute([$mes, $anio]);
     $pedidosEntregados = $pedidosEntregados->fetchColumn();
-    
+
     $ingresosMes = $pdo->prepare("SELECT SUM(total) FROM historico_pedidos WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ? AND estado = 'entregado'");
     $ingresosMes->execute([$mes, $anio]);
     $ingresosMes = $ingresosMes->fetchColumn() ?? 0;
-    
+
     $pedidosCancelados = $pdo->prepare("SELECT COUNT(*) FROM historico_pedidos WHERE MONTH(fecha_completado) = ? AND YEAR(fecha_completado) = ? AND estado = 'cancelado'");
     $pedidosCancelados->execute([$mes, $anio]);
     $pedidosCancelados = $pedidosCancelados->fetchColumn();
@@ -103,7 +103,6 @@ try {
     ");
     $pedidosDiariosMes->execute([$mes, $anio]);
     $pedidosDiariosMes = $pedidosDiariosMes->fetchAll();
-
 } catch (Exception $e) {
     $error = $e->getMessage();
 }
@@ -266,7 +265,7 @@ try {
                 if (!empty($pedido['hora_estimada_entrega'])) {
                     $fechaPedido = date('Y-m-d', strtotime($pedido['fecha_pedido']));
                     $horaProgramada = strtotime($fechaPedido . ' ' . $pedido['hora_estimada_entrega']);
-                    
+
                     if ($llegada <= $horaProgramada) {
                         $cumplidos++;
                     }
@@ -281,7 +280,7 @@ try {
 
         $tiempoPromedio = $numEntregas > 0 ? round($totalTiempo / $numEntregas, 2) : 0;
         $cumplimiento = $numEntregas > 0 ? round(($cumplidos / $numEntregas) * 100, 2) : 0;
-        
+
         // 7. Pedidos pendientes (en tabla pedidos con estado diferente a 'entregado' y 'cancelado')
         $pedidosPendientes = $pdo->query("
             SELECT COUNT(*) 
@@ -424,13 +423,22 @@ try {
         <?php
         // Cambiar las estadísticas principales para mostrar datos del mes
         $meses_es = [
-            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
-            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
-            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre'
         ];
-        
+
         $mesNombre = $meses_es[$mes];
-        
+
         // Calcular estadísticas del mes
         $pedidosEntregadosMes = $pdo->prepare("
             SELECT COUNT(*) 
@@ -439,7 +447,7 @@ try {
         ");
         $pedidosEntregadosMes->execute([$mes, $anio]);
         $entregadosMes = $pedidosEntregadosMes->fetchColumn();
-        
+
         $valorDomiciliosMes = $pdo->prepare("
             SELECT COALESCE(SUM(total), 0) 
             FROM historico_pedidos 
@@ -447,7 +455,7 @@ try {
         ");
         $valorDomiciliosMes->execute([$mes, $anio]);
         $valorMes = $valorDomiciliosMes->fetchColumn();
-        
+
         $canceladosMes = $pdo->prepare("
             SELECT COUNT(*) 
             FROM historico_pedidos 
@@ -515,6 +523,7 @@ try {
                             <th>Hora Salida</th>
                             <th>Hora Llegada</th>
                             <th>Hora Programada</th>
+                            <th>Hora Estimada</th> <!-- Corregido: cambié el div por th -->
                             <th>Cantidad</th>
                             <th>Acciones</th>
                         </tr>
@@ -528,7 +537,7 @@ try {
                                     <td><?php echo htmlspecialchars($pedido['barrio'] ?? 'N/A'); ?></td>
                                     <td><?php echo $pedido['hora_salida'] ? date('H:i', strtotime($pedido['hora_salida'])) : 'N/A'; ?></td>
                                     <td><?php echo $pedido['hora_llegada'] ? date('H:i', strtotime($pedido['hora_llegada'])) : 'N/A'; ?></td>
-                                    <td><?php 
+                                    <td><?php
                                         if ($pedido['hora_estimada_entrega']) {
                                             // Mostrar la hora programada original
                                             echo date('H:i', strtotime($pedido['hora_estimada_entrega']));
@@ -540,7 +549,7 @@ try {
                                         } else {
                                             echo 'N/A';
                                         }
-                                    ?></td>
+                                        ?></td>
                                     <td><?php echo $pedido['cantidad_paquetes']; ?></td>
                                     <td>
                                         <button class="btn btn-info btn-sm" onclick="verDetallesPedido(<?php echo htmlspecialchars(json_encode($pedido), ENT_QUOTES, 'UTF-8'); ?>)">
@@ -562,7 +571,7 @@ try {
             <div id="modalDetallesPedido" class="modal" style="display: none;">
                 <div class="modal-content" style="max-width: 700px;">
                     <div class="modal-header">
-                            <h3>Detalles del Pedido</h3>
+                        <h3>Detalles del Pedido</h3>
                         <div class="modal-actions">
                             <button class="btn-export" onclick="exportarDetallesPedidoExcel()" title="Exportar a Excel">
                                 <i class="fas fa-file-excel"></i> Excel
@@ -647,165 +656,180 @@ try {
             </div>
 
             <script>
-            let pedidoActual = null;
-            
-            function verDetallesPedido(pedido) {
-                pedidoActual = pedido; // Guardar referencia del pedido actual
-                
-                // Información del Cliente
-                document.getElementById('detalle-cliente').textContent = pedido.cliente_nombre || 'N/A';
-                document.getElementById('detalle-telefono').textContent = pedido.cliente_telefono || 'N/A';
-                document.getElementById('detalle-direccion').textContent = pedido.cliente_direccion || 'N/A';
-                document.getElementById('detalle-barrio').textContent = pedido.barrio || 'N/A';
-                
-                // Información del Domiciliario
-                document.getElementById('detalle-domiciliario').textContent = pedido.domiciliario_nombre || 'No asignado';
-                document.getElementById('detalle-zona').textContent = pedido.zona_nombre || 'N/A';
-                document.getElementById('detalle-estado').innerHTML = `<span class="estado-${pedido.estado?.toLowerCase() || 'pendiente'}">${pedido.estado ? pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1) : 'N/A'}</span>`;
-                document.getElementById('detalle-fecha').textContent = pedido.fecha_pedido ? new Date(pedido.fecha_pedido).toLocaleDateString('es-ES') : 'N/A';
-                
-                // Tiempos de Entrega
-                const horaSalida = pedido.hora_salida ? new Date(pedido.hora_salida).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '-';
-                const horaLlegada = pedido.hora_llegada ? new Date(pedido.hora_llegada).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '-';
-                
-                // Calcular hora estimada de llegada
-                let horaEstimada = '-';
-                if (pedido.hora_estimada_entrega) {
-                    // Mostrar la hora programada original
-                    const fechaPedido = pedido.fecha_pedido.split(' ')[0];
-                    const horaProgramada = new Date(fechaPedido + ' ' + pedido.hora_estimada_entrega);
-                    horaEstimada = horaProgramada.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
-                } else if (pedido.hora_salida && pedido.tiempo_estimado) {
-                    // Fallback: calcular basado en hora de salida + tiempo estimado
-                    const salida = new Date(pedido.hora_salida);
-                    salida.setMinutes(salida.getMinutes() + parseInt(pedido.tiempo_estimado || 30));
-                    horaEstimada = salida.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
-                }
-                
-                document.getElementById('detalle-salida').textContent = horaSalida;
-                document.getElementById('detalle-llegada').textContent = horaLlegada;
-                document.getElementById('detalle-estimado').textContent = horaEstimada;
-                
-                // Calcular tiempo real y cumplimiento
-                let tiempoReal = '-';
-                let cumplimiento = '-';
-                
-                if (pedido.hora_salida && pedido.hora_llegada) {
-                    const salida = new Date(pedido.hora_salida);
-                    const llegada = new Date(pedido.hora_llegada);
-                    const tiempoRealMinutos = Math.round((llegada - salida) / (1000 * 60));
-                    tiempoReal = tiempoRealMinutos + ' min';
-                    
-                    // NUEVA LÓGICA: Usar hora programada si está disponible
+                let pedidoActual = null;
+
+                function verDetallesPedido(pedido) {
+                    pedidoActual = pedido; // Guardar referencia del pedido actual
+
+                    // Información del Cliente
+                    document.getElementById('detalle-cliente').textContent = pedido.cliente_nombre || 'N/A';
+                    document.getElementById('detalle-telefono').textContent = pedido.cliente_telefono || 'N/A';
+                    document.getElementById('detalle-direccion').textContent = pedido.cliente_direccion || 'N/A';
+                    document.getElementById('detalle-barrio').textContent = pedido.barrio || 'N/A';
+
+                    // Información del Domiciliario
+                    document.getElementById('detalle-domiciliario').textContent = pedido.domiciliario_nombre || 'No asignado';
+                    document.getElementById('detalle-zona').textContent = pedido.zona_nombre || 'N/A';
+                    document.getElementById('detalle-estado').innerHTML = `<span class="estado-${pedido.estado?.toLowerCase() || 'pendiente'}">${pedido.estado ? pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1) : 'N/A'}</span>`;
+                    document.getElementById('detalle-fecha').textContent = pedido.fecha_pedido ? new Date(pedido.fecha_pedido).toLocaleDateString('es-ES') : 'N/A';
+
+                    // Tiempos de Entrega
+                    const horaSalida = pedido.hora_salida ? new Date(pedido.hora_salida).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : '-';
+                    const horaLlegada = pedido.hora_llegada ? new Date(pedido.hora_llegada).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : '-';
+
+                    // Calcular hora estimada de llegada
+                    let horaEstimada = '-';
                     if (pedido.hora_estimada_entrega) {
-                        const fechaPedido = pedido.fecha_pedido.split(' ')[0]; // Obtener solo la fecha
+                        // Mostrar la hora programada original
+                        const fechaPedido = pedido.fecha_pedido.split(' ')[0];
                         const horaProgramada = new Date(fechaPedido + ' ' + pedido.hora_estimada_entrega);
-                        
-                        if (llegada <= horaProgramada) {
-                            const adelanto = Math.round((horaProgramada - llegada) / (1000 * 60));
-                            cumplimiento = `<span style="color: #28a745; font-weight: bold;">✓ Cumplido (${adelanto} min antes)</span>`;
+                        horaEstimada = horaProgramada.toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    } else if (pedido.hora_salida && pedido.tiempo_estimado) {
+                        // Fallback: calcular basado en hora de salida + tiempo estimado
+                        const salida = new Date(pedido.hora_salida);
+                        salida.setMinutes(salida.getMinutes() + parseInt(pedido.tiempo_estimado || 30));
+                        horaEstimada = salida.toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+
+                    document.getElementById('detalle-salida').textContent = horaSalida;
+                    document.getElementById('detalle-llegada').textContent = horaLlegada;
+                    document.getElementById('detalle-estimado').textContent = horaEstimada;
+
+                    // Calcular tiempo real y cumplimiento
+                    let tiempoReal = '-';
+                    let cumplimiento = '-';
+
+                    if (pedido.hora_salida && pedido.hora_llegada) {
+                        const salida = new Date(pedido.hora_salida);
+                        const llegada = new Date(pedido.hora_llegada);
+                        const tiempoRealMinutos = Math.round((llegada - salida) / (1000 * 60));
+                        tiempoReal = tiempoRealMinutos + ' min';
+
+                        // NUEVA LÓGICA: Usar hora programada si está disponible
+                        if (pedido.hora_estimada_entrega) {
+                            const fechaPedido = pedido.fecha_pedido.split(' ')[0]; // Obtener solo la fecha
+                            const horaProgramada = new Date(fechaPedido + ' ' + pedido.hora_estimada_entrega);
+
+                            if (llegada <= horaProgramada) {
+                                const adelanto = Math.round((horaProgramada - llegada) / (1000 * 60));
+                                cumplimiento = `<span style="color: #28a745; font-weight: bold;">✓ Cumplido (${adelanto} min antes)</span>`;
+                            } else {
+                                const retraso = Math.round((llegada - horaProgramada) / (1000 * 60));
+                                cumplimiento = `<span style="color: #dc3545; font-weight: bold;">✗ Retraso de ${retraso} min</span>`;
+                            }
                         } else {
-                            const retraso = Math.round((llegada - horaProgramada) / (1000 * 60));
-                            cumplimiento = `<span style="color: #dc3545; font-weight: bold;">✗ Retraso de ${retraso} min</span>`;
-                        }
-                    } else {
-                        // Fallback: usar tiempo estimado
-                        const tiempoEstimadoNum = parseInt(pedido.tiempo_estimado) || 30;
-                        if (tiempoRealMinutos <= tiempoEstimadoNum) {
-                            cumplimiento = '<span style="color: #28a745; font-weight: bold;">✓ Cumplido (estimado)</span>';
-                        } else {
-                            const retraso = tiempoRealMinutos - tiempoEstimadoNum;
-                            cumplimiento = `<span style="color: #dc3545; font-weight: bold;">✗ Retraso de ${retraso} min (estimado)</span>`;
+                            // Fallback: usar tiempo estimado
+                            const tiempoEstimadoNum = parseInt(pedido.tiempo_estimado) || 30;
+                            if (tiempoRealMinutos <= tiempoEstimadoNum) {
+                                cumplimiento = '<span style="color: #28a745; font-weight: bold;">✓ Cumplido (estimado)</span>';
+                            } else {
+                                const retraso = tiempoRealMinutos - tiempoEstimadoNum;
+                                cumplimiento = `<span style="color: #dc3545; font-weight: bold;">✗ Retraso de ${retraso} min (estimado)</span>`;
+                            }
                         }
                     }
-                }
-                
-                document.getElementById('detalle-tiempo-real').textContent = tiempoReal;
-                document.getElementById('detalle-cumplimiento').innerHTML = cumplimiento;
-                
-                // Información del Pedido
-                document.getElementById('detalle-paquetes').textContent = pedido.cantidad_paquetes || '1';
-                document.getElementById('detalle-total').textContent = '$' + parseFloat(pedido.total || 0).toLocaleString('es-ES', {minimumFractionDigits: 2});
-                document.getElementById('detalle-id').textContent = pedido.id_pedido_original || 'N/A';
-                
-                document.getElementById('modalDetallesPedido').style.display = 'block';
-            }
 
-            function exportarDetallesPedidoExcel() {
-                if (!pedidoActual) {
-                    alert('No hay pedido seleccionado');
-                    return;
-                }
-                
-                // Crear formulario para enviar datos
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '../servicios/reportes.php';
-                form.style.display = 'none';
-                
-                // Agregar campos del formulario
-                const campos = {
-                    'accion': 'exportar_detalle_pedido',
-                    'pedido_id': pedidoActual.id_pedido_original,
-                    'mes': new URLSearchParams(window.location.search).get('mes') || new Date().getMonth() + 1,
-                    'anio': new URLSearchParams(window.location.search).get('anio') || new Date().getFullYear()
-                };
-                
-                for (const [key, value] of Object.entries(campos)) {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = key;
-                    input.value = value;
-                    form.appendChild(input);
-                }
-                
-                document.body.appendChild(form);
-                form.submit();
-                document.body.removeChild(form);
-            }
+                    document.getElementById('detalle-tiempo-real').textContent = tiempoReal;
+                    document.getElementById('detalle-cumplimiento').innerHTML = cumplimiento;
 
-            function cerrarModalDetalles() {
-                document.getElementById('modalDetallesPedido').style.display = 'none';
-            }
+                    // Información del Pedido
+                    document.getElementById('detalle-paquetes').textContent = pedido.cantidad_paquetes || '1';
+                    document.getElementById('detalle-total').textContent = '$' + parseFloat(pedido.total || 0).toLocaleString('es-ES', {
+                        minimumFractionDigits: 2
+                    });
+                    document.getElementById('detalle-id').textContent = pedido.id_pedido_original || 'N/A';
 
-            // Cerrar modal al hacer clic fuera de él
-            window.onclick = function(event) {
-                const modal = document.getElementById('modalDetallesPedido');
-                if (event.target == modal) {
-                    modal.style.display = 'none';
+                    document.getElementById('modalDetallesPedido').style.display = 'block';
                 }
-            }
+
+                function exportarDetallesPedidoExcel() {
+                    if (!pedidoActual) {
+                        alert('No hay pedido seleccionado');
+                        return;
+                    }
+
+                    // Crear formulario para enviar datos
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '../servicios/reportes.php';
+                    form.style.display = 'none';
+
+                    // Agregar campos del formulario
+                    const campos = {
+                        'accion': 'exportar_detalle_pedido',
+                        'pedido_id': pedidoActual.id_pedido_original,
+                        'mes': new URLSearchParams(window.location.search).get('mes') || new Date().getMonth() + 1,
+                        'anio': new URLSearchParams(window.location.search).get('anio') || new Date().getFullYear()
+                    };
+
+                    for (const [key, value] of Object.entries(campos)) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
+                }
+
+                function cerrarModalDetalles() {
+                    document.getElementById('modalDetallesPedido').style.display = 'none';
+                }
+
+                // Cerrar modal al hacer clic fuera de él
+                window.onclick = function(event) {
+                    const modal = document.getElementById('modalDetallesPedido');
+                    if (event.target == modal) {
+                        modal.style.display = 'none';
+                    }
+                }
             </script>
         </div>
 
         <script src="../componentes/dashboard.js"></script>
         <script>
-        function exportarReporte(tipo) {
-            // Crear formulario para enviar datos por POST
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '../servicios/reportes.php';
-            form.style.display = 'none';
-            
-            // Agregar campos del formulario
-            const accionInput = document.createElement('input');
-            accionInput.type = 'hidden';
-            accionInput.name = 'accion';
-            accionInput.value = 'exportar';
-            form.appendChild(accionInput);
-            
-            const tipoInput = document.createElement('input');
-            tipoInput.type = 'hidden';
-            tipoInput.name = 'tipo';
-            tipoInput.value = tipo;
-            form.appendChild(tipoInput);
-            
-            // Enviar formulario
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-        }
+            function exportarReporte(tipo) {
+                // Crear formulario para enviar datos por POST
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '../servicios/reportes.php';
+                form.style.display = 'none';
+
+                // Agregar campos del formulario
+                const accionInput = document.createElement('input');
+                accionInput.type = 'hidden';
+                accionInput.name = 'accion';
+                accionInput.value = 'exportar';
+                form.appendChild(accionInput);
+
+                const tipoInput = document.createElement('input');
+                tipoInput.type = 'hidden';
+                tipoInput.name = 'tipo';
+                tipoInput.value = tipo;
+                form.appendChild(tipoInput);
+
+                // Enviar formulario
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            }
         </script>
     </div>
 </body>
+
 </html>
