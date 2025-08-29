@@ -547,8 +547,13 @@ try {
             <div id="modalDetallesPedido" class="modal" style="display: none;">
                 <div class="modal-content" style="max-width: 700px;">
                     <div class="modal-header">
-                        <h3>Detalles del Pedido</h3>
-                        <span class="close" onclick="cerrarModalDetalles()">&times;</span>
+                            <h3>Detalles del Pedido</h3>
+                        <div class="modal-actions">
+                            <button class="btn-export" onclick="exportarDetallesPedidoExcel()" title="Exportar a Excel">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                            <span class="close" onclick="cerrarModalDetalles()">&times;</span>
+                        </div>
                     </div>
                     <div class="modal-body">
                         <!-- Información del Cliente -->
@@ -627,7 +632,11 @@ try {
             </div>
 
             <script>
+            let pedidoActual = null;
+            
             function verDetallesPedido(pedido) {
+                pedidoActual = pedido; // Guardar referencia del pedido actual
+                
                 // Información del Cliente
                 document.getElementById('detalle-cliente').textContent = pedido.cliente_nombre || 'N/A';
                 document.getElementById('detalle-telefono').textContent = pedido.cliente_telefono || 'N/A';
@@ -686,6 +695,39 @@ try {
                 document.getElementById('modalDetallesPedido').style.display = 'block';
             }
 
+            function exportarDetallesPedidoExcel() {
+                if (!pedidoActual) {
+                    alert('No hay pedido seleccionado');
+                    return;
+                }
+                
+                // Crear formulario para enviar datos
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '../servicios/reportes.php';
+                form.style.display = 'none';
+                
+                // Agregar campos del formulario
+                const campos = {
+                    'accion': 'exportar_detalle_pedido',
+                    'pedido_id': pedidoActual.id_pedido_original,
+                    'mes': new URLSearchParams(window.location.search).get('mes') || new Date().getMonth() + 1,
+                    'anio': new URLSearchParams(window.location.search).get('anio') || new Date().getFullYear()
+                };
+                
+                for (const [key, value] of Object.entries(campos)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    form.appendChild(input);
+                }
+                
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            }
+
             function cerrarModalDetalles() {
                 document.getElementById('modalDetallesPedido').style.display = 'none';
             }
@@ -703,8 +745,29 @@ try {
         <script src="../componentes/dashboard.js"></script>
         <script>
         function exportarReporte(tipo) {
-            // Función para exportar reportes
-            console.log('Exportando reporte:', tipo);
+            // Crear formulario para enviar datos por POST
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '../servicios/reportes.php';
+            form.style.display = 'none';
+            
+            // Agregar campos del formulario
+            const accionInput = document.createElement('input');
+            accionInput.type = 'hidden';
+            accionInput.name = 'accion';
+            accionInput.value = 'exportar';
+            form.appendChild(accionInput);
+            
+            const tipoInput = document.createElement('input');
+            tipoInput.type = 'hidden';
+            tipoInput.name = 'tipo';
+            tipoInput.value = tipo;
+            form.appendChild(tipoInput);
+            
+            // Enviar formulario
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
         }
         </script>
     </div>
