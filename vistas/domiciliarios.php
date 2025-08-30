@@ -204,39 +204,39 @@ $nombreCompleto = obtenerNombreUsuario();
         // Carga los datos de un domiciliario y abre el modal para editar
         function editarDomiciliario(id) {
             fetch('../servicios/domiciliarios.php', {
-                method: 'POST',
-                body: new URLSearchParams({
-                    accion: 'obtener',
-                    id: id
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        accion: 'obtener',
+                        id: id
+                    })
                 })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    alert('Error: ' + data.error);
-                    return;
-                }
-                
-                document.getElementById('modalTitle').textContent = 'Editar Domiciliario';
-                document.getElementById('domiciliarioId').value = data.id_domiciliario;
-                document.getElementById('nombre').value = data.nombre;
-                document.getElementById('telefono').value = data.telefono;
-                document.getElementById('zona').value = data.id_zona || '';
-                
-                // Mapear el estado de la base de datos al mostrado en el modal
-                let estadoModal = data.estado;
-                if (data.estado === 'ocupado') {
-                    estadoModal = 'en ruta';
-                }
-                document.getElementById('estado').value = estadoModal;
-                
-                document.getElementById('zonaGroup').style.display = 'block';
-                document.getElementById('estadoGroup').style.display = 'block';
-                document.getElementById('modalEditar').style.display = 'block';
-            })
-            .catch(error => {
-                alert('Error: ' + error.message);
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    document.getElementById('modalTitle').textContent = 'Editar Domiciliario';
+                    document.getElementById('domiciliarioId').value = data.id_domiciliario;
+                    document.getElementById('nombre').value = data.nombre;
+                    document.getElementById('telefono').value = data.telefono;
+                    document.getElementById('zona').value = data.id_zona || '';
+
+                    // Mapear el estado de la base de datos al mostrado en el modal
+                    let estadoModal = data.estado;
+                    if (data.estado === 'ocupado') {
+                        estadoModal = 'en ruta';
+                    }
+                    document.getElementById('estado').value = estadoModal;
+
+                    document.getElementById('zonaGroup').style.display = 'block';
+                    document.getElementById('estadoGroup').style.display = 'block';
+                    document.getElementById('modalEditar').style.display = 'block';
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
         }
 
         // Elimina un domiciliario por su id
@@ -285,31 +285,31 @@ $nombreCompleto = obtenerNombreUsuario();
 
             const formData = new FormData(e.target);
             const isEditing = formData.get('id') !== '';
-            
+
             // Mapear "en ruta" de vuelta a "ocupado" para la base de datos
             if (formData.get('estado') === 'en ruta') {
                 formData.set('estado', 'ocupado');
             }
-            
+
             formData.append('accion', isEditing ? 'actualizar' : 'crear');
-            
+
             fetch('../servicios/domiciliarios.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    closeModal('modalEditar');
-                    loadDomiciliarios(currentPage);
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                alert('Error: ' + error.message);
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        closeModal('modalEditar');
+                        loadDomiciliarios(currentPage);
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
         }
 
         // Redirige al menú de usuario (en este caso, al login)
@@ -332,7 +332,7 @@ $nombreCompleto = obtenerNombreUsuario();
                 const nombre = row.cells[0].textContent.toLowerCase();
                 const telefono = row.cells[1].textContent.toLowerCase();
                 const estadoElement = row.cells[3].querySelector('span');
-                
+
                 // Mapear el filtro "en ruta" al estado real "ocupado"
                 let estadoFiltro = statusFilter;
                 if (statusFilter === 'en ruta') {

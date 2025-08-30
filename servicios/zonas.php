@@ -168,14 +168,15 @@ function buscarZonaPorBarrio($barrio)
 }
 
 // Función para obtener tiempo estimado de una zona
-function obtenerTiempoEstimado($id_zona) {
+function obtenerTiempoEstimado($id_zona)
+{
     try {
         $db = ConectarDB();
         $stmt = $db->prepare("SELECT tiempo_estimado FROM zonas WHERE id_zona = ? AND estado = 'activo'");
         $stmt->bind_param("i", $id_zona);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         if ($row = $result->fetch_assoc()) {
             $stmt->close();
             $db->close();

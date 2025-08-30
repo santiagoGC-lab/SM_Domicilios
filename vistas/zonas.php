@@ -229,11 +229,11 @@ $nombreCompleto = obtenerNombreUsuario();
                     console.log('Datos de zona recibidos:', zona); // Para debug
                     document.getElementById('modalTitle').textContent = 'Editar Zona';
                     document.getElementById('zonaId').value = zona.id_zona;
-                    
+
                     // Asegurar que el valor del nombre se establezca correctamente
                     const selectNombre = document.getElementById('nuevoNombre');
                     selectNombre.value = zona.nombre || '';
-                    
+
                     // Si el valor no se establece, intentar encontrar una coincidencia
                     if (!selectNombre.value && zona.nombre) {
                         const opciones = selectNombre.options;
@@ -244,7 +244,7 @@ $nombreCompleto = obtenerNombreUsuario();
                             }
                         }
                     }
-                    
+
                     document.getElementById('barrio').value = zona.barrio || '';
                     document.getElementById('tarifa').value = zona.tarifa_base || '';
                     document.getElementById('tiempo_estimado').value = zona.tiempo_estimado || '';

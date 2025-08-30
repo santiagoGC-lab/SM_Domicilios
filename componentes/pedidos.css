@@ -432,7 +432,7 @@
         grid-template-columns: 1fr;
         gap: 12px;
     }
-    
+
     .checkboxes-inline {
         grid-template-columns: 1fr 1fr;
         justify-items: center;
@@ -448,45 +448,45 @@
         margin: 1% auto;
         max-height: 97vh;
     }
-    
+
     .form-container {
         grid-template-columns: 1fr;
         gap: 12px;
     }
-    
+
     .hora-checkboxes-container {
         grid-template-columns: 1fr;
         gap: 10px;
     }
-    
+
     .checkboxes-inline {
         grid-template-columns: 1fr;
         gap: 10px;
         padding: 10px;
     }
-    
+
     .modal-content h2 {
         font-size: 16px;
         margin-bottom: 12px;
     }
-    
+
     .form-group label {
         font-size: 12px;
     }
-    
+
     .form-group input,
     .form-group select {
         font-size: 12px;
         height: 34px;
         padding: 6px 8px;
     }
-    
+
     .btn-login {
         padding: 8px 16px;
         font-size: 12px;
         min-width: 90px;
     }
-    
+
     .form-full-width input {
         height: 38px;
         font-size: 14px;
